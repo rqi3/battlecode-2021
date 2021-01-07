@@ -22,6 +22,10 @@ public class EnlightenmentCenter {
             Direction.NORTHWEST,
     };
 
+    static int getBidValue(){
+        return 2;
+    };
+
 
     public static void run() throws GameActionException{
         rc = RobotPlayer.rc;
@@ -33,6 +37,12 @@ public class EnlightenmentCenter {
             } else {
                 break;
             }
+        }
+
+        int bid_value = getBidValue();
+
+        if(rc.canBid(bid_value)){
+            rc.bid(bid_value);
         }
     }
 
