@@ -23,11 +23,48 @@ public strictfp class RobotPlayer {
 
     static int turnCount;
 
+    static boolean has_parent_EC = false; //whether this unit spawned by an Enlightenment Center
+    static RobotInfo parent_EC; //the Enlightenment Center that spawned the unit, if it exists
+
+    static void assign_parent_EC() throws GameActionException{ //create parent_EC value
+        if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER) return; //if the robot is an Enlightenment Center it has no parent
+
+        RobotInfo[] close_robots = rc.senseNearbyRobots(2); //check adjacent tiles
+        for(RobotInfo possible_parent: close_robots){
+            if(!(possible_parent.getType() == RobotType.ENLIGHTENMENT_CENTER)){
+                continue; //skip over it if it's not an Enlightenment Center
+            }
+            //System.out.println("FOUND CANDIDATE EC");
+            if(possible_parent.getTeam() != rc.getTeam()){
+                continue; //skip over if it's on the enemy team
+            }
+            if(!rc.canGetFlag(possible_parent.getID())){
+                continue; //if we can't get its flag
+            }
+            int possible_parent_flag = rc.getFlag(possible_parent.getID());
+            if(!EnlightenmentCenter.get_flag_bot_made(possible_parent_flag)){
+                continue; //if the Enlightenment Center's flag says it did not make a unit
+            }
+            //the direction in which the possible parent EC spawned a unit
+            Direction possible_parent_spawn_direction = EnlightenmentCenter.get_flag_direction_made(possible_parent_flag);
+
+            //if this EC says they spawned a unit where I am, this is my parent!
+            if(possible_parent.getLocation().add(possible_parent_spawn_direction).equals(rc.getLocation())){
+                has_parent_EC = true;
+                parent_EC = possible_parent;
+                return;
+            }
+
+        }
+        System.out.println("DID NOT FIND PARENT EC"); //should only occur for converted
+    }
+
     /**
      * run() is the method that is called when a robot is instantiated in the Battlecode world.
      * If this method returns, the robot dies!
      **/
     @SuppressWarnings("unused")
+
     public static void run(RobotController rc) throws GameActionException {
 
         // This is the RobotController object. You use it to perform actions from this robot,
@@ -37,13 +74,23 @@ public strictfp class RobotPlayer {
         turnCount = 0;
 
         System.out.println("I'm a " + rc.getType() + " and I just got created!");
+        assign_parent_EC(); //after it spawns, record which EC spawned it (if any)
+        System.out.println("has_parent_EC: " + has_parent_EC);
+        if(has_parent_EC){
+            System.out.println("parent Location: " + parent_EC.getLocation());
+        }
+
         while (true) {
             turnCount += 1;
             // Try/catch blocks stop unhandled exceptions, which cause your robot to freeze
             try {
                 // Here, we've separated the controls into a different method for each RobotType.
                 // You may rewrite this into your own control structure if you wish.
+
                 System.out.println("I'm a " + rc.getType() + "! Location " + rc.getLocation());
+
+
+
                 switch (rc.getType()) {
                     case ENLIGHTENMENT_CENTER: EnlightenmentCenter.run(); break;
                     case POLITICIAN:           Politician.run();          break;
