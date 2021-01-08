@@ -31,7 +31,7 @@ public class Muckraker {
             if (robot.type.canBeExposed()) {
                 // It's a slanderer... go get them!
                 if (rc.canExpose(robot.location)) {
-                    System.out.println("e x p o s e d");
+                    System.out.println("exposed");
                     rc.expose(robot.location);
                     return;
                 }

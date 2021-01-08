@@ -90,16 +90,15 @@ public class EnlightenmentCenter {
         bot_made_last_turn = bot_made_this_turn;
         bot_made_this_turn = false;
 
-        //Build units. Currently only builds Muckraker of Influence 50
+        //Build units. Currently only builds Muckraker of Influence 1
         RobotType toBuild = RobotType.MUCKRAKER;
-        int influence = 50;
+        int influence = 1;
         for (Direction dir : directions) {
             if (rc.canBuildRobot(toBuild, dir, influence)) {
                 rc.buildRobot(toBuild, dir, influence);
                 bot_made_this_turn = true;
                 bot_direction_this_turn = dir;
                 System.out.println("Made bot in Direction: " + dir);
-            } else {
                 break;
             }
         }
