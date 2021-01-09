@@ -46,6 +46,13 @@ public class EnlightenmentCenter {
 
     }
 
+    static void update_bot_made_lastorthis_turn(){
+        bot_made_last_turn = bot_made_this_turn;
+        bot_direction_last_turn = bot_direction_this_turn;
+        bot_made_this_turn = false;
+        bot_direction_this_turn = Direction.NORTH;
+    }
+
     public static boolean getFlagBotMade(int flag_value)
     /*
     returns the value of bot_made_this_turn given only the flag value.
@@ -81,8 +88,10 @@ public class EnlightenmentCenter {
         for(int dir = 0; dir < 8; dir++){
             if(directions[dir].equals(bot_direction_last_turn)){
                 //direction index is dir
+                System.out.println("Bot was made in direction: " + dir + " " + directions[dir]);
                 for(int j = 0; j < 3; j++){
                     if(((dir>>j)&1) == 1){
+                        System.out.println("bit " + j+1 + " was set to 1");
                         flag_bits[j+1] = true; //sets the 1st, 2nd, 3rd flag_bits
                     }
                 }
@@ -102,8 +111,8 @@ public class EnlightenmentCenter {
     public static void run() throws GameActionException{
         //initialization
         rc = RobotPlayer.rc;
-        bot_made_last_turn = bot_made_this_turn;
-        bot_made_this_turn = false;
+
+        update_bot_made_lastorthis_turn();
 
         //Build units. Currently only builds Muckraker of Influence 1
         RobotType toBuild = RobotType.MUCKRAKER;

@@ -35,17 +35,20 @@ public strictfp class RobotPlayer {
             if(!(possible_parent.getType() == RobotType.ENLIGHTENMENT_CENTER)){
                 continue; //skip over it if it's not an Enlightenment Center
             }
-            //System.out.println("FOUND CANDIDATE EC");
+            System.out.println("FOUND CANDIDATE EC");
             if(possible_parent.getTeam() != rc.getTeam()){
                 continue; //skip over if it's on the enemy team
             }
+            //System.out.println("PASSED CONTINUE 1");
             if(!rc.canGetFlag(possible_parent.getID())){
                 continue; //if we can't get its flag
             }
+            //System.out.println("PASSED CONTINUE 2");
             int possible_parent_flag = rc.getFlag(possible_parent.getID());
             if(!EnlightenmentCenter.getFlagBotMade(possible_parent_flag)){
                 continue; //if the Enlightenment Center's flag says it did not make a unit
             }
+            //System.out.println("PASSED CONTINUE 3");
             //the direction in which the possible parent EC spawned a unit
             Direction possible_parent_spawn_direction = EnlightenmentCenter.getFlagDirectionMade(possible_parent_flag);
 
@@ -108,55 +111,55 @@ public strictfp class RobotPlayer {
             }
         }
     }
+/* Example bot Code:
+    static void runEnlightenmentCenter() throws GameActionException {
+        RobotType toBuild = randomSpawnableRobotType();
+        int influence = 50;
+        for (Direction dir : directions) {
+            if (rc.canBuildRobot(toBuild, dir, influence)) {
+                rc.buildRobot(toBuild, dir, influence);
+            } else {
+                break;
+            }
+        }
+    }
 
-//    static void runEnlightenmentCenter() throws GameActionException {
-//        RobotType toBuild = randomSpawnableRobotType();
-//        int influence = 50;
-//        for (Direction dir : directions) {
-//            if (rc.canBuildRobot(toBuild, dir, influence)) {
-//                rc.buildRobot(toBuild, dir, influence);
-//            } else {
-//                break;
-//            }
-//        }
-//    }
-//
-//    static void runPolitician() throws GameActionException {
-//        Team enemy = rc.getTeam().opponent();
-//        int actionRadius = rc.getType().actionRadiusSquared;
-//        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
-//        if (attackable.length != 0 && rc.canEmpower(actionRadius)) {
-//            System.out.println("empowering...");
-//            rc.empower(actionRadius);
-//            System.out.println("empowered");
-//            return;
-//        }
-//        if (tryMove(randomDirection()))
-//            System.out.println("I moved!");
-//    }
-//
-//    static void runSlanderer() throws GameActionException {
-//        if (tryMove(randomDirection()))
-//            System.out.println("I moved!");
-//    }
-//
-//    static void runMuckraker() throws GameActionException {
-//        Team enemy = rc.getTeam().opponent();
-//        int actionRadius = rc.getType().actionRadiusSquared;
-//        for (RobotInfo robot : rc.senseNearbyRobots(actionRadius, enemy)) {
-//            if (robot.type.canBeExposed()) {
-//                // It's a slanderer... go get them!
-//                if (rc.canExpose(robot.location)) {
-//                    System.out.println("e x p o s e d");
-//                    rc.expose(robot.location);
-//                    return;
-//                }
-//            }
-//        }
-//        if (tryMove(randomDirection()))
-//            System.out.println("I moved!");
-//    }
+    static void runPolitician() throws GameActionException {
+        Team enemy = rc.getTeam().opponent();
+        int actionRadius = rc.getType().actionRadiusSquared;
+        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
+        if (attackable.length != 0 && rc.canEmpower(actionRadius)) {
+            System.out.println("empowering...");
+            rc.empower(actionRadius);
+            System.out.println("empowered");
+            return;
+        }
+        if (tryMove(randomDirection()))
+            System.out.println("I moved!");
+    }
 
+    static void runSlanderer() throws GameActionException {
+        if (tryMove(randomDirection()))
+            System.out.println("I moved!");
+    }
+
+    static void runMuckraker() throws GameActionException {
+        Team enemy = rc.getTeam().opponent();
+        int actionRadius = rc.getType().actionRadiusSquared;
+        for (RobotInfo robot : rc.senseNearbyRobots(actionRadius, enemy)) {
+            if (robot.type.canBeExposed()) {
+                // It's a slanderer... go get them!
+                if (rc.canExpose(robot.location)) {
+                    System.out.println("e x p o s e d");
+                    rc.expose(robot.location);
+                    return;
+                }
+            }
+        }
+        if (tryMove(randomDirection()))
+            System.out.println("I moved!");
+    }
+*/
     /**
      * Returns a random Direction.
      *
