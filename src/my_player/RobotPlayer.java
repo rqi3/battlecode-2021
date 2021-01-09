@@ -21,12 +21,12 @@ public strictfp class RobotPlayer {
         Direction.NORTHWEST,
     };
 
-    static int turnCount;
+    static int turn_count;
 
     static boolean has_parent_EC = false; //whether this unit spawned by an Enlightenment Center
     static RobotInfo parent_EC; //the Enlightenment Center that spawned the unit, if it exists
 
-    static void assign_parent_EC() throws GameActionException{ //create parent_EC value
+    static void assignParentEC() throws GameActionException{ //create parent_EC value
         if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER) return; //if the robot is an Enlightenment Center it has no parent
 
         RobotInfo[] close_robots = rc.senseNearbyRobots(2); //check adjacent tiles
@@ -42,11 +42,11 @@ public strictfp class RobotPlayer {
                 continue; //if we can't get its flag
             }
             int possible_parent_flag = rc.getFlag(possible_parent.getID());
-            if(!EnlightenmentCenter.get_flag_bot_made(possible_parent_flag)){
+            if(!EnlightenmentCenter.getFlagBotMade(possible_parent_flag)){
                 continue; //if the Enlightenment Center's flag says it did not make a unit
             }
             //the direction in which the possible parent EC spawned a unit
-            Direction possible_parent_spawn_direction = EnlightenmentCenter.get_flag_direction_made(possible_parent_flag);
+            Direction possible_parent_spawn_direction = EnlightenmentCenter.getFlagDirectionMade(possible_parent_flag);
 
             //if this EC says they spawned a unit where I am, this is my parent!
             if(possible_parent.getLocation().add(possible_parent_spawn_direction).equals(rc.getLocation())){
@@ -71,17 +71,17 @@ public strictfp class RobotPlayer {
         // and to get information on its current status.
         RobotPlayer.rc = rc;
 
-        turnCount = 0;
+        turn_count = 0;
 
         System.out.println("I'm a " + rc.getType() + " and I just got created!");
-        assign_parent_EC(); //after it spawns, record which EC spawned it (if any)
+        assignParentEC(); //after it spawns, record which EC spawned it (if any)
         System.out.println("has_parent_EC: " + has_parent_EC);
         if(has_parent_EC){
             System.out.println("parent Location: " + parent_EC.getLocation());
         }
 
         while (true) {
-            turnCount += 1;
+            turn_count += 1;
             // Try/catch blocks stop unhandled exceptions, which cause your robot to freeze
             try {
                 // Here, we've separated the controls into a different method for each RobotType.

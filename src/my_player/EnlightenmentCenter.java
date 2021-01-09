@@ -5,9 +5,9 @@ import battlecode.common.*;
 public class EnlightenmentCenter {
     static RobotController rc;
     static boolean bot_made_last_turn = false;
-    static Direction bot_direction_last_turn = Direction.NORTH;
+    static Direction bot_direction_last_turn = Direction.NORTH; //
     static boolean bot_made_this_turn = false; //was a bot made this turn?
-    static Direction bot_direction_this_turn = Direction.NORTH;
+    static Direction bot_direction_this_turn = Direction.NORTH; //direction the bot is facing
 
     static final RobotType[] spawnableRobot = {
             RobotType.POLITICIAN,
@@ -28,9 +28,10 @@ public class EnlightenmentCenter {
 
     static int getBidValue(){ //returns the value this Enlightenment Center will bid
         return 2;
+
     }
 
-    public static boolean get_flag_bot_made(int flag_value)
+    public static boolean getFlagBotMade(int flag_value)
     /*
     returns the value of bot_made_this_turn given only the flag value.
     Depends on how we made the flag_value in generateFlagValue()
@@ -42,7 +43,7 @@ public class EnlightenmentCenter {
         return false;
     }
 
-    public static Direction get_flag_direction_made(int flag_value)
+    public static Direction getFlagDirectionMade(int flag_value)
     /*
     returns the value of bot_made_this_turn given only the flag value.
     Depends on how we made the flag_value in generateFlagValue()
@@ -55,7 +56,6 @@ public class EnlightenmentCenter {
         }
         return directions[dir];
     }
-
 
     static int generateFlagValue(){ //returns the flag this Enlightenment Center will set to
         boolean[] flag_bits = new boolean[24];
