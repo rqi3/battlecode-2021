@@ -1,9 +1,15 @@
 package my_player;
 
 import battlecode.common.*;
+import java.util.*;
 
 public class EnlightenmentCenter {
     static RobotController rc;
+
+    static ArrayList<Point> friendly_ecs_locs;
+    static ArrayList<Point> enemy_ecs_locs;
+    static ArrayList<Point> neutral_ecs_locs;
+
     static boolean bot_made_last_turn = false;
     static Direction bot_direction_last_turn = Direction.NORTH; //
     static boolean bot_made_this_turn = false; //was a bot made this turn?
@@ -25,6 +31,15 @@ public class EnlightenmentCenter {
             Direction.WEST,
             Direction.NORTHWEST,
     };
+
+    static void foundEnemyMuckraker(int x, int y)
+    /*
+    Called when the EC receives communication that Enemy Muckraker is at relative position (x, y)
+    location relative to EC
+    */
+    {
+        // maybe send politician/make fewer slanderers
+    }
 
     static int getBidValue(){ //returns the value this Enlightenment Center will bid
         return 2;

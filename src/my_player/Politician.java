@@ -1,9 +1,14 @@
 package my_player;
 
 import battlecode.common.*;
+import java.util.*;
 
 public class Politician {
     static RobotController rc;
+
+    static ArrayList<Point> friendly_ecs_locs;
+    static ArrayList<Point> enemy_ecs_locs;
+    static ArrayList<Point> neutral_ecs_locs;
 
     static final RobotType[] spawnableRobot = {
             RobotType.POLITICIAN,
@@ -21,6 +26,7 @@ public class Politician {
             Direction.WEST,
             Direction.NORTHWEST,
     };
+
 
 
     public static void run() throws GameActionException{

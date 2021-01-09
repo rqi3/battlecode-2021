@@ -1,5 +1,6 @@
 package my_player;
 import battlecode.common.*;
+import java.util.*;
 
 public strictfp class RobotPlayer {
     static RobotController rc;
