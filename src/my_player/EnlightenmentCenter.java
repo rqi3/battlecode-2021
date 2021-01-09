@@ -6,10 +6,6 @@ import java.util.*;
 public class EnlightenmentCenter {
     static RobotController rc;
 
-    static ArrayList<Point> friendly_ecs_locs;
-    static ArrayList<Point> enemy_ecs_locs;
-    static ArrayList<Point> neutral_ecs_locs;
-
     static boolean bot_made_last_turn = false;
     static Direction bot_direction_last_turn = Direction.NORTH; //
     static boolean bot_made_this_turn = false; //was a bot made this turn?
@@ -114,6 +110,8 @@ public class EnlightenmentCenter {
 
         update_bot_made_lastorthis_turn();
 
+        //Receive Flag Communication
+
         //Build units. Currently only builds Muckraker of Influence 1
         RobotType toBuild = RobotType.MUCKRAKER;
         int influence = 1;
@@ -134,7 +132,7 @@ public class EnlightenmentCenter {
             rc.bid(bid_value);
         }
 
-        //Flag communication
+        //Flag Send Communication
         int flag_value = generateFlagValue();
         if(rc.canSetFlag(flag_value)){
             rc.setFlag(flag_value);
@@ -161,20 +159,5 @@ public class EnlightenmentCenter {
 
     static RobotType randomSpawnableRobotType() {
         return spawnableRobot[(int) (Math.random() * spawnableRobot.length)];
-    }
-
-    /**
-     * Attempts to move in a given direction.
-     *
-     * @param dir The intended direction of movement
-     * @return true if a move was performed
-     * @throws GameActionException
-     */
-    static boolean tryMove(Direction dir) throws GameActionException {
-        System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
-        if (rc.canMove(dir)) {
-            rc.move(dir);
-            return true;
-        } else return false;
     }
 }

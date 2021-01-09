@@ -26,9 +26,16 @@ public strictfp class RobotPlayer {
 
     static boolean has_parent_EC = false; //whether this unit spawned by an Enlightenment Center
     static RobotInfo parent_EC; //the Enlightenment Center that spawned the unit, if it exists
+    static ArrayList<Friend_EC_Info> friendly_ecs;
+    static ArrayList<Enemy_EC_Info> enemy_ecs;
+    static ArrayList<Neutral_EC_Info> neutral_ecs;
 
     static void assignParentEC() throws GameActionException{ //create parent_EC value
-        if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER) return; //if the robot is an Enlightenment Center it has no parent
+        if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
+            has_parent_EC = false;
+            return; //if the robot is an Enlightenment Center it has not parent
+        }
+
 
         RobotInfo[] close_robots = rc.senseNearbyRobots(2); //check adjacent tiles
         for(RobotInfo possible_parent: close_robots){
@@ -61,6 +68,15 @@ public strictfp class RobotPlayer {
 
         }
         System.out.println("DID NOT FIND PARENT EC"); //should only occur for converted
+    }
+
+
+    void moveTo(int destination_x, int destination_y) //destination x and y are relative to parent_EC
+    /*
+    Robot tries to move closer to a destination location
+     */
+    {
+
     }
 
     /**

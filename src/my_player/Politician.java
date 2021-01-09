@@ -6,10 +6,6 @@ import java.util.*;
 public class Politician {
     static RobotController rc;
 
-    static ArrayList<Point> friendly_ecs_locs;
-    static ArrayList<Point> enemy_ecs_locs;
-    static ArrayList<Point> neutral_ecs_locs;
-
     static final RobotType[] spawnableRobot = {
             RobotType.POLITICIAN,
             RobotType.SLANDERER,
