@@ -6,12 +6,15 @@ import java.util.*;
 public class EnlightenmentCenter {
 	static RobotController rc;
 
+	public static final int MAX_SCOUTS = 100;
 	public static final int OPTIMAL_SLANDERER_INFLUENCE[] = {21,41,63,85,107,130,154,178,203,228,255,282,310,339,368,399,431,463,497,532,568,605,643,683,724,766,810,855,902,949};
 
 	static boolean bot_made_last_turn = false;
 	static Direction bot_direction_last_turn = Direction.NORTH; //
 	static boolean bot_made_this_turn = false; //was a bot made this turn?
 	static Direction bot_direction_this_turn = Direction.NORTH; //direction the bot is facing
+
+	static List<Integer> alive_scout_ids = new ArrayList<Integer>();
 
 	static float slanderer_frequency;
 	static int slanderer_investment;
@@ -128,6 +131,48 @@ public class EnlightenmentCenter {
 		return OPTIMAL_SLANDERER_INFLUENCE[l];
 	}
 
+	public static void updateScoutList()
+	/*
+	Updates the list of scouts based on whether one died or not
+	 */
+	{
+		for(int i = alive_scout_ids.size()-1; i >= 0; i--){
+			Integer robot_id = alive_scout_ids.get(i);
+			if(!rc.canGetFlag(robot_id)){ //Can't get the flag if they are dead
+				alive_scout_ids.remove(robot_id); //Scout died, remove it from the list!
+			}
+		}
+	}
+
+	public static boolean trySpawnScout() throws GameActionException
+	/*
+	Tries to spawn a scout in a random direction.
+	Returns whether it did spawn a scout.
+	 */
+	{
+		updateScoutList();
+
+		int scout_influence = 1;
+
+		if(alive_scout_ids.size() < MAX_SCOUTS){
+			for (Direction dir : directions) {
+				if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, scout_influence)) {
+					rc.buildRobot(RobotType.MUCKRAKER, dir, scout_influence);
+					bot_made_this_turn = true;
+					bot_direction_this_turn = dir;
+					System.out.println("Made bot in Direction: " + dir);
+					MapLocation spawn_loc = rc.getLocation().add(dir);
+					int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();
+					alive_scout_ids.add(spawn_id);
+					break;
+				}
+			}
+			return true;
+		}
+
+		return false;
+	}
+
 	public static void spawnRobot() throws GameActionException
 	/*
 			Spawns robots
@@ -150,17 +195,25 @@ public class EnlightenmentCenter {
 				influence = cost;
 				slanderer_frequency = Math.max(slanderer_frequency-0.5f, 0.0f);
 			}
+
 		}
-		
-		for (Direction dir : directions) {
-			if (rc.canBuildRobot(toBuild, dir, influence)) {
-				rc.buildRobot(toBuild, dir, influence);
-				bot_made_this_turn = true;
-				bot_direction_this_turn = dir;
-				System.out.println("Made bot in Direction: " + dir);
-				break;
+
+		if(toBuild == RobotType.SLANDERER){
+			for (Direction dir : directions) {
+				if (rc.canBuildRobot(toBuild, dir, influence)) {
+					rc.buildRobot(toBuild, dir, influence);
+					bot_made_this_turn = true;
+					bot_direction_this_turn = dir;
+					System.out.println("Made bot in Direction: " + dir);
+					break;
+				}
 			}
 		}
+		else{
+			trySpawnScout();
+		}
+
+
 		slanderer_frequency = Math.min(slanderer_frequency+0.05f, 1f);
 	}
 
