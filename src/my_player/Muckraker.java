@@ -81,7 +81,7 @@ public class Muckraker {
                     }
                 }
                 else if(nearby_robot.getTeam() == rc.getTeam() && nearby_robot.getType() == RobotType.ENLIGHTENMENT_CENTER){
-                    if(nearby_robot.getLocation() == RobotPlayer.parent_EC.getLocation()) continue; //don't need to communicate this
+                    if(nearby_robot.getLocation().equals(RobotPlayer.parent_EC.getLocation())) continue; //don't need to communicate this
                     //Friend Enlightenment Center found
                     friend_EC_nearby = true;
                     if(!communicated_ecs.contains(nearby_robot.getLocation())){
@@ -144,7 +144,6 @@ public class Muckraker {
                 if (rc.canExpose(robot.location)) {
                     System.out.println("exposed");
                     rc.expose(robot.location);
-                    return;
                 }
             }
         }

@@ -106,7 +106,6 @@ public strictfp class RobotPlayer {
 		System.out.println("DID NOT FIND PARENT EC"); //should only occur for converted
 	}
 
-
 	void moveTo(int destination_x, int destination_y) //destination x and y are relative to parent_EC
 	/*
 	Robot tries to move closer to a destination location
@@ -149,8 +148,6 @@ public strictfp class RobotPlayer {
 				// You may rewrite this into your own control structure if you wish.
 
 				System.out.println("I'm a " + rc.getType() + "! Location " + rc.getLocation());
-
-
 
 				switch (rc.getType()) {
 					case ENLIGHTENMENT_CENTER: EnlightenmentCenter.run(); break;
