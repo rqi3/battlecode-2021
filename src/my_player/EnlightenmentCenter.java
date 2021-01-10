@@ -83,32 +83,35 @@ public class EnlightenmentCenter {
 		return directions[dir];
 	}
 
-	static int generateFlagValue(){ //returns the flag this Enlightenment Center will set to
-		boolean[] flag_bits = new boolean[24];
+	public static void receiveScoutCommunication() throws GameActionException{
+		for(Integer scout_id: alive_scout_ids){
+			if(!rc.canGetFlag(scout_id)) continue;
+			int flag_value = rc.getFlag(scout_id);
+			int flag_signal = flag_value % (1<<3);
 
-		//0th bit is whether a bot was made last turn
-		flag_bits[0] = bot_made_last_turn;
-		//1st, 2nd, 3rd bits indicate the direction of where the bot was made
-		for(int dir = 0; dir < 8; dir++){
-			if(directions[dir].equals(bot_direction_last_turn)){
-				//direction index is dir
-				System.out.println("Bot was made in direction: " + dir + " " + directions[dir]);
-				for(int j = 0; j < 3; j++){
-					if(((dir>>j)&1) == 1){
-						System.out.println("bit " + j+1 + " was set to 1");
-						flag_bits[j+1] = true; //sets the 1st, 2nd, 3rd flag_bits
-					}
-				}
+			if(flag_signal == 1){
+				//Neutral_EC_Info
+				Neutral_EC_Info neutral_ec = Neutral_EC_Info.fromFlagValue(flag_value);
+				RobotPlayer.neutral_ecs.add(neutral_ec);
+				System.out.println("Neutral EC Information Received:");
+				System.out.println("Influence: " + neutral_ec.influence);
+				System.out.println("Relative Position: " + neutral_ec.rel_loc);
+			}
+			else if(flag_signal == 2){
+				//Enemy_EC_Info
+				Enemy_EC_Info enemy_ec = Enemy_EC_Info.fromFlagValue(flag_value);
+				RobotPlayer.enemy_ecs.add(enemy_ec);
+				System.out.println("Enemy EC Information Received:");
+				System.out.println("Relative Position: " + enemy_ec.rel_loc);
+			}
+			else if(flag_signal == 3){
+				//Friend_EC_Info
+				Friend_EC_Info friend_ec = Friend_EC_Info.fromFlagValue(flag_value);
+				RobotPlayer.friend_ecs.add(friend_ec);
+				System.out.println("Friend EC Information Received:");
+				System.out.println("Relative Position: " + friend_ec.rel_loc);
 			}
 		}
-
-		int returned_flag_value = 0; //convert the bits to an integer
-		for(int bit_position = 0; bit_position < 24; bit_position++){
-			if(flag_bits[bit_position]) {
-				returned_flag_value += (1 << bit_position);
-			}
-		}
-		return returned_flag_value;
 	}
 
 	public static int getOptimalSlandererInfluence(int max_val)
@@ -150,7 +153,6 @@ public class EnlightenmentCenter {
 	Returns whether it did spawn a scout.
 	 */
 	{
-		updateScoutList();
 
 		int scout_influence = 1;
 
@@ -217,14 +219,46 @@ public class EnlightenmentCenter {
 		slanderer_frequency = Math.min(slanderer_frequency+0.05f, 1f);
 	}
 
+	static int generateFlagValue(){ //returns the flag this Enlightenment Center will set to
+		boolean[] flag_bits = new boolean[24];
+
+		//0th bit is whether a bot was made last turn
+		flag_bits[0] = bot_made_last_turn;
+		//1st, 2nd, 3rd bits indicate the direction of where the bot was made
+		for(int dir = 0; dir < 8; dir++){
+			if(directions[dir].equals(bot_direction_last_turn)){
+				//direction index is dir
+				System.out.println("Bot was made in direction: " + dir + " " + directions[dir]);
+				for(int j = 0; j < 3; j++){
+					if(((dir>>j)&1) == 1){
+						System.out.println("bit " + j+1 + " was set to 1");
+						flag_bits[j+1] = true; //sets the 1st, 2nd, 3rd flag_bits
+					}
+				}
+			}
+		}
+
+		int returned_flag_value = 0; //convert the bits to an integer
+		for(int bit_position = 0; bit_position < 24; bit_position++){
+			if(flag_bits[bit_position]) {
+				returned_flag_value += (1 << bit_position);
+			}
+		}
+		return returned_flag_value;
+	}
+
 	public static void run() throws GameActionException{
 		//initialization
 		rc = RobotPlayer.rc;
 
 		update_bot_made_lastorthis_turn();
+		updateScoutList();
 
-		//Receive Flag Communication (TODO)
+		//Receive Flag Communication from Scouts(TODO)
 
+		receiveScoutCommunication();
+
+		//Spawn Robot
 		spawnRobot();
 
 		//Bidding using the getBidValue function

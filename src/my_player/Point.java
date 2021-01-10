@@ -18,4 +18,9 @@ public class Point {
 		if(x == p.x && y == p.y) return true;
 		return false;
 	}
+
+
+	public String toString(){
+		return "(" + x + "," + y + ")";
+	}
 }
