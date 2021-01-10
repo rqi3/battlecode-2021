@@ -30,6 +30,41 @@ public strictfp class RobotPlayer {
 	static List<Enemy_EC_Info> enemy_ecs;
 	static List<Neutral_EC_Info> neutral_ecs;
 
+	static Point convertToRelativeCoordinates(MapLocation loc){
+		Point rel_loc = new Point();
+		rel_loc.x = loc.x-parent_EC.getLocation().x;
+		rel_loc.y = loc.y-parent_EC.getLocation().y;
+		return rel_loc;
+	}
+
+	static int convertToFlagRelativeLocation(Point rel_loc)
+	//takes a relative location and converts it to a single integer up to 2^14
+	{
+		int flag_loc = (rel_loc.x+63)+((rel_loc.y+63)<<7);
+		return flag_loc;
+	}
+
+	static Point convertFromFlagRelativeLocation(int flag_loc)
+	//Inverts convertToFlagRelativeLocation
+	{
+		Point rel_loc = new Point();
+		rel_loc.x = flag_loc % (1<<7) - 63;
+		rel_loc.y = flag_loc/(1<<7) - 63;
+		return rel_loc;
+	}
+
+	static int getBitsBetween(int flag_value, int l, int r){
+		//return integer corresponding to the bits [l, r] in flag_value
+		int res = 0;
+		for(int i = l; i <= r; i++){
+			if((((flag_value)>>i)&1) == 1){
+				res+=(1<<(i-l));
+			}
+		}
+		return res;
+	}
+
+
 	static void assignParentEC() throws GameActionException{ //create parent_EC value
 		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
 			has_parent_EC = false;

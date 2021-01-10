@@ -4,10 +4,46 @@ import battlecode.common.*;
 import java.util.*;
 
 public class Neutral_EC_Info {
-    public int x; //x position relative to parent EC of unit that is accessing this
-    public int y; //y position relative to parent EC of unit that is accessing this
+    public Point rel_loc; //position relative to parent EC of unit that is accessing this
+    public MapLocation loc;
+    public int influence;
 
-    public void setPosition(int _x, int _y){
-        x = _x; y = _y;
+    final int flag_signal = 1;
+
+    Neutral_EC_Info(){
+        rel_loc = new Point();
+        influence = 0;
     }
+
+    public void setPosition(Point _rel_loc){
+        rel_loc = _rel_loc;
+    }
+
+    public void setPosition(MapLocation _loc, MapLocation origin){
+        rel_loc.x = _loc.x-origin.x;
+        rel_loc.y = _loc.y-origin.y;
+        loc = _loc;
+    }
+
+
+    public void setInfluence(int _influence){
+        influence = _influence;
+    }
+
+    public int toFlagValue(){
+        int flag_value = flag_signal;
+        int flag_influence = (int)((double)(influence)*127.0/500.0);
+        int flag_loc = RobotPlayer.convertToFlagRelativeLocation(rel_loc);
+        return flag_value+flag_influence*(1<<3)+flag_loc*(1<<10);
+    }
+
+    public static Neutral_EC_Info fromFlagValue(int flag_value){
+        Neutral_EC_Info neutral_ec = new Neutral_EC_Info();
+        int location_bits = RobotPlayer.getBitsBetween(flag_value, 10, 23);
+        int influence_bits = RobotPlayer.getBitsBetween(flag_value, 3, 9);
+        neutral_ec.setPosition(RobotPlayer.convertFromFlagRelativeLocation(location_bits));
+        neutral_ec.setInfluence((int)(influence_bits*500.0/127.0));
+        return neutral_ec;
+    }
+
 }

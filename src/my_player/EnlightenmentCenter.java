@@ -151,7 +151,7 @@ public class EnlightenmentCenter {
 				slanderer_frequency = Math.max(slanderer_frequency-0.5f, 0.0f);
 			}
 		}
-
+		
 		for (Direction dir : directions) {
 			if (rc.canBuildRobot(toBuild, dir, influence)) {
 				rc.buildRobot(toBuild, dir, influence);
@@ -170,7 +170,7 @@ public class EnlightenmentCenter {
 
 		update_bot_made_lastorthis_turn();
 
-		//Receive Flag Communication
+		//Receive Flag Communication (TODO)
 
 		spawnRobot();
 
