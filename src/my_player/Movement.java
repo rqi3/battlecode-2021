@@ -151,7 +151,12 @@ public class Movement {
     Given x or y coordinate relative to parent_EC, determine the x or y sector coordinate
      */
     {
+
+
+
         int rel_middle_sector = x_or_y+3; //relative to (0,0) of sector (8, 8)
+
+        System.out.println("getSector Debug: " + x_or_y + ", " + (flooredDiv(rel_middle_sector, 8) + 8));
         return flooredDiv(rel_middle_sector, 8) + 8;
     }
 

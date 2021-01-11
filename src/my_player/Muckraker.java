@@ -139,6 +139,12 @@ public class Muckraker {
     Chooses a new sector for this scout; updates next_sector
      */
     {
+        Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
+
+        //next_sector should currently be the current sector
+        next_sector.x = Movement.getSector(my_rel_loc.x);
+        next_sector.y = Movement.getSector(my_rel_loc.y);
+
         if(!roaming_sectors){
             //choose the sector along scout_initial_direction
         }
@@ -146,7 +152,7 @@ public class Muckraker {
         List<Point> sector0s = new ArrayList<>();
         List<Point> sector1s = new ArrayList<>();
 
-        for(int i = Math.max(0, next_sector.x-2); i <= Math.min(16, next_sector.y+2); i++){
+        for(int i = Math.max(0, next_sector.x-2); i <= Math.min(16, next_sector.x+2); i++){
             for(int j = Math.max(0, next_sector.y-2); j <= Math.min(16, next_sector.y+2); j++){
                 if(i == next_sector.x && j == next_sector.y) continue; //don't choose the same
 
