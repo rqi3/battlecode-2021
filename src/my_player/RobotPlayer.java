@@ -27,9 +27,9 @@ public strictfp class RobotPlayer {
 	static boolean has_parent_EC = false; //whether this unit spawned by an Enlightenment Center
 	static RobotInfo parent_EC; //the Enlightenment Center that spawned the unit, if it exists
 
-	static List<Neutral_EC_Info> neutral_ecs;
-	static List<Enemy_EC_Info> enemy_ecs;
-	static List<Friend_EC_Info> friend_ecs;
+	static List<Neutral_EC_Info> neutral_ecs = new ArrayList<Neutral_EC_Info>();
+	static List<Enemy_EC_Info> enemy_ecs = new ArrayList<Enemy_EC_Info>();
+	static List<Friend_EC_Info> friend_ecs = new ArrayList<Friend_EC_Info>();;
 
 	static Point convertToRelativeCoordinates(MapLocation loc)
 	/*
@@ -178,12 +178,6 @@ public strictfp class RobotPlayer {
 	@SuppressWarnings("unused")
 
 	public static void run(RobotController rc) throws GameActionException {
-
-		//initialize ec arrays
-		friend_ecs = new ArrayList<Friend_EC_Info>();
-		enemy_ecs = new ArrayList<Enemy_EC_Info>();
-		neutral_ecs = new ArrayList<Neutral_EC_Info>();
-
 		// This is the RobotController object. You use it to perform actions from this robot,
 		// and to get information on its current status.
 		RobotPlayer.rc = rc;

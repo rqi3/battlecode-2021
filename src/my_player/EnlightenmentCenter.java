@@ -7,7 +7,7 @@ public class EnlightenmentCenter {
 	static RobotController rc;
 
 	public static final int MAX_SCOUTS = 25; //reduce bytecode usage. Currently accounts for ~7000 bytecode
-	public static final int OPTIMAL_SLANDERER_INFLUENCE[] = {21,41,63,85,107,130,154,178,203,228,255,282,310,339,368,399,431,463,497,532,568,605,643,683,724,766,810,855,902,949};
+	public static final int[] OPTIMAL_SLANDERER_INFLUENCE = {21,41,63,85,107,130,154,178,203,228,255,282,310,339,368,399,431,463,497,532,568,605,643,683,724,766,810,855,902,949};
 
 	static boolean bot_made_last_turn = false;
 	static Direction bot_direction_last_turn = Direction.NORTH; //
@@ -286,7 +286,6 @@ public class EnlightenmentCenter {
 					System.out.println("Bot was made in direction: " + dir + " " + directions[dir]);
 					for(int j = 0; j < 3; j++){
 						if(((dir>>j)&1) == 1){
-							System.out.println("bit " + j+1 + " was set to 1");
 							flag_bits[j+1] = true; //sets the 1st, 2nd, 3rd flag_bits
 						}
 					}

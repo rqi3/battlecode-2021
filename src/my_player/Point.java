@@ -29,6 +29,9 @@ public class Point {
 		return newp;
 	}
 
+	public static int getRadiusSquaredDistance(Point a, Point b){
+		return (b.x-a.x)*(b.x-a.x)+(b.y-a.y)*(b.y-a.y);
+	}
 
 	public boolean equals(Object o){
 		if(o == this) return true;

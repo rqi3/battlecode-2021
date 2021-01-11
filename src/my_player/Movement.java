@@ -48,6 +48,7 @@ public class Movement {
         return Math.max(Math.abs(b.x-a.x), Math.abs(b.y-a.y));
     }
 
+
     public static void moveToNaive(Point destination) throws GameActionException
     /*
     Naively attempts to move the robot to the destination.
@@ -57,17 +58,31 @@ public class Movement {
         assert(RobotPlayer.has_parent_EC); //destination was not defined if this has no parent_EC
         Point current_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
+        boolean found_direction = false;
+        Direction best_direction = Direction.NORTH;
+        int lowest_radius_squared = 0;
+
         for(Direction dir: directions){
-            System.out.println("Possible move: " + dir);
             if(rc.canMove(dir)){
                 Point new_loc = current_loc.add(dir);
-                if(movementDistance(new_loc, destination) < movementDistance(current_loc, destination)){
-                    System.out.println("current_loc: " + current_loc);
-                    System.out.println("new_loc: " + new_loc);
-                    rc.move(dir);
-                    return;
+                if(!found_direction){
+                    found_direction = true;
+                    best_direction = dir;
+                    lowest_radius_squared = Point.getRadiusSquaredDistance(new_loc, destination);
+                }
+                else{
+                    int new_radius_squared = Point.getRadiusSquaredDistance(new_loc, destination);
+                    if(new_radius_squared <= lowest_radius_squared){
+                        best_direction = dir;
+                        lowest_radius_squared = new_radius_squared;
+                    }
                 }
             }
         }
+
+        if(found_direction){
+            rc.move(best_direction);
+        }
+
     }
 }
