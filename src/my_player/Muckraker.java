@@ -318,6 +318,7 @@ public class Muckraker {
         return flag_value;
     }
 
+    static Point goal = null;
 
     public static void run() throws GameActionException{
         //Initialization
@@ -349,8 +350,23 @@ public class Muckraker {
             moveScout();
         }
         else{ //different movement for attackers
-            if (tryMove(randomDirection()))
-                System.out.println("I moved!");
+            if(goal == null)
+            if(RobotPlayer.enemy_ecs.size() > 0) {
+            	goal = RobotPlayer.enemy_ecs.get((int)(Math.random()*RobotPlayer.enemy_ecs.size())).rel_loc;
+            } else {
+            	if(RobotPlayer.neutral_ecs.size() > 0) {
+                	goal = RobotPlayer.neutral_ecs.get((int)(Math.random()*RobotPlayer.neutral_ecs.size())).rel_loc;
+            	} else {
+            		if(RobotPlayer.friend_ecs.size() > 0) {
+                    	goal = RobotPlayer.friend_ecs.get((int)(Math.random()*RobotPlayer.friend_ecs.size())).rel_loc;
+            		}
+            	}
+            }
+        	
+        	if(goal == null) tryMove(randomDirection());
+        	else {
+        		Movement.moveToNaive(goal);
+        	}
         }
 
 
