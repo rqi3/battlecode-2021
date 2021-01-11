@@ -27,6 +27,10 @@ public class Politician {
 
     public static void run() throws GameActionException{
         rc = RobotPlayer.rc;
+
+        //Receive broadcast from parent_EC
+        RobotPlayer.receiveECBroadcast();
+
         Team enemy = rc.getTeam().opponent();
         int actionRadius = rc.getType().actionRadiusSquared;
         RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);

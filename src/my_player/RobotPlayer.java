@@ -26,9 +26,104 @@ public strictfp class RobotPlayer {
 
 	static boolean has_parent_EC = false; //whether this unit spawned by an Enlightenment Center
 	static RobotInfo parent_EC; //the Enlightenment Center that spawned the unit, if it exists
-	static List<Friend_EC_Info> friendly_ecs;
-	static List<Enemy_EC_Info> enemy_ecs;
+
 	static List<Neutral_EC_Info> neutral_ecs;
+	static List<Enemy_EC_Info> enemy_ecs;
+	static List<Friend_EC_Info> friend_ecs;
+
+	static Point convertToRelativeCoordinates(MapLocation loc){
+		Point rel_loc = new Point();
+		rel_loc.x = loc.x-parent_EC.getLocation().x;
+		rel_loc.y = loc.y-parent_EC.getLocation().y;
+		return rel_loc;
+	}
+
+	static int convertToFlagRelativeLocation(Point rel_loc)
+	//takes a relative location and converts it to a single integer up to 2^14
+	{
+		int flag_loc = (rel_loc.x+63)+((rel_loc.y+63)<<7);
+		return flag_loc;
+	}
+
+	static Point convertFromFlagRelativeLocation(int flag_loc)
+	//Inverts convertToFlagRelativeLocation
+	{
+		Point rel_loc = new Point();
+		rel_loc.x = flag_loc % (1<<7) - 63;
+		rel_loc.y = flag_loc/(1<<7) - 63;
+		return rel_loc;
+	}
+
+	static int getBitsBetween(int flag_value, int l, int r){
+		//return integer corresponding to the bits [l, r] in flag_value
+		int res = 0;
+		for(int i = l; i <= r; i++){
+			if((((flag_value)>>i)&1) == 1){
+				res+=(1<<(i-l));
+			}
+		}
+		return res;
+	}
+
+	public static void removeECInfo(Point ec_rel_loc)
+	/*
+	If we just received information about an ec, remove it from the old information so we can safely add it.
+	 */
+	{
+		RobotPlayer.neutral_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
+		RobotPlayer.enemy_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
+		RobotPlayer.friend_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
+	}
+	public static void removeECInfo(Neutral_EC_Info ec)
+	/*
+	If we just received information about an ec, remove it from the old information so we can safely add it.
+	 */
+	{
+		removeECInfo(ec.rel_loc);
+	}
+	public static void removeECInfo(Enemy_EC_Info ec)
+	/*
+	If we just received information about an ec, remove it from the old information so we can safely add it.
+	 */
+	{
+		removeECInfo(ec.rel_loc);
+	}
+
+	public static void receiveECBroadcast() throws GameActionException{
+		if(!has_parent_EC) return;
+
+		int ec_flag_value = rc.getFlag(parent_EC.getID());
+		int is_global_broadcast_bit = getBitsBetween(ec_flag_value, 0, 0);
+		if(is_global_broadcast_bit == 1) return; //careful, 1 means it is NOT a global broadcast.
+		int flag_signal = getBitsBetween(ec_flag_value, 1, 3);
+
+		if(flag_signal == 1){
+			//neutral EC found
+			Neutral_EC_Info neutral_ec = Neutral_EC_Info.fromBroadcastFlagValue(ec_flag_value);
+			removeECInfo(neutral_ec);
+			neutral_ecs.add(neutral_ec);
+
+			System.out.println("Neutral EC at location " + neutral_ec.rel_loc + " was broadcast to me.");
+			System.out.println("Current neutral_ecs: ");
+			for(Neutral_EC_Info a: neutral_ecs){
+				System.out.println(a.rel_loc);
+			}
+		}
+		else if(flag_signal == 2){
+			//enemy EC found
+			System.out.println("Enemy EC was broadcast to me.");
+			Enemy_EC_Info enemy_ec = Enemy_EC_Info.fromBroadcastFlagValue(ec_flag_value);
+			removeECInfo(enemy_ec);
+			enemy_ecs.add(enemy_ec);
+
+			System.out.println("Enemy EC at location " + enemy_ec.rel_loc + " was broadcast to me.");
+			System.out.println("Current enemy_ecs: ");
+			for(Enemy_EC_Info a: enemy_ecs){
+				System.out.println(a.rel_loc);
+			}
+		}
+	}
+
 
 	static void assignParentEC() throws GameActionException{ //create parent_EC value
 		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
@@ -70,7 +165,6 @@ public strictfp class RobotPlayer {
 		System.out.println("DID NOT FIND PARENT EC"); //should only occur for converted
 	}
 
-
 	void moveTo(int destination_x, int destination_y) //destination x and y are relative to parent_EC
 	/*
 	Robot tries to move closer to a destination location
@@ -88,7 +182,7 @@ public strictfp class RobotPlayer {
 	public static void run(RobotController rc) throws GameActionException {
 
 		//initialize ec arrays
-		friendly_ecs = new ArrayList<Friend_EC_Info>();
+		friend_ecs = new ArrayList<Friend_EC_Info>();
 		enemy_ecs = new ArrayList<Enemy_EC_Info>();
 		neutral_ecs = new ArrayList<Neutral_EC_Info>();
 
@@ -113,8 +207,6 @@ public strictfp class RobotPlayer {
 				// You may rewrite this into your own control structure if you wish.
 
 				System.out.println("I'm a " + rc.getType() + "! Location " + rc.getLocation());
-
-
 
 				switch (rc.getType()) {
 					case ENLIGHTENMENT_CENTER: EnlightenmentCenter.run(); break;

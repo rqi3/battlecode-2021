@@ -30,6 +30,10 @@ public class Slanderer {
 
 	public static void run() throws GameActionException{
 		rc = RobotPlayer.rc;
+		//Receive broadcast from parent_EC
+		RobotPlayer.receiveECBroadcast();
+
+		//Movement
 		if (tryMove(greedyPathfinding()))
 			System.out.println("I moved!");
 	}
