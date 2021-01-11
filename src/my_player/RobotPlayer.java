@@ -42,6 +42,14 @@ public strictfp class RobotPlayer {
 		return rel_loc;
 	}
 
+	static MapLocation convertFromRelativeCoordinates(Point rel_loc)
+	/*
+	Computes relative coordinates, assuming that it has a parent enlightenment center
+	 */
+	{
+		return parent_EC.getLocation().translate(rel_loc.x, rel_loc.y);
+	}
+
 	static int convertToFlagRelativeLocation(Point rel_loc)
 	//takes a relative location and converts it to a single integer up to 2^14
 	{

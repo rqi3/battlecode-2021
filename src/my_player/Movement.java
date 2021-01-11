@@ -114,21 +114,35 @@ public class Movement {
 
     public static void moveToDestination() throws GameActionException
     {
-        //will try to move closer to its destination
         /*
-        If nowhere decreases distance, rotate around
+        TODO: If nowhere decreases distance, rotate around
          */
+        Point current_location = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
+        if(boundaries[0] >= 0){
+            current_destination.y = Math.min(current_destination.y, boundaries[0]);
+        }
+        if(boundaries[1] >= 0){
+            current_destination.x = Math.min(current_destination.x, boundaries[1]);
+        }
+        if(boundaries[2] <= 0){
+            current_destination.y = Math.max(current_destination.y, boundaries[2]);
+        }
+        if(boundaries[3] <= 0){
+            current_destination.x = Math.max(current_destination.x, boundaries[3]);
+        }
         moveToNaive(current_destination);
 
         if(RobotPlayer.convertToRelativeCoordinates(rc.getLocation()).equals(current_destination)){
             moved_to_destination = true;
         }
 
-        /*
-        TODO: If we determine that we can't get to destination and need to choose a new one,
-        also set moved_to_destination = true
-         */
+        if(Point.getRadiusSquaredDistance(current_location, current_destination) <= 2){
+            if(rc.isLocationOccupied(RobotPlayer.convertFromRelativeCoordinates(current_destination))){
+                moved_to_destination = true; //give up if close and tile is occupied
+            }
+        }
+
 
     }
 
