@@ -49,12 +49,12 @@ public class EnlightenmentCenter {
     
     static ArrayList<Integer> previous_scores = new ArrayList<Integer>();
     
-    static double current_bid_value = 10; //calibrate this based on what other bots are doing
+    static double current_bid_value = 5; //calibrate this based on what other bots are doing
     static double BID_PERCENTAGE_UPPER_BOUND = 0.15; //don't spend too much... in theory if the opponent is going above our upper bound then they will be too poor to win remaining rounds
     //though maybe we want to raise this upper bound in the the last 200 rounds?
     static double volatility = 3; 
     static double bid_multiplier = 1;
-    static final int LAST_FEW_BIDS = 6;
+    static final int LAST_FEW_BIDS = 4;
     
     static int getBidValue(){ //returns the value this Enlightenment Center will bid
     	System.out.println("Current influence: " + rc.getInfluence());
@@ -64,20 +64,24 @@ public class EnlightenmentCenter {
     	
     	if(us > 1500) return 0; //we have majority vote, just invest in full defense
     	
-    	int check = Math.min(LAST_FEW_BIDS, previous_scores.size());
-    	if(check > 0) {
-    		int bids_lost = check - (us - previous_scores.get(previous_scores.size() - check));
-    		bid_multiplier *= (.90 + .1 * bids_lost);
+    	if(rc.getRoundNum() >= 2750) {
+    		BID_PERCENTAGE_UPPER_BOUND = 0.40;
     	}
     	
-    	if(rc.getRoundNum() > 2750) { //untested
-    		BID_PERCENTAGE_UPPER_BOUND = 0.40;
-    		bid_multiplier *= 1.3;
+    	int check = Math.min(LAST_FEW_BIDS, previous_scores.size());
+    	if(previous_scores.size() > check) {
+    		int bids_lost = check - (us - previous_scores.get(previous_scores.size() - check));
+    		if(rc.getRoundNum() >= 400) {
+    			bid_multiplier *= (.9996 + .02 * bids_lost);
+    		} else {
+    			bid_multiplier *= (.90 + .1 * bids_lost);
+    		}
     	}
     	
     	current_bid_value *= Math.pow(bid_multiplier, volatility);
     	current_bid_value = Math.min(current_bid_value, BID_PERCENTAGE_UPPER_BOUND * rc.getInfluence());
     	previous_scores.add(rc.getTeamVotes());
+    	
     	return (int) current_bid_value;
     }
     
