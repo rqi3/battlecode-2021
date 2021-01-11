@@ -71,7 +71,7 @@ public class EnlightenmentCenter {
     	int check = Math.min(LAST_FEW_BIDS, previous_scores.size());
     	if(previous_scores.size() > check) {
     		int bids_lost = check - (us - previous_scores.get(previous_scores.size() - check));
-    		if(rc.getRoundNum() >= 400) {
+    		if(rc.getRoundNum() >= 2750) {
     			bid_multiplier *= (.9996 + .02 * bids_lost);
     		} else {
     			bid_multiplier *= (.90 + .1 * bids_lost);
