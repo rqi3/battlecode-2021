@@ -325,6 +325,7 @@ public class Muckraker {
         rc = RobotPlayer.rc;
         Movement.rc = RobotPlayer.rc;
         updateParentEC();
+        if(rc.getInfluence() > 1) is_scout = false;
 
         //sense around it
         lookAround();
