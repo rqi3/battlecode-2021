@@ -52,7 +52,7 @@ public class EnlightenmentCenter {
     static double current_bid_value = 5; //calibrate this based on what other bots are doing
     static double BID_PERCENTAGE_UPPER_BOUND = 0.15; //don't spend too much... in theory if the opponent is going above our upper bound then they will be too poor to win remaining rounds
     //though maybe we want to raise this upper bound in the the last 200 rounds?
-    static double volatility = 3; 
+    static double volatility = 6; 
     static double bid_multiplier = 1;
     static final int LAST_FEW_BIDS = 6;
     
@@ -65,7 +65,7 @@ public class EnlightenmentCenter {
     	if(us > 1500) return 0; //we have majority vote, just invest in full defense
     	
     	int check = Math.min(LAST_FEW_BIDS, previous_scores.size());
-    	if(previous_scores.size() > check) {
+    	if(check > 0) {
     		int bids_lost = check - (us - previous_scores.get(previous_scores.size() - check));
     		bid_multiplier *= (.90 + .1 * bids_lost);
     	}
