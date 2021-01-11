@@ -321,7 +321,7 @@ public class EnlightenmentCenter {
 			}
 		}
 
-		if(alive_scout_ids.size() >= 2*MAX_SCOUTS/3){
+		if(alive_scout_ids.size() >= 2*MAX_SCOUTS/3 && RobotPlayer.enemy_ecs.size() > 0){
 			if(RobotPlayer.neutral_ecs.size() == 0){
 				build_attacker_muckraker = 0.5;
 			}
