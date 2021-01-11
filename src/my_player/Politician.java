@@ -36,7 +36,7 @@ public class Politician {
             System.out.println("empowered");
             return;
         }
-        if (tryMove(randomDirection()))
+        if (tryMove(Slanderer.greedyPathfinding()))// just use slanderer movement
             System.out.println("I moved!");
     }
 
