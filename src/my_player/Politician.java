@@ -23,6 +23,8 @@ public class Politician {
             Direction.NORTHWEST,
     };
 
+
+
     static void updateParentEC()
     /*
     Check whether parent EC died
@@ -34,13 +36,118 @@ public class Politician {
         }
     }
 
+    static boolean isECAttacker = false;
+    static boolean hasECTarget = false;
+    static int ec_target_type = 0; // 1 = neutral, 2 = enemy
+    static Point ec_target = new Point(); //relative location
+
+
+
+    static void assignECTarget()
+    /*
+    Assign an EC target if !hasECTarget
+
+    reassign EC target if there is a better target
+     */
+    {
+        if(RobotPlayer.neutral_ecs.size() == 0 && RobotPlayer.enemy_ecs.size() == 0){
+            //no targets
+            return;
+        }
+
+        if(!hasECTarget){
+            //choose closest Neutral
+            if(RobotPlayer.neutral_ecs.size() > 0){
+                hasECTarget = true;
+                ec_target_type = 1;
+                ec_target = RobotPlayer.getClosestNeutralECLocation();
+            }
+            //choose closest Enemy
+            if(RobotPlayer.enemy_ecs.size() > 0){
+                hasECTarget = true;
+                ec_target_type = 2;
+                ec_target = RobotPlayer.getClosestEnemyECLocation();
+            }
+            return;
+        }
+
+        if(ec_target_type == 1) return; //already assigned a neutral
+
+        //already assigned an enemy
+
+        //choose closest Neutral
+        if(RobotPlayer.neutral_ecs.size() > 0){
+            ec_target_type = 1;
+            ec_target = RobotPlayer.getClosestNeutralECLocation();
+            return;
+        }
+        //choose closest Enemy
+        if(RobotPlayer.enemy_ecs.size() > 0){
+            ec_target_type = 2;
+            ec_target = RobotPlayer.getClosestEnemyECLocation();
+        }
+    }
+    static void doECAttackerAction() throws GameActionException
+    /*
+    EC Attacker
+    Decide to Empower or Move to EC
+     */
+    {
+        if(!hasECTarget){
+            if (tryMove(randomDirection()))
+                System.out.println("I moved!");
+            return;
+        }
+
+        Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
+        int distance_to_target = Point.getRadiusSquaredDistance(ec_target, my_rel_loc);
+
+        boolean moveAction = false;
+        for(Direction dir: directions){
+            Point candidate_rel_loc = my_rel_loc.add(dir);
+            MapLocation candidate_loc = rc.getLocation().add(dir);
+            if(Point.getRadiusSquaredDistance(candidate_rel_loc, ec_target) < distance_to_target){
+                if(rc.canSenseLocation(candidate_loc) && !rc.isLocationOccupied(candidate_loc)){
+                    moveAction = true;
+                }
+
+            }
+        }
+
+        if(!moveAction){
+            if(rc.canEmpower(distance_to_target)){
+                rc.empower(distance_to_target);
+            }
+            return;
+        }
+
+        Movement.assignDestination(ec_target);
+        Movement.moveToDestination();
+    }
+
     public static void run() throws GameActionException{
         //Initialization
         rc = RobotPlayer.rc;
+        Movement.rc = RobotPlayer.rc;
         updateParentEC();
+
+        //Just spawned?
+        if(RobotPlayer.just_made && RobotPlayer.has_parent_EC){
+            isECAttacker = true;
+
+        }
 
         //Receive broadcast from parent_EC
         RobotPlayer.receiveECBroadcast();
+
+        //Assign the ec target
+        assignECTarget();
+
+        //Do an action (attack or move)
+        if(isECAttacker){
+            doECAttackerAction();
+        }
+
 
         Team enemy = rc.getTeam().opponent();
         int actionRadius = rc.getType().actionRadiusSquared;
@@ -53,6 +160,8 @@ public class Politician {
         }
         if (tryMove(randomDirection()))
             System.out.println("I moved!");
+
+
     }
 
     /**

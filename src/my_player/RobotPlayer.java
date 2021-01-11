@@ -22,6 +22,7 @@ public strictfp class RobotPlayer {
 		Direction.NORTHWEST,
 	};
 
+	static boolean just_made = true;
 	static int turn_count;
 
 	static boolean has_parent_EC = false; //whether this unit spawned by an Enlightenment Center
@@ -37,8 +38,15 @@ public strictfp class RobotPlayer {
 	 */
 	{
 		Point rel_loc = new Point();
-		rel_loc.x = loc.x-parent_EC.getLocation().x;
-		rel_loc.y = loc.y-parent_EC.getLocation().y;
+		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
+			rel_loc.x = loc.x-rc.getLocation().x;
+			rel_loc.y = loc.y-rc.getLocation().y;
+		}
+		else{
+			rel_loc.x = loc.x-parent_EC.getLocation().x;
+			rel_loc.y = loc.y-parent_EC.getLocation().y;
+		}
+
 		return rel_loc;
 	}
 
@@ -48,6 +56,38 @@ public strictfp class RobotPlayer {
 	 */
 	{
 		return parent_EC.getLocation().translate(rel_loc.x, rel_loc.y);
+	}
+
+	static Point getClosestNeutralECLocation(){
+		assert(RobotPlayer.neutral_ecs.size() > 0);
+		Point closest_neutral_ec = RobotPlayer.neutral_ecs.get(0).rel_loc;
+		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
+
+
+		for(int i = 1; i < RobotPlayer.neutral_ecs.size(); i++){
+			int cur_dist = Point.getRadiusSquaredDistance(my_rel_loc, closest_neutral_ec);
+			Point this_neutral_ec = RobotPlayer.neutral_ecs.get(i).rel_loc;
+			int this_dist = Point.getRadiusSquaredDistance(my_rel_loc, this_neutral_ec);
+			if(this_dist < cur_dist){
+				closest_neutral_ec = this_neutral_ec;
+			}
+		}
+		return closest_neutral_ec;
+	}
+
+	static Point getClosestEnemyECLocation(){
+		assert(RobotPlayer.enemy_ecs.size() > 0);
+		Point closest_enemy_ec = RobotPlayer.enemy_ecs.get(0).rel_loc;
+		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
+		for(int i = 1; i < RobotPlayer.enemy_ecs.size(); i++){
+			int cur_dist = Point.getRadiusSquaredDistance(my_rel_loc, closest_enemy_ec);
+			Point this_enemy_ec = RobotPlayer.enemy_ecs.get(i).rel_loc;
+			int this_dist = Point.getRadiusSquaredDistance(my_rel_loc, this_enemy_ec);
+			if(this_dist < cur_dist){
+				closest_enemy_ec = this_enemy_ec;
+			}
+		}
+		return closest_enemy_ec;
 	}
 
 	static int convertToFlagRelativeLocation(Point rel_loc)
@@ -213,7 +253,7 @@ public strictfp class RobotPlayer {
 					case SLANDERER:			Slanderer.run();		   break;
 					case MUCKRAKER:			Muckraker.run();		   break;
 				}
-
+				just_made = false;
 				// Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
 				Clock.yield();
 

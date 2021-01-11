@@ -6,7 +6,7 @@ import java.util.*;
 public class EnlightenmentCenter {
 	static RobotController rc;
 
-	public static final int MAX_SCOUTS = 25; //reduce bytecode usage. Currently accounts for ~7000 bytecode
+	public static final int MAX_SCOUTS = 16; //reduce bytecode usage. Currently accounts for ~7000 bytecode
 	public static final int[] OPTIMAL_SLANDERER_INFLUENCE = {21,41,63,85,107,130,154,178,203,228,255,282,310,339,368,399,431,463,497,532,568,605,643,683,724,766,810,855,902,949};
 
 	static boolean bot_made_last_turn = false;
@@ -218,12 +218,27 @@ public class EnlightenmentCenter {
 					MapLocation spawn_loc = rc.getLocation().add(dir);
 					int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();
 					alive_scout_ids.add(spawn_id);
-					break;
+					return true;
 				}
 			}
-			return true;
 		}
 
+		return false;
+	}
+
+	public static boolean trySpawnAttackerPolitician(int attacker_influence) throws GameActionException
+	{
+		for (Direction dir : directions) {
+			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, attacker_influence)) {
+				rc.buildRobot(RobotType.POLITICIAN, dir, attacker_influence);
+				bot_made_this_turn = true;
+				bot_direction_this_turn = dir;
+				System.out.println("Made Attacker in Direction: " + dir);
+				/*MapLocation spawn_loc = rc.getLocation().add(dir);
+				int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();*/
+				break;
+			}
+		}
 		return false;
 	}
 
@@ -238,6 +253,43 @@ public class EnlightenmentCenter {
 		RobotType toBuild = RobotType.MUCKRAKER;
 		int influence = 1;
 
+		boolean build_attacker_politician = false;
+		int attacker_politician_influence = 1;
+
+		boolean build_scout = true;
+
+		if(RobotPlayer.neutral_ecs.size() > 0){
+			Point ec_target = RobotPlayer.getClosestNeutralECLocation();
+			int ec_target_influence = 1;
+			for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
+				if(neutral_ec.rel_loc == ec_target){
+					ec_target_influence = neutral_ec.influence;
+					break;
+				}
+			}
+
+			attacker_politician_influence = ec_target_influence+20;
+
+			if(attacker_politician_influence >= rc.getInfluence()/3){
+				build_attacker_politician = false;
+			}
+			else if(alive_scout_ids.size() == MAX_SCOUTS){
+				build_attacker_politician = true;
+			}
+			else if(RobotPlayer.neutral_ecs.size() == 0){
+				build_attacker_politician = false;
+			}
+			else{
+				if(Math.random() < 0.3){
+					build_attacker_politician = true;
+				}
+			}
+		}
+
+		if (build_attacker_politician) {
+			toBuild = RobotType.POLITICIAN;
+		}
+
 		if(Math.random() < slanderer_frequency)
 		{
 			//Attempt to build slanderer
@@ -249,13 +301,12 @@ public class EnlightenmentCenter {
 				influence = cost;
 				slanderer_frequency = Math.max(slanderer_frequency-0.5f, 0.0f);
 			}
-
 		}
 
 		if(toBuild == RobotType.SLANDERER){
 			for (Direction dir : directions) {
-				if (rc.canBuildRobot(toBuild, dir, influence)) {
-					rc.buildRobot(toBuild, dir, influence);
+				if (rc.canBuildRobot(RobotType.SLANDERER, dir, influence)) {
+					rc.buildRobot(RobotType.SLANDERER, dir, influence);
 					bot_made_this_turn = true;
 					bot_direction_this_turn = dir;
 					System.out.println("Made bot in Direction: " + dir);
@@ -263,7 +314,10 @@ public class EnlightenmentCenter {
 				}
 			}
 		}
-		else{
+		else if(build_attacker_politician){
+			trySpawnAttackerPolitician(attacker_politician_influence);
+		}
+		else if(build_scout){
 			trySpawnScout();
 		}
 
