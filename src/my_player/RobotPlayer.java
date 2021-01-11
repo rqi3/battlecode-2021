@@ -115,7 +115,6 @@ public strictfp class RobotPlayer {
 		}
 		else if(flag_signal == 2){
 			//enemy EC found
-			System.out.println("Enemy EC was broadcast to me.");
 			Enemy_EC_Info enemy_ec = Enemy_EC_Info.fromBroadcastFlagValue(ec_flag_value);
 			removeECInfo(enemy_ec);
 			enemy_ecs.add(enemy_ec);
