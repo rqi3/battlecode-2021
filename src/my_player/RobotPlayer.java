@@ -31,7 +31,11 @@ public strictfp class RobotPlayer {
 	static List<Enemy_EC_Info> enemy_ecs;
 	static List<Friend_EC_Info> friend_ecs;
 
-	static Point convertToRelativeCoordinates(MapLocation loc){
+	static Point convertToRelativeCoordinates(MapLocation loc)
+	/*
+	Computes relative coordinates, assuming that it has a parent enlightenment center
+	 */
+	{
 		Point rel_loc = new Point();
 		rel_loc.x = loc.x-parent_EC.getLocation().x;
 		rel_loc.y = loc.y-parent_EC.getLocation().y;
@@ -128,7 +132,7 @@ public strictfp class RobotPlayer {
 	static void assignParentEC() throws GameActionException{ //create parent_EC value
 		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
 			has_parent_EC = false;
-			return; //if the robot is an Enlightenment Center it has not parent
+			return; //if the robot is an Enlightenment Center it has no parent
 		}
 
 
@@ -165,13 +169,7 @@ public strictfp class RobotPlayer {
 		System.out.println("DID NOT FIND PARENT EC"); //should only occur for converted
 	}
 
-	void moveTo(int destination_x, int destination_y) //destination x and y are relative to parent_EC
-	/*
-	Robot tries to move closer to a destination location
-	 */
-	{
 
-	}
 
 	/**
 	 * run() is the method that is called when a robot is instantiated in the Battlecode world.

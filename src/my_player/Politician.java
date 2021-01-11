@@ -23,10 +23,21 @@ public class Politician {
             Direction.NORTHWEST,
     };
 
-
+    static void updateParentEC()
+    /*
+    Check whether parent EC died
+     */
+    {
+        if(!RobotPlayer.has_parent_EC) return;
+        if(!rc.canGetFlag(RobotPlayer.parent_EC.getID())){ //parent EC died
+            RobotPlayer.has_parent_EC = false; //should never change to true again
+        }
+    }
 
     public static void run() throws GameActionException{
+        //Initialization
         rc = RobotPlayer.rc;
+        updateParentEC();
 
         //Receive broadcast from parent_EC
         RobotPlayer.receiveECBroadcast();

@@ -25,7 +25,23 @@ public class Muckraker {
             Direction.NORTHWEST,
     };
 
+    static void updateParentEC()
+    /*
+    Check whether parent EC died
+     */
+    {
+        if(!RobotPlayer.has_parent_EC) return;
+        if(!rc.canGetFlag(RobotPlayer.parent_EC.getID())){ //parent EC died
+            RobotPlayer.has_parent_EC = false; //should never change to true again
+        }
+    }
 
+    private static void moveScout() throws GameActionException
+
+    {
+        if (tryMove(randomDirection()))
+            System.out.println("I moved!");
+    }
 
     private static int generateFlagValue(){
         int flag_value = 0;
@@ -134,7 +150,11 @@ public class Muckraker {
 
 
     public static void run() throws GameActionException{
+        //Initialization
         rc = RobotPlayer.rc;
+        Movement.rc = RobotPlayer.rc;
+        updateParentEC();
+
 
         //Receive broadcast from parent_EC
         RobotPlayer.receiveECBroadcast();
@@ -153,8 +173,14 @@ public class Muckraker {
         }
 
         //Move
-        if (tryMove(randomDirection()))
-            System.out.println("I moved!");
+        if(is_scout){ //movement for scout
+            moveScout();
+        }
+        else{ //different movement for attackers
+            if (tryMove(randomDirection()))
+                System.out.println("I moved!");
+        }
+
 
 
         //Send Communications
