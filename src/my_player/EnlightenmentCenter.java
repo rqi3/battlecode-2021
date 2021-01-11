@@ -70,9 +70,9 @@ public class EnlightenmentCenter {
     		bid_multiplier *= (.90 + .1 * bids_lost);
     	}
     	
-    	if(rc.getRoundNum() > 2800) { //untested
-    		BID_PERCENTAGE_UPPER_BOUND = 0.65;
-    		bid_multiplier *= 1.5;
+    	if(rc.getRoundNum() > 2750) { //untested
+    		BID_PERCENTAGE_UPPER_BOUND = 0.40;
+    		bid_multiplier *= 1.3;
     	}
     	
     	current_bid_value *= Math.pow(bid_multiplier, volatility);
