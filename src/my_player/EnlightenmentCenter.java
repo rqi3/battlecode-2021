@@ -65,7 +65,7 @@ public class EnlightenmentCenter {
     	if(us > 1500) return 0; //we have majority vote, just invest in full defense
     	
     	int check = Math.min(LAST_FEW_BIDS, previous_scores.size());
-    	if(previous_scores.size() > check) {
+    	if(previous_scores.size() >= check) {
     		int bids_lost = check - (us - previous_scores.get(previous_scores.size() - check));
     		bid_multiplier *= (.90 + .1 * bids_lost);
     	}
