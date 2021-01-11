@@ -242,6 +242,40 @@ public class EnlightenmentCenter {
 		return false;
 	}
 
+	static int chooseRandomFreq(double[] freq){
+		double[] cum_freq = freq;
+		for(int i = 1; i < freq.length; i++){
+			cum_freq[i]+=cum_freq[i-1];
+		}
+		for(int i = 0; i < freq.length; i++){
+			cum_freq[i]/=cum_freq[freq.length-1];
+		}
+		double rand_val = Math.random();
+		for(int i = 0; i < cum_freq.length; i++){
+			if(rand_val <= cum_freq[i]){
+				return i;
+			}
+		}
+		System.out.println("chooseRandomFreq error");
+		return 0;
+	}
+
+	static void trySpawnAttackerMuckraker() throws GameActionException
+	{
+		int attacker_influence = 2;
+		for (Direction dir : directions) {
+			if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, attacker_influence)) {
+				rc.buildRobot(RobotType.MUCKRAKER, dir, attacker_influence);
+				bot_made_this_turn = true;
+				bot_direction_this_turn = dir;
+				System.out.println("Made Attacker in Direction: " + dir);
+				/*MapLocation spawn_loc = rc.getLocation().add(dir);
+				int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();*/
+				break;
+			}
+		}
+	}
+
 	public static void spawnRobot() throws GameActionException
 	/*
 			Spawns robots
@@ -253,10 +287,16 @@ public class EnlightenmentCenter {
 		RobotType toBuild = RobotType.MUCKRAKER;
 		int influence = 1;
 
-		boolean build_attacker_politician = false;
 		int attacker_politician_influence = 1;
 
-		boolean build_scout = true;
+		double build_scout_muckraker = 0; //scale of 0 to 2 of spawning weights
+		double build_attacker_politician = 0;
+		double build_attacker_muckraker = 0;
+		double build_defender_politician = 0;
+
+		if(alive_scout_ids.size() < MAX_SCOUTS){
+			build_scout_muckraker = 1.0;
+		}
 
 		if(RobotPlayer.neutral_ecs.size() > 0){
 			Point ec_target = RobotPlayer.getClosestNeutralECLocation();
@@ -271,24 +311,25 @@ public class EnlightenmentCenter {
 			attacker_politician_influence = ec_target_influence+20;
 
 			if(attacker_politician_influence >= rc.getInfluence()/3){
-				build_attacker_politician = false;
-			}
-			else if(alive_scout_ids.size() == MAX_SCOUTS){
-				build_attacker_politician = true;
+				build_attacker_politician = 0;
 			}
 			else if(RobotPlayer.neutral_ecs.size() == 0){
-				build_attacker_politician = false;
+				build_attacker_politician = 0;
 			}
 			else{
-				if(Math.random() < 0.3){
-					build_attacker_politician = true;
-				}
+				build_attacker_politician = 0.5;
 			}
 		}
 
-		if (build_attacker_politician) {
-			toBuild = RobotType.POLITICIAN;
+		if(alive_scout_ids.size() >= 2*MAX_SCOUTS/3){
+			if(RobotPlayer.neutral_ecs.size() == 0){
+				build_attacker_muckraker = 0.5;
+			}
+			else{
+				build_attacker_muckraker = 0;
+			}
 		}
+
 
 		if(Math.random() < slanderer_frequency)
 		{
@@ -314,13 +355,27 @@ public class EnlightenmentCenter {
 				}
 			}
 		}
-		else if(build_attacker_politician){
-			trySpawnAttackerPolitician(attacker_politician_influence);
-		}
-		else if(build_scout){
-			trySpawnScout();
-		}
+		else{
+			double[] spawn_freq = new double[4];
+			spawn_freq[0] = build_scout_muckraker; //scale of 0 to 2 of spawning weights
+			spawn_freq[1] = build_attacker_politician;
+			spawn_freq[2] = build_attacker_muckraker;
+			spawn_freq[3] = build_defender_politician;
 
+			int spawn_type = chooseRandomFreq(spawn_freq);
+			if(spawn_type == 0){
+				trySpawnScout();
+			}
+			else if(spawn_type == 1){
+				trySpawnAttackerPolitician(attacker_politician_influence);
+			}
+			else if(spawn_type == 2){
+				trySpawnAttackerMuckraker();
+			}
+			else if(spawn_type == 3){
+
+			}
+		}
 
 		slanderer_frequency = Math.min(slanderer_frequency+0.05f, 1f);
 	}
