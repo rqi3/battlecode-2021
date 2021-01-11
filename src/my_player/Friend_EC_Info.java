@@ -36,4 +36,8 @@ public class Friend_EC_Info {
         friend_ec.setPosition(RobotPlayer.convertFromFlagRelativeLocation(location_bits));
         return friend_ec;
     }
+
+    /*
+    We are not broadcasting this (so far)
+     */
 }

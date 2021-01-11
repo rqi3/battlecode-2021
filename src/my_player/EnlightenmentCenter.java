@@ -83,13 +83,6 @@ public class EnlightenmentCenter {
 		return directions[dir];
 	}
 
-
-	public static void removeECInfo(Point ec_rel_loc){
-		RobotPlayer.neutral_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
-		RobotPlayer.enemy_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
-		RobotPlayer.friend_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
-	}
-
 	public static void receiveScoutCommunication() throws GameActionException{
 		for(Integer scout_id: alive_scout_ids){
 			if(!rc.canGetFlag(scout_id)) continue;
@@ -101,7 +94,7 @@ public class EnlightenmentCenter {
 
 				//in case we have this information already in an ec information list.
 				//prevents duplicates
-				removeECInfo(neutral_ec.rel_loc);
+				RobotPlayer.removeECInfo(neutral_ec.rel_loc);
 
 				RobotPlayer.neutral_ecs.add(neutral_ec);
 				System.out.println("Neutral EC Information Received:");
@@ -114,7 +107,7 @@ public class EnlightenmentCenter {
 
 				//in case we have this information already in an ec information list.
 				//prevents duplicates
-				removeECInfo(enemy_ec.rel_loc);
+				RobotPlayer.removeECInfo(enemy_ec.rel_loc);
 
 				RobotPlayer.enemy_ecs.add(enemy_ec);
 				System.out.println("Enemy EC Information Received:");
@@ -126,7 +119,7 @@ public class EnlightenmentCenter {
 
 				//in case we have this information already in an ec information list.
 				//prevents duplicates
-				removeECInfo(friend_ec.rel_loc);
+				RobotPlayer.removeECInfo(friend_ec.rel_loc);
 
 				RobotPlayer.friend_ecs.add(friend_ec);
 				System.out.println("Friend EC Information Received:");
@@ -240,7 +233,8 @@ public class EnlightenmentCenter {
 		slanderer_frequency = Math.min(slanderer_frequency+0.05f, 1f);
 	}
 
-	static int generateFlagValue(){ //returns the flag this Enlightenment Center will set to
+
+	private static int generateFlagValue(){ //returns the flag this Enlightenment Center will set to
 		boolean global_broadcast; //will we be communicating to everyone
 
 		global_broadcast = !bot_made_last_turn;
@@ -249,8 +243,7 @@ public class EnlightenmentCenter {
 		if(!global_broadcast){
 			boolean[] flag_bits = new boolean[24];
 
-			//0th bit is whether a bot was made last turn
-			flag_bits[0] = bot_made_last_turn;
+			flag_bits[0] = true;
 			//1st, 2nd, 3rd bits indicate the direction of where the bot was made.
 			//this allows bot to find its parent_EC
 			for(int dir = 0; dir < 8; dir++){
@@ -274,7 +267,33 @@ public class EnlightenmentCenter {
 			}
 		}
 		else{
-			//broadcast an enemy or
+			//broadcast an enemy or neutral EC
+			boolean broadcast_enemy = false;
+			boolean broadcast_neutral = false;
+			if(RobotPlayer.enemy_ecs.size() > 0 && RobotPlayer.neutral_ecs.size() == 0){
+				broadcast_enemy = true;
+			}
+			else if(RobotPlayer.enemy_ecs.size() == 0 && RobotPlayer.neutral_ecs.size() > 0){
+				broadcast_neutral = true;
+			}
+			else if(RobotPlayer.enemy_ecs.size() > 0 && RobotPlayer.neutral_ecs.size() > 0){
+				if(Math.random() <= 0.5){
+					broadcast_enemy = true;
+				}
+				else{
+					broadcast_neutral = true;
+				}
+			}
+
+			if(broadcast_enemy){
+				int enemy_ec_ind = (int)(Math.random()*RobotPlayer.enemy_ecs.size());
+				returned_flag_value = RobotPlayer.enemy_ecs.get(enemy_ec_ind).toBroadcastFlagValue();
+			}
+			else if(broadcast_neutral){
+				int neutral_ec_ind = (int)(Math.random()*RobotPlayer.neutral_ecs.size());
+				returned_flag_value = RobotPlayer.neutral_ecs.get(neutral_ec_ind).toBroadcastFlagValue();
+			}
+
 
 		}
 
@@ -292,7 +311,13 @@ public class EnlightenmentCenter {
 
 		receiveScoutCommunication();
 		for(Neutral_EC_Info a: RobotPlayer.neutral_ecs){
-			System.out.println("I know a neutral is here: " + a.rel_loc);
+			System.out.println("I know a neutral EC is here: " + a.rel_loc);
+		}
+		for(Enemy_EC_Info a: RobotPlayer.enemy_ecs){
+			System.out.println("I know an enemy EC is here: " + a.rel_loc);
+		}
+		for(Friend_EC_Info a: RobotPlayer.friend_ecs){
+			System.out.println("I know a friend EC is here: " + a.rel_loc);
 		}
 
 		//Spawn Robot

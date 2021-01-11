@@ -65,6 +65,65 @@ public strictfp class RobotPlayer {
 		return res;
 	}
 
+	public static void removeECInfo(Point ec_rel_loc)
+	/*
+	If we just received information about an ec, remove it from the old information so we can safely add it.
+	 */
+	{
+		RobotPlayer.neutral_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
+		RobotPlayer.enemy_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
+		RobotPlayer.friend_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
+	}
+	public static void removeECInfo(Neutral_EC_Info ec)
+	/*
+	If we just received information about an ec, remove it from the old information so we can safely add it.
+	 */
+	{
+		removeECInfo(ec.rel_loc);
+	}
+	public static void removeECInfo(Enemy_EC_Info ec)
+	/*
+	If we just received information about an ec, remove it from the old information so we can safely add it.
+	 */
+	{
+		removeECInfo(ec.rel_loc);
+	}
+
+	public static void receiveECBroadcast() throws GameActionException{
+		if(!has_parent_EC) return;
+
+		int ec_flag_value = rc.getFlag(parent_EC.getID());
+		int is_global_broadcast_bit = getBitsBetween(ec_flag_value, 0, 0);
+		if(is_global_broadcast_bit == 1) return; //careful, 1 means it is NOT a global broadcast.
+		int flag_signal = getBitsBetween(ec_flag_value, 1, 3);
+
+		if(flag_signal == 1){
+			//neutral EC found
+			Neutral_EC_Info neutral_ec = Neutral_EC_Info.fromBroadcastFlagValue(ec_flag_value);
+			removeECInfo(neutral_ec);
+			neutral_ecs.add(neutral_ec);
+
+			System.out.println("Neutral EC at location " + neutral_ec.rel_loc + " was broadcast to me.");
+			System.out.println("Current neutral_ecs: ");
+			for(Neutral_EC_Info a: neutral_ecs){
+				System.out.println(a.rel_loc);
+			}
+		}
+		else if(flag_signal == 2){
+			//enemy EC found
+			System.out.println("Enemy EC was broadcast to me.");
+			Enemy_EC_Info enemy_ec = Enemy_EC_Info.fromBroadcastFlagValue(ec_flag_value);
+			removeECInfo(enemy_ec);
+			enemy_ecs.add(enemy_ec);
+
+			System.out.println("Enemy EC at location " + enemy_ec.rel_loc + " was broadcast to me.");
+			System.out.println("Current enemy_ecs: ");
+			for(Enemy_EC_Info a: enemy_ecs){
+				System.out.println(a.rel_loc);
+			}
+		}
+	}
+
 
 	static void assignParentEC() throws GameActionException{ //create parent_EC value
 		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){

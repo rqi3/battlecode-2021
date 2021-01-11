@@ -36,4 +36,28 @@ public class Enemy_EC_Info {
         enemy_ec.setPosition(RobotPlayer.convertFromFlagRelativeLocation(location_bits));
         return enemy_ec;
     }
+
+    public int toBroadcastFlagValue() //parent_EC uses this to broadcast to all units
+
+    {
+        /*
+        0th bit is 0.
+        1-3 bits are flag_signal
+        10-23 bits are location
+         */
+        int flag_loc = RobotPlayer.convertToFlagRelativeLocation(rel_loc);
+
+        return flag_signal*(1<<1)+flag_loc*(1<<10);
+    }
+
+    public static Enemy_EC_Info fromBroadcastFlagValue(int flag_value)
+    //units use this to convert to EC location known by parent_EC
+    {
+        int location_bits = RobotPlayer.getBitsBetween(flag_value, 10, 23);
+
+        Enemy_EC_Info enemy_ec = new Enemy_EC_Info();
+        enemy_ec.setPosition(RobotPlayer.convertFromFlagRelativeLocation(location_bits));
+
+        return enemy_ec;
+    }
 }

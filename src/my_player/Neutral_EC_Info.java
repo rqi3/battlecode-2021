@@ -30,20 +30,48 @@ public class Neutral_EC_Info {
         influence = _influence;
     }
 
-    public int toFlagValue(){
-        int flag_value = flag_signal;
+    public int toFlagValue(){ //Muckraker uses this to convert EC they see into flag
         int flag_influence = (int)((double)(influence)*127.0/500.0);
         int flag_loc = RobotPlayer.convertToFlagRelativeLocation(rel_loc);
-        return flag_value+flag_influence*(1<<3)+flag_loc*(1<<10);
+
+        return flag_signal+flag_influence*(1<<3)+flag_loc*(1<<10);
     }
 
-    public static Neutral_EC_Info fromFlagValue(int flag_value){
+    public static Neutral_EC_Info fromFlagValue(int flag_value){ //parent_EC uses this to convert flag into EC found by scout
         Neutral_EC_Info neutral_ec = new Neutral_EC_Info();
+
         int location_bits = RobotPlayer.getBitsBetween(flag_value, 10, 23);
         int influence_bits = RobotPlayer.getBitsBetween(flag_value, 3, 9);
+
         neutral_ec.setPosition(RobotPlayer.convertFromFlagRelativeLocation(location_bits));
         neutral_ec.setInfluence((int)(influence_bits*500.0/127.0));
+
         return neutral_ec;
     }
+
+    public int toBroadcastFlagValue() //parent_EC uses this to broadcast to all units
+
+    {
+        /*
+        0th bit is 0.
+        1-3 bits are flag_signal
+        10-23 bits are location
+         */
+        int flag_loc = RobotPlayer.convertToFlagRelativeLocation(rel_loc);
+
+        return flag_signal*(1<<1)+flag_loc*(1<<10);
+    }
+
+    public static Neutral_EC_Info fromBroadcastFlagValue(int flag_value)
+    //units use this to convert to EC location known by parent_EC
+    {
+        int location_bits = RobotPlayer.getBitsBetween(flag_value, 10, 23);
+
+        Neutral_EC_Info neutral_ec = new Neutral_EC_Info();
+        neutral_ec.setPosition(RobotPlayer.convertFromFlagRelativeLocation(location_bits));
+
+        return neutral_ec;
+    }
+
 
 }

@@ -6,7 +6,7 @@ import java.util.*;
 public class Muckraker {
     static RobotController rc;
     static boolean is_scout = true; //whether this Muckraker will be communicating stuff it sees to parent_EC
-    static List<MapLocation> communicated_ecs = new ArrayList<MapLocation>();
+    static List<MapLocation> communicated_ecs = new ArrayList<>();
 
     static final RobotType[] spawnableRobot = {
             RobotType.POLITICIAN,
@@ -24,6 +24,8 @@ public class Muckraker {
             Direction.WEST,
             Direction.NORTHWEST,
     };
+
+
 
     private static int generateFlagValue(){
         int flag_value = 0;
@@ -134,8 +136,10 @@ public class Muckraker {
     public static void run() throws GameActionException{
         rc = RobotPlayer.rc;
 
-        //Receive Communications (TODO)
+        //Receive broadcast from parent_EC
+        RobotPlayer.receiveECBroadcast();
 
+        //Attack
         Team enemy = rc.getTeam().opponent();
         int actionRadius = rc.getType().actionRadiusSquared;
         for (RobotInfo robot : rc.senseNearbyRobots(actionRadius, enemy)) {
@@ -147,9 +151,13 @@ public class Muckraker {
                 }
             }
         }
+
+        //Move
         if (tryMove(randomDirection()))
             System.out.println("I moved!");
 
+
+        //Send Communications
         int flag_value = generateFlagValue();
         if(rc.canSetFlag(flag_value)){
             rc.setFlag(flag_value);
