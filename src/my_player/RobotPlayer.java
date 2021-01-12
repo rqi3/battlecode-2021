@@ -27,10 +27,11 @@ public strictfp class RobotPlayer {
 	static List<Friend_EC_Info> friend_ecs = new ArrayList<>();; //List of information about friend ecs that it knows
 
 	static Point convertToRelativeCoordinates(MapLocation loc)
-	/*
-	Computes relative coordinates, assuming that it has a parent enlightenment center
-	 */
+	/**
+	 * Computes relative location of loc with respect to parent_EC, assuming that this Robot has a parent enlightenment center
+	 **/
 	{
+		assert(has_parent_EC);
 		Point rel_loc = new Point();
 		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
 			rel_loc.x = loc.x-rc.getLocation().x;

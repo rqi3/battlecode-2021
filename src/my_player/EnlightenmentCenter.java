@@ -298,6 +298,7 @@ public class EnlightenmentCenter {
 		double build_attacker_politician = 0;
 		double build_attacker_muckraker = 0.1;
 		double build_defender_politician = 0;
+		double build_nothing = 0;
 
 		if(alive_scout_ids.size() < MAX_SCOUTS){
 			build_scout_muckraker = 1.0;
@@ -323,16 +324,13 @@ public class EnlightenmentCenter {
 			}
 			else{
 				build_attacker_politician = 0.5;
+				build_nothing = 0;
 			}
 		}
 
 		if(alive_scout_ids.size() >= 2*MAX_SCOUTS/3 && RobotPlayer.enemy_ecs.size() > 0){
-			if(RobotPlayer.neutral_ecs.size() == 0){
-				build_attacker_muckraker = 0.5;
-			}
-			else{
-				build_attacker_muckraker = 0.2;
-			}
+			build_attacker_muckraker = 0.5;
+			build_nothing = 0;
 		}
 
 
@@ -361,11 +359,12 @@ public class EnlightenmentCenter {
 			}
 		}
 		else{
-			double[] spawn_freq = new double[4];
+			double[] spawn_freq = new double[5];
 			spawn_freq[0] = build_scout_muckraker; //scale of 0 to 2 of spawning weights
 			spawn_freq[1] = build_attacker_politician;
 			spawn_freq[2] = build_attacker_muckraker;
 			spawn_freq[3] = build_defender_politician;
+			spawn_freq[4] = build_nothing; // build nothing
 
 			int spawn_type = chooseRandomFreq(spawn_freq);
 			if(spawn_type == 0){
