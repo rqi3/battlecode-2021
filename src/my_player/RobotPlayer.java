@@ -102,6 +102,7 @@ public strictfp class RobotPlayer {
 
 	static int getBitsBetween(int flag_value, int l, int r){
 		//return integer corresponding to the bits [l, r] in flag_value
+		//return flag_value>>l&((1<<r-l+1)-1); //assuming java & cpp have same operator precedence, which I think is true
 		int res = 0;
 		for(int i = l; i <= r; i++){
 			if((((flag_value)>>i)&1) == 1){
@@ -170,10 +171,14 @@ public strictfp class RobotPlayer {
 	}
 
 
-	static void assignParentEC() throws GameActionException{ //create parent_EC value
+	static int assignParentEC() throws GameActionException
+	/*
+		 Returns additional bot parameters (or 0 by default), and -1 if error occurred
+	*/
+	{ //create parent_EC value
 		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
 			has_parent_EC = false;
-			return; //if the robot is an Enlightenment Center it has no parent
+			return 0; //if the robot is an Enlightenment Center it has no parent
 		}
 
 
@@ -203,11 +208,12 @@ public strictfp class RobotPlayer {
 			if(possible_parent.getLocation().add(possible_parent_spawn_direction).equals(rc.getLocation())){
 				has_parent_EC = true;
 				parent_EC = possible_parent;
-				return;
+				return possible_parent_flag >> 4; // FLAG
 			}
 
 		}
 		System.out.println("DID NOT FIND PARENT EC"); //should only occur for converted
+		return -1;
 	}
 
 

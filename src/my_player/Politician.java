@@ -1,3 +1,16 @@
+/*
+USEFUL INFORMATION;
+
+ *** BOT PARAMETERS ***
+
+ Bit 4..5:
+	00 = Defense Politician (Slanderers, default)
+  01 = Attack Politician (EC)
+	10 = Defense Politician (Spawner EC) [Not implemented]
+	11 = Attack Politician (Enemy units) [Not implemented]
+
+*/
+
 package my_player;
 
 import battlecode.common.*;
@@ -36,11 +49,50 @@ public class Politician {
         }
     }
 
-    static boolean isECAttacker = false;
+//////////////// PARAMETERS
+
+		static int politician_type = 0; // read above. By default, defense politician
+		public static final int SLANDERER_DEFENSE = 0;
+		public static final int EC_ATTACK = 1;
+		public static final int EC_DEFENSE = 2;
+		public static final int ENEMY_ATTACK = 3;
+
+		// Type 1 politican parameters
     static boolean hasECTarget = false;
     static int ec_target_type = 0; // 1 = neutral, 2 = enemy
     static Point ec_target = new Point(); //relative location
 
+////////////////
+
+
+		// Type 0 Politician Functions
+		static void doSlandererDefenseAction() throws GameActionException
+		/*
+			Summary of Algorithm:
+			* Copy slanderer pathfinding (to hopefully find them)
+			* If you see enemy muckraker within range, use empower
+		*/
+		{
+			RobotInfo[] close_robots = rc.senseNearbyRobots(2); //If there are nearby enemy units, empower
+			boolean do_empower = false;
+			for(RobotInfo x : close_robots)
+			{
+				//check whether robot x is an enemy muckraker
+				if(x.getTeam() != rc.getTeam() && x.getType() == RobotType.MUCKRAKER)
+					do_empower = true;
+			}
+			if(do_empower)
+				if(rc.canEmpower(2)){ // TODO what should we do about empower parameter?
+					rc.empower(2);
+					return; // successfully empowered
+				}
+
+			//otherwise: copy slanderer pathfinding
+			tryMove(Slanderer.greedyPathfinding());
+			return;
+		}
+
+		// Type 1 Politician Functions
 
 
     static void assignECTarget()
@@ -125,6 +177,9 @@ public class Politician {
         Movement.moveToDestination();
     }
 
+
+// General Politician Functions
+
     static void doRandomAction() throws GameActionException
     {
         Team enemy = rc.getTeam().opponent();
@@ -146,11 +201,8 @@ public class Politician {
         Movement.rc = RobotPlayer.rc;
         //TODO: Consider Slanderer-converted Politicians
         if(RobotPlayer.just_made){
-            RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
-
-            if(RobotPlayer.has_parent_EC){
-                isECAttacker = true;
-            }
+            politician_type = RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
+						//Also record type of politician (note this will result in SLANDERER_DEFENSE by default)
 
             System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
             if(RobotPlayer.has_parent_EC){
@@ -171,12 +223,22 @@ public class Politician {
         assignECTarget();
 
         //Do an action (attack or move)
-        if(isECAttacker){
-            doECAttackerAction();
-        }
-        else{
-            doRandomAction();
-        }
+				switch(politician_type)
+				{
+					case SLANDERER_DEFENSE:
+						doSlandererDefenseAction();
+						break;
+					case EC_ATTACK:
+						doECAttackerAction();
+						break;
+					case EC_DEFENSE:
+						doRandomAction(); // TODO Implement
+						break;
+					case ENEMY_ATTACK:
+						doRandomAction(); // TODO Implement
+					default:
+						break;// or throw some exception
+				}
 
         ////////////////////Action End
 

@@ -11,8 +11,10 @@ public class EnlightenmentCenter {
 
 	static boolean bot_made_last_turn = false;
 	static Direction bot_direction_last_turn = Direction.NORTH; //
+	static int bot_parameter_last_turn = 0;
 	static boolean bot_made_this_turn = false; //was a bot made this turn?
 	static Direction bot_direction_this_turn = Direction.NORTH; //direction the bot is facing
+	static int bot_parameter_this_turn = 0;
 
 	static List<Integer> alive_scout_ids = new ArrayList<Integer>();
 
@@ -46,53 +48,55 @@ public class EnlightenmentCenter {
 	}
 
 	////////////////////////////// Nathan Chen Bidder Code //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    static ArrayList<Integer> previous_scores = new ArrayList<Integer>();
-    
-    static double current_bid_value = 5; //calibrate this based on what other bots are doing
-    static double BID_PERCENTAGE_UPPER_BOUND = 0.15; //don't spend too much... in theory if the opponent is going above our upper bound then they will be too poor to win remaining rounds
-    //though maybe we want to raise this upper bound in the the last 200 rounds?
-    static double volatility = 3; 
-    static double bid_multiplier = 1;
-    static final int LAST_FEW_BIDS = 4;
-    
-    static int getBidValue(){ //returns the value this Enlightenment Center will bid
-    	System.out.println("Current influence: " + rc.getInfluence());
-    	int us = rc.getTeamVotes();
-    	int them = rc.getRoundNum() - rc.getTeamVotes(); //might be slightly overestimated in the case of ties - in reality ties should be really unlikely
-    	bid_multiplier = 1; //reset
-    	
-    	if(us > 1500) return 0; //we have majority vote, just invest in full defense
-    	
-    	if(rc.getRoundNum() >= 2750) {
-    		BID_PERCENTAGE_UPPER_BOUND = 0.40;
-    	}
-    	
-    	int check = Math.min(LAST_FEW_BIDS, previous_scores.size());
-    	if(previous_scores.size() > check) {
-    		int bids_lost = check - (us - previous_scores.get(previous_scores.size() - check));
-    		if(rc.getRoundNum() >= 2750) {
-    			bid_multiplier *= (.9996 + .02 * bids_lost);
-    		} else {
-    			bid_multiplier *= (.90 + .1 * bids_lost);
-    		}
-    	}
-    	
-    	current_bid_value *= Math.pow(bid_multiplier, volatility);
-    	current_bid_value = Math.min(current_bid_value, BID_PERCENTAGE_UPPER_BOUND * rc.getInfluence());
-    	previous_scores.add(rc.getTeamVotes());
-    	
-    	return (int) current_bid_value;
-    }
-    
-    /////////////////////////////// END Nathan Chen Bidder Code ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	static ArrayList<Integer> previous_scores = new ArrayList<Integer>();
+	
+	static double current_bid_value = 5; //calibrate this based on what other bots are doing
+	static double BID_PERCENTAGE_UPPER_BOUND = 0.15; //don't spend too much... in theory if the opponent is going above our upper bound then they will be too poor to win remaining rounds
+	//though maybe we want to raise this upper bound in the the last 200 rounds?
+	static double volatility = 3; 
+	static double bid_multiplier = 1;
+	static final int LAST_FEW_BIDS = 4;
+	
+	static int getBidValue(){ //returns the value this Enlightenment Center will bid
+		System.out.println("Current influence: " + rc.getInfluence());
+		int us = rc.getTeamVotes();
+		int them = rc.getRoundNum() - rc.getTeamVotes(); //might be slightly overestimated in the case of ties - in reality ties should be really unlikely
+		bid_multiplier = 1; //reset
+		
+		if(us > 1500) return 0; //we have majority vote, just invest in full defense
+		
+		if(rc.getRoundNum() >= 2750) {
+			BID_PERCENTAGE_UPPER_BOUND = 0.40;
+		}
+		
+		int check = Math.min(LAST_FEW_BIDS, previous_scores.size());
+		if(previous_scores.size() > check) {
+			int bids_lost = check - (us - previous_scores.get(previous_scores.size() - check));
+			if(rc.getRoundNum() >= 2750) {
+				bid_multiplier *= (.9996 + .02 * bids_lost);
+			} else {
+				bid_multiplier *= (.90 + .1 * bids_lost);
+			}
+		}
+		
+		current_bid_value *= Math.pow(bid_multiplier, volatility);
+		current_bid_value = Math.min(current_bid_value, BID_PERCENTAGE_UPPER_BOUND * rc.getInfluence());
+		previous_scores.add(rc.getTeamVotes());
+		
+		return (int) current_bid_value;
+	}
+	
+	/////////////////////////////// END Nathan Chen Bidder Code ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-	static void update_bot_made_lastorthis_turn(){
+	static void updateBotCreationInfo(){
 		bot_made_last_turn = bot_made_this_turn;
 		bot_direction_last_turn = bot_direction_this_turn;
+		bot_parameter_last_turn = bot_parameter_this_turn;
 		bot_made_this_turn = false;
 		bot_direction_this_turn = Direction.NORTH;
+		bot_parameter_this_turn = 0;
 	}
 
 	public static boolean getFlagBotMade(int flag_value)
@@ -113,6 +117,7 @@ public class EnlightenmentCenter {
 	Depends on how we made the flag_value in generateFlagValue()
 	 */
 	{
+		// return directions[flag_value>>1&7];
 		int dir = 0;
 		for(int i = 1; i <= 3; i++){
 			int bit_value = ((flag_value>>i)&1);
@@ -233,6 +238,7 @@ public class EnlightenmentCenter {
 				rc.buildRobot(RobotType.POLITICIAN, dir, attacker_influence);
 				bot_made_this_turn = true;
 				bot_direction_this_turn = dir;
+				bot_parameter_this_turn = Politician.EC_ATTACK;
 				System.out.println("Made Attacker in Direction: " + dir);
 				/*MapLocation spawn_loc = rc.getLocation().add(dir);
 				int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();*/
@@ -378,7 +384,7 @@ public class EnlightenmentCenter {
 				trySpawnAttackerMuckraker();
 			}
 			else if(spawn_type == 3){
-
+				// Spawn politician with bot parameter = Politician.SLANDERER_DEFENSE or Politician.EC_DEFENSE
 			}
 		}
 
@@ -407,6 +413,7 @@ public class EnlightenmentCenter {
 							flag_bits[j+1] = true; //sets the 1st, 2nd, 3rd flag_bits
 						}
 					}
+					// or flag_bits |= dir << 1; // sets bits 1..3, indicating one of the 8 possible directions
 				}
 			}
 
@@ -416,6 +423,8 @@ public class EnlightenmentCenter {
 					returned_flag_value += (1 << bit_position);
 				}
 			}
+
+			returned_flag_value |= bot_parameter_last_turn << 4; // bits 4..?? are set to the bot's extra paramters. For example, whether politician is attack/defense
 		}
 		else{
 			//broadcast an enemy or neutral EC
@@ -460,7 +469,7 @@ public class EnlightenmentCenter {
 
 
 		////////////////////Initialization Begin
-		update_bot_made_lastorthis_turn();
+		updateBotCreationInfo();
 		updateScoutList();
 		////////////////////Initialization End
 
