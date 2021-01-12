@@ -142,46 +142,8 @@ public strictfp class RobotPlayer {
 	}
 
 	/**
-	 * Receives a broadcast from the parent_EC.
-	 * Updates ec lists.
-	 * @throws GameActionException
-	 */
-	public static void receiveECBroadcast() throws GameActionException{
-		if(!has_parent_EC) return;
-
-		int ec_flag_value = rc.getFlag(parent_EC.getID());
-		int is_global_broadcast_bit = getBitsBetween(ec_flag_value, 0, 0);
-		if(is_global_broadcast_bit == 1) return; //careful, 1 means it is NOT a global broadcast.
-		int flag_signal = getBitsBetween(ec_flag_value, 1, 3);
-
-		if(flag_signal == 1){
-			//neutral EC found
-			Neutral_EC_Info neutral_ec = Neutral_EC_Info.fromBroadcastFlagValue(ec_flag_value);
-			removeECInfo(neutral_ec);
-			neutral_ecs.add(neutral_ec);
-
-			System.out.println("Neutral EC at location " + neutral_ec.rel_loc + " was broadcast to me.");
-			System.out.println("Current neutral_ecs: ");
-			for(Neutral_EC_Info a: neutral_ecs){
-				System.out.println(a.rel_loc);
-			}
-		}
-		else if(flag_signal == 2){
-			//enemy EC found
-			Enemy_EC_Info enemy_ec = Enemy_EC_Info.fromBroadcastFlagValue(ec_flag_value);
-			removeECInfo(enemy_ec);
-			enemy_ecs.add(enemy_ec);
-
-			System.out.println("Enemy EC at location " + enemy_ec.rel_loc + " was broadcast to me.");
-			System.out.println("Current enemy_ecs: ");
-			for(Enemy_EC_Info a: enemy_ecs){
-				System.out.println(a.rel_loc);
-			}
-		}
-	}
-
-	/**
 	 * When a unit is spawned, look for a parent EC that spawned it and edit parent_EC
+	 * TODO: Local communication can also be stored in this information
 	 */
 	static void assignParentEC() throws GameActionException{ //create parent_EC value
 		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
@@ -222,6 +184,47 @@ public strictfp class RobotPlayer {
 		}
 		System.out.println("DID NOT FIND PARENT EC"); //should only occur for converted
 	}
+
+	/**
+	 * Receives a broadcast from the parent_EC, if it exists.
+	 * Updates ec lists.
+	 * @throws GameActionException
+	 */
+	public static void receiveECBroadcast() throws GameActionException{
+		if(!has_parent_EC) return;
+
+		int ec_flag_value = rc.getFlag(parent_EC.getID());
+		int is_global_broadcast_bit = getBitsBetween(ec_flag_value, 0, 0);
+		if(is_global_broadcast_bit == 1) return; //careful, 1 means it is NOT a global broadcast.
+		int flag_signal = getBitsBetween(ec_flag_value, 1, 3);
+
+		if(flag_signal == 1){
+			//neutral EC found
+			Neutral_EC_Info neutral_ec = Neutral_EC_Info.fromBroadcastFlagValue(ec_flag_value);
+			removeECInfo(neutral_ec);
+			neutral_ecs.add(neutral_ec);
+
+			System.out.println("Neutral EC at location " + neutral_ec.rel_loc + " was broadcast to me.");
+			System.out.println("Current neutral_ecs: ");
+			for(Neutral_EC_Info a: neutral_ecs){
+				System.out.println(a.rel_loc);
+			}
+		}
+		else if(flag_signal == 2){
+			//enemy EC found
+			Enemy_EC_Info enemy_ec = Enemy_EC_Info.fromBroadcastFlagValue(ec_flag_value);
+			removeECInfo(enemy_ec);
+			enemy_ecs.add(enemy_ec);
+
+			System.out.println("Enemy EC at location " + enemy_ec.rel_loc + " was broadcast to me.");
+			System.out.println("Current enemy_ecs: ");
+			for(Enemy_EC_Info a: enemy_ecs){
+				System.out.println(a.rel_loc);
+			}
+		}
+	}
+
+
 
 
 

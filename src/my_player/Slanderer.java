@@ -24,11 +24,10 @@ public class Slanderer {
 			Direction.NORTHWEST,
 	};
 
-	static void updateParentEC()
-    /*
-    Check whether parent EC died
+	/**
+	 * Check whether parent EC died
      */
-	{
+	static void updateParentEC() {
 		if(!RobotPlayer.has_parent_EC) return;
 		if(!rc.canGetFlag(RobotPlayer.parent_EC.getID())){ //parent EC died
 			RobotPlayer.has_parent_EC = false; //should never change to true again
@@ -77,8 +76,7 @@ public class Slanderer {
 	 *
 	 * @return a greedy Direction, or randomly if no enemy ecs are known
 	 */
-	static Direction greedyPathfinding()
-	{
+	static Direction greedyPathfinding() {
 		List<Enemy_EC_Info> enemy_ecs = RobotPlayer.enemy_ecs;
 		if(enemy_ecs.isEmpty())
 			return randomDirection();

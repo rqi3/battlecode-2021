@@ -27,6 +27,7 @@ public class EnlightenmentCenter {
 	 * Whether a bot was made last or this turn and which direction it was made in.
 	 */
 	static boolean bot_made_last_turn = false;
+	static Direction bot_direction_last_turn = Direction.NORTH;
 	static boolean bot_made_this_turn = false;
 	static Direction bot_direction_this_turn = Direction.NORTH;
 

@@ -9,12 +9,9 @@ import java.util.*;
  */
 public class Politician {
     static RobotController rc;
-
-    static final RobotType[] spawnableRobot = {
-            RobotType.POLITICIAN,
-            RobotType.SLANDERER,
-            RobotType.MUCKRAKER,
-    };
+    static boolean is_EC_attacker = false;
+    static boolean is_slanderer_politician = true; //should be set to false if it is newly made from an EC
+    static boolean is_converted_politician = false;
 
     static final Direction[] directions = {
             Direction.NORTH,
@@ -28,34 +25,33 @@ public class Politician {
     };
 
 
-
-    static void updateParentEC()
-    /*
-    Check whether parent EC died
+    /**
+     * Check whether parent EC died and updates parent_EC
+     * possibly change the way the politician acts now
      */
-    {
+    private static void updateParentEC() {
         if(!RobotPlayer.has_parent_EC) return;
         if(!rc.canGetFlag(RobotPlayer.parent_EC.getID())){ //parent EC died
             RobotPlayer.has_parent_EC = false; //should never change to true again
         }
     }
 
-    static boolean isECAttacker = false;
+    /**
+     * Targeting for Attacker Politicians
+     */
     static boolean hasECTarget = false;
     static int ec_target_type = 0; // 1 = neutral, 2 = enemy
     static Point ec_target = new Point(); //relative location
 
 
 
-    static void assignECTarget()
-    /*
-    Assign an EC target if !hasECTarget
-
-    reassign EC target if there is a better target
+    /**
+     * Assign an EC target if !hasECTarget
+     * reassign EC target if there is a better target
      */
-    {
+    static void assignECTarget() {
         if(RobotPlayer.neutral_ecs.size() == 0 && RobotPlayer.enemy_ecs.size() == 0){
-            //no targets
+            //no potential targets
             return;
         }
 
@@ -91,12 +87,12 @@ public class Politician {
             ec_target = RobotPlayer.getClosestEnemyECLocation();
         }
     }
-    static void doECAttackerAction() throws GameActionException
+
     /*
     EC Attacker
     Decide to Empower or Move to EC
      */
-    {
+    private static void doECAttackerAction() throws GameActionException {
         if(!hasECTarget){
             if (tryMove(randomDirection()))
                 System.out.println("I moved!");
@@ -129,8 +125,12 @@ public class Politician {
         Movement.moveToDestination();
     }
 
-    static void doRandomAction() throws GameActionException
-    {
+
+    /**
+     * Attacks if it can. Otherwise, move randomly.
+     * @throws GameActionException
+     */
+    private static void doRandomAction() throws GameActionException {
         Team enemy = rc.getTeam().opponent();
         int actionRadius = rc.getType().actionRadiusSquared;
         RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
@@ -144,16 +144,22 @@ public class Politician {
             System.out.println("I moved!");
     }
 
+    /**
+     * Controls this Politician
+     * @throws GameActionException
+     */
     public static void run() throws GameActionException{
         ////////////////////Creation Begin
         rc = RobotPlayer.rc;
         Movement.rc = RobotPlayer.rc;
         //TODO: Consider Slanderer-converted Politicians
         if(RobotPlayer.just_made){
+
             RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
 
+            is_slanderer_politician = false;
             if(RobotPlayer.has_parent_EC){
-                isECAttacker = true;
+                is_EC_attacker = true;
             }
 
             System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
@@ -165,6 +171,11 @@ public class Politician {
 
         ////////////////////Initialization Begin
         updateParentEC();
+        if(!RobotPlayer.has_parent_EC){
+            is_EC_attacker = false;
+            is_slanderer_politician = false;
+            is_converted_politician = true;
+        }
         ////////////////////Initialization End
 
         ////////////////////Receive Broadcast Begin
@@ -175,7 +186,7 @@ public class Politician {
         assignECTarget();
 
         //Do an action (attack or move)
-        if(isECAttacker){
+        if(is_EC_attacker){
             doECAttackerAction();
         }
         else{
@@ -194,15 +205,6 @@ public class Politician {
      */
     static Direction randomDirection() {
         return directions[(int) (Math.random() * directions.length)];
-    }
-
-    /**
-     * Returns a random spawnable RobotType
-     *
-     * @return a random RobotType
-     */
-    static RobotType randomSpawnableRobotType() {
-        return spawnableRobot[(int) (Math.random() * spawnableRobot.length)];
     }
 
     /**

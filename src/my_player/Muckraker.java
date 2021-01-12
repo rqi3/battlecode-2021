@@ -13,12 +13,6 @@ public class Muckraker {
     static boolean is_attacker = false;
     static List<MapLocation> communicated_ecs = new ArrayList<>();
 
-    static final RobotType[] spawnableRobot = {
-            RobotType.POLITICIAN,
-            RobotType.SLANDERER,
-            RobotType.MUCKRAKER,
-    };
-
     static final Direction[] directions = {
             Direction.NORTH,
             Direction.NORTHEAST,
@@ -30,11 +24,10 @@ public class Muckraker {
             Direction.NORTHWEST,
     };
 
-    static void updateParentEC()
-    /*
-    Check whether parent EC died
+    /**
+     * Check whether parent EC died and possibly change type if this happens.
      */
-    {
+    private static void updateParentEC() {
         if(!RobotPlayer.has_parent_EC) return;
         if(!rc.canGetFlag(RobotPlayer.parent_EC.getID())){ //parent EC died
             RobotPlayer.has_parent_EC = false; //should never change to true again
@@ -44,9 +37,13 @@ public class Muckraker {
     static Point my_rel_loc; //if parent EC exists, stores relative location
     static RobotInfo[] all_nearby_robots;
 
-    static void lookAround() throws GameActionException
-    {
 
+    /**
+     * Updates my_rel_loc, all_nearby_robots.
+     * Find boundaries.
+     * Scout updates their visited sectors.
+     */
+    static void lookAround() throws GameActionException {
         all_nearby_robots = rc.senseNearbyRobots();
 
         if(RobotPlayer.has_parent_EC){
@@ -84,12 +81,12 @@ public class Muckraker {
 
             }
         }
-
-
     }
 
-    static void attackSlanderer() throws GameActionException
-    {
+    /**
+     * Attacks an enemy slanderer if one is in range.
+     */
+    static void attackSlanderer() throws GameActionException {
         Team enemy = rc.getTeam().opponent();
         int actionRadius = rc.getType().actionRadiusSquared;
         for (RobotInfo robot : rc.senseNearbyRobots(actionRadius, enemy)) {
@@ -105,36 +102,33 @@ public class Muckraker {
 
     //////////////BEGIN SCOUT MOVEMENT CODE
 
-
-
-
-    /*
-    Starting sector is 8, 8.
-    Starting position in this sector is (3, 3) 0-indexed
+    /**
+     * Sectors that the scout has visited
+     *  Starting sector is 8, 8.
+     *  Starting position in this sector is (3, 3) 0-indexed
      */
     static int[][] visited_sectors = new int[17][17];
     static Point next_sector = new Point(8, 8); //the sector that this scout is trying to get to
 
-    private static void updateBoundarySectors(int boundary_type, int boundary_loc)
-    /*
-    When we find a boundary, some sectors are declared invalid (visited = 3)
+    /**
+     * When we find a boundary, some sectors are declared invalid (visited = 3)
      */
-    {
+    private static void updateBoundarySectors(int boundary_type, int boundary_loc) {
         int boundary_sector_coordinate = Movement.getSector(boundary_loc);
         while(true){
             boundary_sector_coordinate+=Movement.relative_boundary_directions[boundary_type];
             if(0 <= boundary_sector_coordinate && boundary_sector_coordinate <= 16){
-                System.out.println("boundary_sector_coordinate: " + boundary_sector_coordinate);
-                for(int i = 0; i <= 16; i++){
-                    if(boundary_type % 2 == 0){
+                if((boundary_type&1) == 0){
+                    for(int i = 0; i <= 16; i++){
                         visited_sectors[i][boundary_sector_coordinate] = 3;
-                        //System.out.println("BAD SECTOR: " + i + "," + boundary_sector_coordinate);
-                    }
-                    else{
-                        visited_sectors[boundary_sector_coordinate][i] = 3;
-                        //System.out.println("BAD SECTOR: " + boundary_sector_coordinate + ", " + i);
                     }
                 }
+                else{
+                    for(int i = 0; i <= 16; i++){
+                        visited_sectors[boundary_sector_coordinate][i] = 3;
+                    }
+                }
+                System.out.println("boundary_sector_coordinate: " + boundary_sector_coordinate);
             }
             else break;
         }
@@ -144,12 +138,10 @@ public class Muckraker {
     static boolean roaming_sectors = false; //initially goes in the initial direction, then roams around sectors
     static double scout_initial_direction = Math.random()*(2*Math.PI);
 
-
-    static void assignNewSector()
-    /*
-    Chooses a new sector for this scout; updates next_sector
+    /**
+     * Chooses a new sector for this scout; updates next_sector
      */
-    {
+    static void assignNewSector() {
         Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
         //next_sector should currently be the current sector
@@ -157,7 +149,7 @@ public class Muckraker {
         next_sector.y = Movement.getSector(my_rel_loc.y);
 
         if(!roaming_sectors){
-            //choose the sector along scout_initial_direction
+            //TODO: choose the sector along scout_initial_direction
         }
 
         List<Point> sector0s = new ArrayList<>();
@@ -193,11 +185,10 @@ public class Muckraker {
         System.out.println("NEXT SECTOR NOT FOUND");
     }
 
-    private static void moveScout() throws GameActionException
-    /*
-    Movement Code for Scouts
+    /**
+     * Movement code for Scouts
      */
-    {
+    private static void moveScout() throws GameActionException {
         visited_sectors[8][8] = 1; //default set your starting sector
 
         if(Movement.moved_to_destination){
@@ -206,12 +197,11 @@ public class Muckraker {
             }
         }
 
-        if(Movement.moved_to_destination || visited_sectors[next_sector.x][next_sector.y] == 3)
         /*
         If you reached the destination sector or the sector is now invalid,
         assign a new sector & destination.
          */
-        {
+        if(Movement.moved_to_destination || visited_sectors[next_sector.x][next_sector.y] == 3) {
             assignNewSector();
             Movement.assignDestination(Movement.getSectorLoc(next_sector));
         }
@@ -226,8 +216,13 @@ public class Muckraker {
 
     ///////////////END OF SCOUT MOVEMENT CODE
 
-    public static void moveAttacker() throws GameActionException
-    {
+
+    static Point goal = null;
+    /**
+     * Moves an attacker to surround goal (a chosen enemy_ec)
+     * @throws GameActionException
+     */
+    public static void moveAttacker() throws GameActionException {
         Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
         if(goal == null){
@@ -248,6 +243,10 @@ public class Muckraker {
         }
     }
 
+    /**
+     * Sends information to parent_EC by generating a flag value
+     * @return flag value to set
+     */
     private static int generateFlagValue(){
         int flag_value = 0;
 
@@ -350,8 +349,6 @@ public class Muckraker {
         return flag_value;
     }
 
-    static Point goal = null;
-
     public static void run() throws GameActionException{
         ////////////////////Creation Begin
         if(RobotPlayer.just_made){
@@ -420,15 +417,6 @@ public class Muckraker {
      */
     static Direction randomDirection() {
         return directions[(int) (Math.random() * directions.length)];
-    }
-
-    /**
-     * Returns a random spawnable RobotType
-     *
-     * @return a random RobotType
-     */
-    static RobotType randomSpawnableRobotType() {
-        return spawnableRobot[(int) (Math.random() * spawnableRobot.length)];
     }
 
     /**
