@@ -31,7 +31,6 @@ public strictfp class RobotPlayer {
 	 * Computes relative location of loc with respect to parent_EC, assuming that this Robot has a parent enlightenment center
 	 **/
 	{
-		assert(has_parent_EC);
 		Point rel_loc = new Point();
 		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
 			rel_loc.x = loc.x-rc.getLocation().x;
@@ -55,10 +54,8 @@ public strictfp class RobotPlayer {
 
 	static Point getClosestNeutralECLocation(){
 		assert(RobotPlayer.neutral_ecs.size() > 0);
-		Point closest_neutral_ec = RobotPlayer.neutral_ecs.get(0).rel_loc;
-		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
-
-
+		Point closest_neutral_ec = neutral_ecs.get(0).rel_loc;
+		Point my_rel_loc = convertToRelativeCoordinates(rc.getLocation());
 		for(int i = 1; i < RobotPlayer.neutral_ecs.size(); i++){
 			int cur_dist = Point.getRadiusSquaredDistance(my_rel_loc, closest_neutral_ec);
 			Point this_neutral_ec = RobotPlayer.neutral_ecs.get(i).rel_loc;

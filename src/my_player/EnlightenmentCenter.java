@@ -295,6 +295,7 @@ public class EnlightenmentCenter {
 				slanderer_investment is current set at 10% of enlightenment center influence
 	*/
 	{
+		System.out.println("Spawning a robot...");
 		RobotType toBuild = RobotType.MUCKRAKER;
 		int influence = 1;
 
@@ -311,6 +312,7 @@ public class EnlightenmentCenter {
 		}
 
 		if(RobotPlayer.neutral_ecs.size() > 0){
+			System.out.println(RobotPlayer.neutral_ecs.size());
 			Point ec_target = RobotPlayer.getClosestNeutralECLocation();
 			int ec_target_influence = 1;
 			for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
@@ -333,15 +335,16 @@ public class EnlightenmentCenter {
 				build_nothing = 0;
 			}
 		}
-
+		System.out.println("Breakpoint 2");
 		if(alive_scout_ids.size() >= 2*MAX_SCOUTS/3 && RobotPlayer.enemy_ecs.size() > 0){
 			build_attacker_muckraker = 0.5;
 			build_nothing = 0;
 		}
 
-
+		System.out.println("Breakpoint 3");
 		if(Math.random() < slanderer_frequency)
 		{
+			System.out.println("Breakpoint 4");
 			//Attempt to build slanderer
 			slanderer_investment = rc.getInfluence()/10;
 			int cost = getOptimalSlandererInfluence(slanderer_investment);
@@ -352,8 +355,9 @@ public class EnlightenmentCenter {
 				slanderer_frequency = Math.max(slanderer_frequency-0.5f, 0.0f);
 			}
 		}
-
+		System.out.println("Breakpoint 5");
 		if(toBuild == RobotType.SLANDERER){
+			System.out.println("Breakpoint 6");
 			for (Direction dir : directions) {
 				if (rc.canBuildRobot(RobotType.SLANDERER, dir, influence)) {
 					rc.buildRobot(RobotType.SLANDERER, dir, influence);
@@ -365,12 +369,15 @@ public class EnlightenmentCenter {
 			}
 		}
 		else{
+			System.out.println("Breakpoint 7");
 			double[] spawn_freq = new double[5];
 			spawn_freq[0] = build_scout_muckraker; //scale of 0 to 2 of spawning weights
 			spawn_freq[1] = build_attacker_politician;
 			spawn_freq[2] = build_attacker_muckraker;
 			spawn_freq[3] = build_defender_politician;
 			spawn_freq[4] = build_nothing; // build nothing
+
+			System.out.println("spawn_freq: " + spawn_freq[0] + ", " + spawn_freq[1] + ", " + spawn_freq[2] + ", " + spawn_freq[3] + ", "+ spawn_freq[4]);
 
 			int spawn_type = chooseRandomFreq(spawn_freq);
 			if(spawn_type == 0){
