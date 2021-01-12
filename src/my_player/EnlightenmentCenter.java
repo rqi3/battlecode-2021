@@ -66,6 +66,12 @@ public class EnlightenmentCenter {
     	
     	if(rc.getRoundNum() >= 2750) {
     		BID_PERCENTAGE_UPPER_BOUND = 0.40;
+		if(rc.getRoundNum() >= 2875) {
+			BID_PERCENTAGE_UPPER_BOUND = 0.45;
+			if(rc.getRoundNum() >= 2960) {
+				BID_PERCENTAGE_UPPER_BOUND = 0.50;	
+			}
+		}
     	}
     	
     	int check = Math.min(LAST_FEW_BIDS, previous_scores.size());
