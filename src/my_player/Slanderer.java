@@ -40,7 +40,7 @@ public class Slanderer {
 
 
 	public static void run() throws GameActionException{
-
+		////////////////////Creation Begin
 		if(RobotPlayer.just_made){
 			rc = RobotPlayer.rc;
 			RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
@@ -50,16 +50,20 @@ public class Slanderer {
 				System.out.println("parent Location: " + RobotPlayer.parent_EC.getLocation());
 			}
 		}
+		////////////////////Creation End
 
-		//Initialization
+		////////////////////Initialization Begin
 		updateParentEC();
+		////////////////////Initialization End
 
-		//Receive broadcast from parent_EC
+		////////////////////Receive Broadcast Begin
 		RobotPlayer.receiveECBroadcast();
+		////////////////////Receive Broadcast End
 
-		//Movement
+		////////////////////Movement Begin
 		if (tryMove(greedyPathfinding()))
 			System.out.println("I moved!");
+		////////////////////Movement End
 	}
 
 	/**

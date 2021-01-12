@@ -6,6 +6,7 @@ import java.util.*;
 public class Muckraker {
     static RobotController rc;
     static boolean is_scout = true; //whether this Muckraker will be communicating stuff it sees to parent_EC
+    static boolean is_attacker = false;
     static List<MapLocation> communicated_ecs = new ArrayList<>();
 
     static final RobotType[] spawnableRobot = {
@@ -38,8 +39,6 @@ public class Muckraker {
 
     static Point my_rel_loc; //if parent EC exists, stores relative location
     static RobotInfo[] all_nearby_robots;
-
-
 
     static void lookAround() throws GameActionException
     {
@@ -85,7 +84,20 @@ public class Muckraker {
 
     }
 
-
+    static void attackSlanderer() throws GameActionException
+    {
+        Team enemy = rc.getTeam().opponent();
+        int actionRadius = rc.getType().actionRadiusSquared;
+        for (RobotInfo robot : rc.senseNearbyRobots(actionRadius, enemy)) {
+            if (robot.type.canBeExposed()) {
+                // It's a slanderer... go get them!
+                if (rc.canExpose(robot.location)) {
+                    System.out.println("exposed");
+                    rc.expose(robot.location);
+                }
+            }
+        }
+    }
 
     //////////////BEGIN SCOUT MOVEMENT CODE
 
@@ -210,6 +222,28 @@ public class Muckraker {
 
     ///////////////END OF SCOUT MOVEMENT CODE
 
+    public static void moveAttacker() throws GameActionException
+    {
+        Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
+
+        if(goal == null){
+            if(RobotPlayer.enemy_ecs.size() > 0) {
+                goal = RobotPlayer.enemy_ecs.get((int)(Math.random()*RobotPlayer.enemy_ecs.size())).rel_loc;
+            }
+        }
+
+        if(goal == null){
+            tryMove(randomDirection());
+        }
+        else {
+            if(Point.getRadiusSquaredDistance(goal, my_rel_loc) <= 2){
+                //it has done its job and is next to the enemy base
+                return;
+            }
+            Movement.moveToNaive(goal);
+        }
+    }
+
     private static int generateFlagValue(){
         int flag_value = 0;
 
@@ -307,7 +341,6 @@ public class Muckraker {
                 flag_value = friend_ec.toFlagValue();
             }
             //also update communicated_ecs
-
         }
 
         return flag_value;
@@ -316,9 +349,18 @@ public class Muckraker {
     static Point goal = null;
 
     public static void run() throws GameActionException{
+        ////////////////////Creation Begin
         if(RobotPlayer.just_made){
             rc = RobotPlayer.rc;
             Movement.rc = RobotPlayer.rc;
+            if(rc.getInfluence() == 1){
+                is_scout = true;
+                is_attacker = false;
+            }
+            else if(rc.getInfluence() > 1){
+                is_scout = false;
+                is_attacker = true;
+            }
             RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
 
             System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
@@ -326,69 +368,45 @@ public class Muckraker {
                 System.out.println("parent Location: " + RobotPlayer.parent_EC.getLocation());
             }
         }
-
+        ////////////////////Creation End
 
         //////////////////// Begin Initialization
-
         updateParentEC();
-        if(rc.getInfluence() > 1) is_scout = false;
+        if(!RobotPlayer.has_parent_EC){
+            is_scout = false;
+            is_attacker = true;
+        }
         //////////////////// End Initialization
 
         //////////////////// Begin Sense
         lookAround();
-
         //////////////////// End Sense
 
 
         //////////////////// Begin Receive Broadcast
         RobotPlayer.receiveECBroadcast();
-
         //////////////////// End Receive Broadcast
 
-        //Attack
-        Team enemy = rc.getTeam().opponent();
-        int actionRadius = rc.getType().actionRadiusSquared;
-        for (RobotInfo robot : rc.senseNearbyRobots(actionRadius, enemy)) {
-            if (robot.type.canBeExposed()) {
-                // It's a slanderer... go get them!
-                if (rc.canExpose(robot.location)) {
-                    System.out.println("exposed");
-                    rc.expose(robot.location);
-                }
-            }
-        }
+        //////////////////// Attack Begin
+        attackSlanderer(); //assume that we always want to attack if we can
+        //////////////////// Attack End
 
-        //Move
+        //////////////////// Movement Begin
         if(is_scout){ //movement for scout
             moveScout();
         }
-        else{ //different movement for attackers
-            if(goal == null)
-            if(RobotPlayer.enemy_ecs.size() > 0) {
-            	goal = RobotPlayer.enemy_ecs.get((int)(Math.random()*RobotPlayer.enemy_ecs.size())).rel_loc;
-            } else {
-            	if(RobotPlayer.neutral_ecs.size() > 0) {
-                	goal = RobotPlayer.neutral_ecs.get((int)(Math.random()*RobotPlayer.neutral_ecs.size())).rel_loc;
-            	} else {
-            		if(RobotPlayer.friend_ecs.size() > 0) {
-                    	goal = RobotPlayer.friend_ecs.get((int)(Math.random()*RobotPlayer.friend_ecs.size())).rel_loc;
-            		}
-            	}
-            }
-        	
-        	if(goal == null) tryMove(randomDirection());
-        	else {
-        		Movement.moveToNaive(goal);
-        	}
+        else if(is_attacker){
+            moveAttacker();
         }
+        //////////////////// Movement End
 
 
-
-        //Send Communications
+        ////////////////////Send Communication Begin
         int flag_value = generateFlagValue();
         if(rc.canSetFlag(flag_value)){
             rc.setFlag(flag_value);
         }
+        ////////////////////Send Communication End
     }
 
     /**

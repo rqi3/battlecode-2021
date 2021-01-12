@@ -125,41 +125,8 @@ public class Politician {
         Movement.moveToDestination();
     }
 
-    public static void run() throws GameActionException{
-
-        rc = RobotPlayer.rc;
-        Movement.rc = RobotPlayer.rc;
-
-
-        //Just spawned?
-        if(RobotPlayer.just_made){
-
-            RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
-
-            if(RobotPlayer.has_parent_EC){
-                isECAttacker = true;
-            }
-
-            System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
-            if(RobotPlayer.has_parent_EC){
-                System.out.println("parent Location: " + RobotPlayer.parent_EC.getLocation());
-            }
-        }
-        //Initialization
-        updateParentEC();
-
-        //Receive broadcast from parent_EC
-        RobotPlayer.receiveECBroadcast();
-
-        //Assign the ec target
-        assignECTarget();
-
-        //Do an action (attack or move)
-        if(isECAttacker){
-            doECAttackerAction();
-        }
-
-
+    static void doRandomAction() throws GameActionException
+    {
         Team enemy = rc.getTeam().opponent();
         int actionRadius = rc.getType().actionRadiusSquared;
         RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
@@ -171,6 +138,47 @@ public class Politician {
         }
         if (tryMove(randomDirection()))
             System.out.println("I moved!");
+    }
+
+    public static void run() throws GameActionException{
+        ////////////////////Creation Begin
+        rc = RobotPlayer.rc;
+        Movement.rc = RobotPlayer.rc;
+        //TODO: Consider Slanderer-converted Politicians
+        if(RobotPlayer.just_made){
+            RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
+
+            if(RobotPlayer.has_parent_EC){
+                isECAttacker = true;
+            }
+
+            System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
+            if(RobotPlayer.has_parent_EC){
+                System.out.println("parent Location: " + RobotPlayer.parent_EC.getLocation());
+            }
+        }
+        ////////////////////Creation End
+
+        ////////////////////Initialization Begin
+        updateParentEC();
+        ////////////////////Initialization End
+
+        ////////////////////Receive Broadcast Begin
+        RobotPlayer.receiveECBroadcast();
+        ////////////////////Receive Broadcast End
+
+        ////////////////////Action Begin
+        assignECTarget();
+
+        //Do an action (attack or move)
+        if(isECAttacker){
+            doECAttackerAction();
+        }
+        else{
+            doRandomAction();
+        }
+
+        ////////////////////Action End
 
 
     }

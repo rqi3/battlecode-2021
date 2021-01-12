@@ -296,7 +296,7 @@ public class EnlightenmentCenter {
 
 		double build_scout_muckraker = 0; //scale of 0 to 2 of spawning weights
 		double build_attacker_politician = 0;
-		double build_attacker_muckraker = 0;
+		double build_attacker_muckraker = 0.1;
 		double build_defender_politician = 0;
 
 		if(alive_scout_ids.size() < MAX_SCOUTS){
@@ -331,7 +331,7 @@ public class EnlightenmentCenter {
 				build_attacker_muckraker = 0.5;
 			}
 			else{
-				build_attacker_muckraker = 0;
+				build_attacker_muckraker = 0.2;
 			}
 		}
 
@@ -452,14 +452,20 @@ public class EnlightenmentCenter {
 	}
 
 	public static void run() throws GameActionException{
-		//initialization
-		rc = RobotPlayer.rc;
+		////////////////////Creation Begin
+		if(RobotPlayer.just_made){
+			rc = RobotPlayer.rc;
+		}
+		////////////////////Creation End
 
+
+		////////////////////Initialization Begin
 		update_bot_made_lastorthis_turn();
 		updateScoutList();
+		////////////////////Initialization End
 
-		//Receive Flag Communication from Scouts
 
+		////////////////////Receive Communication Begin
 		receiveScoutCommunication();
 		for(Neutral_EC_Info a: RobotPlayer.neutral_ecs){
 			System.out.println("I know a neutral EC is here: " + a.rel_loc);
@@ -470,24 +476,31 @@ public class EnlightenmentCenter {
 		for(Friend_EC_Info a: RobotPlayer.friend_ecs){
 			System.out.println("I know a friend EC is here: " + a.rel_loc);
 		}
+		////////////////////Receive Communication End
 
-		//Spawn Robot
+
+		////////////////////Spawn Robot Begin
 		spawnRobot();
+		////////////////////Spawn Robot End
 
-		//Bidding using the getBidValue function
+
+		////////////////////Bid Begin
 		int bid_value = getBidValue();
 		if(rc.canBid(bid_value)){
+			System.out.println("I bid " + bid_value);
 			rc.bid(bid_value);
 		}
+		////////////////////Bid End
 
-		//Flag Send Communication
+
+		////////////////////Broadcast to Units Begin
 		int flag_value = generateFlagValue();
 		if(rc.canSetFlag(flag_value)){
 			rc.setFlag(flag_value);
 		}
 
 		System.out.println("Set Flag Value to: " + flag_value);
-
+		////////////////////Broadcast to Units End
 	}
 
 	/**
