@@ -27,15 +27,43 @@ public class Slanderer {
 			Direction.NORTHWEST,
 	};
 
+	static void updateParentEC()
+    /*
+    Check whether parent EC died
+     */
+	{
+		if(!RobotPlayer.has_parent_EC) return;
+		if(!rc.canGetFlag(RobotPlayer.parent_EC.getID())){ //parent EC died
+			RobotPlayer.has_parent_EC = false; //should never change to true again
+		}
+	}
+
 
 	public static void run() throws GameActionException{
-		rc = RobotPlayer.rc;
-		//Receive broadcast from parent_EC
-		RobotPlayer.receiveECBroadcast();
+		////////////////////Creation Begin
+		if(RobotPlayer.just_made){
+			rc = RobotPlayer.rc;
+			RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
 
-		//Movement
+			System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
+			if(RobotPlayer.has_parent_EC){
+				System.out.println("parent Location: " + RobotPlayer.parent_EC.getLocation());
+			}
+		}
+		////////////////////Creation End
+
+		////////////////////Initialization Begin
+		updateParentEC();
+		////////////////////Initialization End
+
+		////////////////////Receive Broadcast Begin
+		RobotPlayer.receiveECBroadcast();
+		////////////////////Receive Broadcast End
+
+		////////////////////Movement Begin
 		if (tryMove(greedyPathfinding()))
 			System.out.println("I moved!");
+		////////////////////Movement End
 	}
 
 	/**

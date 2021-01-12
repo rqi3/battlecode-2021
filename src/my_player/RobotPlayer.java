@@ -5,12 +5,6 @@ import java.util.*;
 public strictfp class RobotPlayer {
 	static RobotController rc;
 
-	static final RobotType[] spawnableRobot = {
-		RobotType.POLITICIAN,
-		RobotType.SLANDERER,
-		RobotType.MUCKRAKER,
-	};
-
 	static final Direction[] directions = {
 		Direction.NORTH,
 		Direction.NORTHEAST,
@@ -22,20 +16,72 @@ public strictfp class RobotPlayer {
 		Direction.NORTHWEST,
 	};
 
+	static boolean just_made = true;
 	static int turn_count;
 
 	static boolean has_parent_EC = false; //whether this unit spawned by an Enlightenment Center
 	static RobotInfo parent_EC; //the Enlightenment Center that spawned the unit, if it exists
 
-	static List<Neutral_EC_Info> neutral_ecs;
-	static List<Enemy_EC_Info> enemy_ecs;
-	static List<Friend_EC_Info> friend_ecs;
+	static List<Neutral_EC_Info> neutral_ecs = new ArrayList<>(); //List of information about neutral ecs that it knows
+	static List<Enemy_EC_Info> enemy_ecs = new ArrayList<>(); //List of information about enemy ecs that it knows
+	static List<Friend_EC_Info> friend_ecs = new ArrayList<>();; //List of information about friend ecs that it knows
 
-	static Point convertToRelativeCoordinates(MapLocation loc){
+	static Point convertToRelativeCoordinates(MapLocation loc)
+	/*
+	Computes relative coordinates, assuming that it has a parent enlightenment center
+	 */
+	{
 		Point rel_loc = new Point();
-		rel_loc.x = loc.x-parent_EC.getLocation().x;
-		rel_loc.y = loc.y-parent_EC.getLocation().y;
+		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
+			rel_loc.x = loc.x-rc.getLocation().x;
+			rel_loc.y = loc.y-rc.getLocation().y;
+		}
+		else{
+			rel_loc.x = loc.x-parent_EC.getLocation().x;
+			rel_loc.y = loc.y-parent_EC.getLocation().y;
+		}
+
 		return rel_loc;
+	}
+
+	static MapLocation convertFromRelativeCoordinates(Point rel_loc)
+	/*
+	Computes relative coordinates, assuming that it has a parent enlightenment center
+	 */
+	{
+		return parent_EC.getLocation().translate(rel_loc.x, rel_loc.y);
+	}
+
+	static Point getClosestNeutralECLocation(){
+		assert(RobotPlayer.neutral_ecs.size() > 0);
+		Point closest_neutral_ec = RobotPlayer.neutral_ecs.get(0).rel_loc;
+		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
+
+
+		for(int i = 1; i < RobotPlayer.neutral_ecs.size(); i++){
+			int cur_dist = Point.getRadiusSquaredDistance(my_rel_loc, closest_neutral_ec);
+			Point this_neutral_ec = RobotPlayer.neutral_ecs.get(i).rel_loc;
+			int this_dist = Point.getRadiusSquaredDistance(my_rel_loc, this_neutral_ec);
+			if(this_dist < cur_dist){
+				closest_neutral_ec = this_neutral_ec;
+			}
+		}
+		return closest_neutral_ec;
+	}
+
+	static Point getClosestEnemyECLocation(){
+		assert(RobotPlayer.enemy_ecs.size() > 0);
+		Point closest_enemy_ec = RobotPlayer.enemy_ecs.get(0).rel_loc;
+		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
+		for(int i = 1; i < RobotPlayer.enemy_ecs.size(); i++){
+			int cur_dist = Point.getRadiusSquaredDistance(my_rel_loc, closest_enemy_ec);
+			Point this_enemy_ec = RobotPlayer.enemy_ecs.get(i).rel_loc;
+			int this_dist = Point.getRadiusSquaredDistance(my_rel_loc, this_enemy_ec);
+			if(this_dist < cur_dist){
+				closest_enemy_ec = this_enemy_ec;
+			}
+		}
+		return closest_enemy_ec;
 	}
 
 	static int convertToFlagRelativeLocation(Point rel_loc)
@@ -111,7 +157,6 @@ public strictfp class RobotPlayer {
 		}
 		else if(flag_signal == 2){
 			//enemy EC found
-			System.out.println("Enemy EC was broadcast to me.");
 			Enemy_EC_Info enemy_ec = Enemy_EC_Info.fromBroadcastFlagValue(ec_flag_value);
 			removeECInfo(enemy_ec);
 			enemy_ecs.add(enemy_ec);
@@ -128,7 +173,7 @@ public strictfp class RobotPlayer {
 	static void assignParentEC() throws GameActionException{ //create parent_EC value
 		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
 			has_parent_EC = false;
-			return; //if the robot is an Enlightenment Center it has not parent
+			return; //if the robot is an Enlightenment Center it has no parent
 		}
 
 
@@ -165,13 +210,7 @@ public strictfp class RobotPlayer {
 		System.out.println("DID NOT FIND PARENT EC"); //should only occur for converted
 	}
 
-	void moveTo(int destination_x, int destination_y) //destination x and y are relative to parent_EC
-	/*
-	Robot tries to move closer to a destination location
-	 */
-	{
 
-	}
 
 	/**
 	 * run() is the method that is called when a robot is instantiated in the Battlecode world.
@@ -180,12 +219,6 @@ public strictfp class RobotPlayer {
 	@SuppressWarnings("unused")
 
 	public static void run(RobotController rc) throws GameActionException {
-
-		//initialize ec arrays
-		friend_ecs = new ArrayList<Friend_EC_Info>();
-		enemy_ecs = new ArrayList<Enemy_EC_Info>();
-		neutral_ecs = new ArrayList<Neutral_EC_Info>();
-
 		// This is the RobotController object. You use it to perform actions from this robot,
 		// and to get information on its current status.
 		RobotPlayer.rc = rc;
@@ -193,11 +226,7 @@ public strictfp class RobotPlayer {
 		turn_count = 0;
 
 		System.out.println("I'm a " + rc.getType() + " and I just got created!");
-		assignParentEC(); //after it spawns, record which EC spawned it (if any)
-		System.out.println("has_parent_EC: " + has_parent_EC);
-		if(has_parent_EC){
-			System.out.println("parent Location: " + parent_EC.getLocation());
-		}
+
 
 		while (true) {
 			turn_count += 1;
@@ -214,7 +243,7 @@ public strictfp class RobotPlayer {
 					case SLANDERER:			Slanderer.run();		   break;
 					case MUCKRAKER:			Muckraker.run();		   break;
 				}
-
+				just_made = false;
 				// Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
 				Clock.yield();
 
@@ -224,80 +253,7 @@ public strictfp class RobotPlayer {
 			}
 		}
 	}
-/* Example bot Code:
-	static void runEnlightenmentCenter() throws GameActionException {
-		RobotType toBuild = randomSpawnableRobotType();
-		int influence = 50;
-		for (Direction dir : directions) {
-			if (rc.canBuildRobot(toBuild, dir, influence)) {
-				rc.buildRobot(toBuild, dir, influence);
-			} else {
-				break;
-			}
-		}
-	}
 
-	static void runPolitician() throws GameActionException {
-		Team enemy = rc.getTeam().opponent();
-		int actionRadius = rc.getType().actionRadiusSquared;
-		RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
-		if (attackable.length != 0 && rc.canEmpower(actionRadius)) {
-			System.out.println("empowering...");
-			rc.empower(actionRadius);
-			System.out.println("empowered");
-			return;
-		}
-		if (tryMove(randomDirection()))
-			System.out.println("I moved!");
-	}
-
-	static void runSlanderer() throws GameActionException {
-		if (tryMove(randomDirection()))
-			System.out.println("I moved!");
-	}
-
-	static void runMuckraker() throws GameActionException {
-		Team enemy = rc.getTeam().opponent();
-		int actionRadius = rc.getType().actionRadiusSquared;
-		for (RobotInfo robot : rc.senseNearbyRobots(actionRadius, enemy)) {
-			if (robot.type.canBeExposed()) {
-				// It's a slanderer... go get them!
-				if (rc.canExpose(robot.location)) {
-					System.out.println("e x p o s e d");
-					rc.expose(robot.location);
-					return;
-				}
-			}
-		}
-		if (tryMove(randomDirection()))
-			System.out.println("I moved!");
-	}
-*/
-	/**
-	 * Returns a random Direction.
-	 *
-	 * @return a random Direction
-	 */
-	static Direction randomDirection() {
-		return directions[(int) (Math.random() * directions.length)];
-	}
-
-	/**
-	 * Returns a random spawnable RobotType
-	 *
-	 * @return a random RobotType
-	 */
-	static RobotType randomSpawnableRobotType() {
-		return spawnableRobot[(int) (Math.random() * spawnableRobot.length)];
-	}
-
-	/**
-	 * Attempts to move in a given direction.
-	 *
-	 * @param dir The intended direction of movement
-	 * @return true if a move was performed
-	 * @throws GameActionException
-	 */
 	static boolean tryMove(Direction dir) throws GameActionException {
 		System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
 		if (rc.canMove(dir)) {

@@ -6,8 +6,8 @@ import java.util.*;
 public class EnlightenmentCenter {
 	static RobotController rc;
 
-	public static final int MAX_SCOUTS = 100;
-	public static final int OPTIMAL_SLANDERER_INFLUENCE[] = {21,41,63,85,107,130,154,178,203,228,255,282,310,339,368,399,431,463,497,532,568,605,643,683,724,766,810,855,902,949};
+	public static final int MAX_SCOUTS = 16; //reduce bytecode usage. Currently accounts for ~7000 bytecode
+	public static final int[] OPTIMAL_SLANDERER_INFLUENCE = {21,41,63,85,107,130,154,178,203,228,255,282,310,339,368,399,431,463,497,532,568,605,643,683,724,766,810,855,902,949};
 
 	static boolean bot_made_last_turn = false;
 	static Direction bot_direction_last_turn = Direction.NORTH; //
@@ -45,10 +45,48 @@ public class EnlightenmentCenter {
 		// maybe send politician/make fewer slanderers
 	}
 
-	static int getBidValue(){ //returns the value this Enlightenment Center will bid
-		return 2;
+	////////////////////////////// Nathan Chen Bidder Code //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    static ArrayList<Integer> previous_scores = new ArrayList<Integer>();
+    
+    static double current_bid_value = 5; //calibrate this based on what other bots are doing
+    static double BID_PERCENTAGE_UPPER_BOUND = 0.15; //don't spend too much... in theory if the opponent is going above our upper bound then they will be too poor to win remaining rounds
+    //though maybe we want to raise this upper bound in the the last 200 rounds?
+    static double volatility = 3; 
+    static double bid_multiplier = 1;
+    static final int LAST_FEW_BIDS = 4;
+    
+    static int getBidValue(){ //returns the value this Enlightenment Center will bid
+    	System.out.println("Current influence: " + rc.getInfluence());
+    	int us = rc.getTeamVotes();
+    	int them = rc.getRoundNum() - rc.getTeamVotes(); //might be slightly overestimated in the case of ties - in reality ties should be really unlikely
+    	bid_multiplier = 1; //reset
+    	
+    	if(us > 1500) return 0; //we have majority vote, just invest in full defense
+    	
+    	if(rc.getRoundNum() >= 2750) {
+    		BID_PERCENTAGE_UPPER_BOUND = 0.40;
+    	}
+    	
+    	int check = Math.min(LAST_FEW_BIDS, previous_scores.size());
+    	if(previous_scores.size() > check) {
+    		int bids_lost = check - (us - previous_scores.get(previous_scores.size() - check));
+    		if(rc.getRoundNum() >= 2750) {
+    			bid_multiplier *= (.9996 + .02 * bids_lost);
+    		} else {
+    			bid_multiplier *= (.90 + .1 * bids_lost);
+    		}
+    	}
+    	
+    	current_bid_value *= Math.pow(bid_multiplier, volatility);
+    	current_bid_value = Math.min(current_bid_value, BID_PERCENTAGE_UPPER_BOUND * rc.getInfluence());
+    	previous_scores.add(rc.getTeamVotes());
+    	
+    	return (int) current_bid_value;
+    }
+    
+    /////////////////////////////// END Nathan Chen Bidder Code ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	}
 
 	static void update_bot_made_lastorthis_turn(){
 		bot_made_last_turn = bot_made_this_turn;
@@ -180,13 +218,67 @@ public class EnlightenmentCenter {
 					MapLocation spawn_loc = rc.getLocation().add(dir);
 					int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();
 					alive_scout_ids.add(spawn_id);
-					break;
+					return true;
 				}
 			}
-			return true;
 		}
 
 		return false;
+	}
+
+	public static boolean trySpawnAttackerPolitician(int attacker_influence) throws GameActionException
+	{
+		for (Direction dir : directions) {
+			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, attacker_influence)) {
+				rc.buildRobot(RobotType.POLITICIAN, dir, attacker_influence);
+				bot_made_this_turn = true;
+				bot_direction_this_turn = dir;
+				System.out.println("Made Attacker in Direction: " + dir);
+				/*MapLocation spawn_loc = rc.getLocation().add(dir);
+				int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();*/
+				break;
+			}
+		}
+		return false;
+	}
+
+	static int chooseRandomFreq(double[] freq){
+		for(int i = 0; i < freq.length; i++){
+			assert(freq[i] >= 0);
+		}
+		for(int i = 1; i < freq.length; i++){
+			freq[i]+= freq[i-1];
+		}
+
+		if(freq[freq.length-1] < 0.001) return 0;
+
+		for(int i = 0; i < freq.length; i++){
+			freq[i]/= freq[freq.length-1];
+		}
+		double rand_val = Math.random();
+		for(int i = 0; i < freq.length; i++){
+			if(rand_val <= freq[i]){
+				return i;
+			}
+		}
+		System.out.println("chooseRandomFreq error");
+		return 0;
+	}
+
+	static void trySpawnAttackerMuckraker() throws GameActionException
+	{
+		int attacker_influence = 2;
+		for (Direction dir : directions) {
+			if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, attacker_influence)) {
+				rc.buildRobot(RobotType.MUCKRAKER, dir, attacker_influence);
+				bot_made_this_turn = true;
+				bot_direction_this_turn = dir;
+				System.out.println("Made Attacker in Direction: " + dir);
+				/*MapLocation spawn_loc = rc.getLocation().add(dir);
+				int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();*/
+				break;
+			}
+		}
 	}
 
 	public static void spawnRobot() throws GameActionException
@@ -200,6 +292,50 @@ public class EnlightenmentCenter {
 		RobotType toBuild = RobotType.MUCKRAKER;
 		int influence = 1;
 
+		int attacker_politician_influence = 1;
+
+		double build_scout_muckraker = 0; //scale of 0 to 2 of spawning weights
+		double build_attacker_politician = 0;
+		double build_attacker_muckraker = 0.1;
+		double build_defender_politician = 0;
+
+		if(alive_scout_ids.size() < MAX_SCOUTS){
+			build_scout_muckraker = 1.0;
+		}
+
+		if(RobotPlayer.neutral_ecs.size() > 0){
+			Point ec_target = RobotPlayer.getClosestNeutralECLocation();
+			int ec_target_influence = 1;
+			for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
+				if(neutral_ec.rel_loc == ec_target){
+					ec_target_influence = neutral_ec.influence;
+					break;
+				}
+			}
+
+			attacker_politician_influence = ec_target_influence+20;
+
+			if(attacker_politician_influence >= rc.getInfluence()/3){
+				build_attacker_politician = 0;
+			}
+			else if(RobotPlayer.neutral_ecs.size() == 0){
+				build_attacker_politician = 0;
+			}
+			else{
+				build_attacker_politician = 0.5;
+			}
+		}
+
+		if(alive_scout_ids.size() >= 2*MAX_SCOUTS/3 && RobotPlayer.enemy_ecs.size() > 0){
+			if(RobotPlayer.neutral_ecs.size() == 0){
+				build_attacker_muckraker = 0.5;
+			}
+			else{
+				build_attacker_muckraker = 0.2;
+			}
+		}
+
+
 		if(Math.random() < slanderer_frequency)
 		{
 			//Attempt to build slanderer
@@ -211,13 +347,12 @@ public class EnlightenmentCenter {
 				influence = cost;
 				slanderer_frequency = Math.max(slanderer_frequency-0.5f, 0.0f);
 			}
-
 		}
 
 		if(toBuild == RobotType.SLANDERER){
 			for (Direction dir : directions) {
-				if (rc.canBuildRobot(toBuild, dir, influence)) {
-					rc.buildRobot(toBuild, dir, influence);
+				if (rc.canBuildRobot(RobotType.SLANDERER, dir, influence)) {
+					rc.buildRobot(RobotType.SLANDERER, dir, influence);
 					bot_made_this_turn = true;
 					bot_direction_this_turn = dir;
 					System.out.println("Made bot in Direction: " + dir);
@@ -226,9 +361,26 @@ public class EnlightenmentCenter {
 			}
 		}
 		else{
-			trySpawnScout();
-		}
+			double[] spawn_freq = new double[4];
+			spawn_freq[0] = build_scout_muckraker; //scale of 0 to 2 of spawning weights
+			spawn_freq[1] = build_attacker_politician;
+			spawn_freq[2] = build_attacker_muckraker;
+			spawn_freq[3] = build_defender_politician;
 
+			int spawn_type = chooseRandomFreq(spawn_freq);
+			if(spawn_type == 0){
+				trySpawnScout();
+			}
+			else if(spawn_type == 1){
+				trySpawnAttackerPolitician(attacker_politician_influence);
+			}
+			else if(spawn_type == 2){
+				trySpawnAttackerMuckraker();
+			}
+			else if(spawn_type == 3){
+
+			}
+		}
 
 		slanderer_frequency = Math.min(slanderer_frequency+0.05f, 1f);
 	}
@@ -252,7 +404,6 @@ public class EnlightenmentCenter {
 					System.out.println("Bot was made in direction: " + dir + " " + directions[dir]);
 					for(int j = 0; j < 3; j++){
 						if(((dir>>j)&1) == 1){
-							System.out.println("bit " + j+1 + " was set to 1");
 							flag_bits[j+1] = true; //sets the 1st, 2nd, 3rd flag_bits
 						}
 					}
@@ -301,14 +452,20 @@ public class EnlightenmentCenter {
 	}
 
 	public static void run() throws GameActionException{
-		//initialization
-		rc = RobotPlayer.rc;
+		////////////////////Creation Begin
+		if(RobotPlayer.just_made){
+			rc = RobotPlayer.rc;
+		}
+		////////////////////Creation End
 
+
+		////////////////////Initialization Begin
 		update_bot_made_lastorthis_turn();
 		updateScoutList();
+		////////////////////Initialization End
 
-		//Receive Flag Communication from Scouts
 
+		////////////////////Receive Communication Begin
 		receiveScoutCommunication();
 		for(Neutral_EC_Info a: RobotPlayer.neutral_ecs){
 			System.out.println("I know a neutral EC is here: " + a.rel_loc);
@@ -319,24 +476,31 @@ public class EnlightenmentCenter {
 		for(Friend_EC_Info a: RobotPlayer.friend_ecs){
 			System.out.println("I know a friend EC is here: " + a.rel_loc);
 		}
+		////////////////////Receive Communication End
 
-		//Spawn Robot
+
+		////////////////////Spawn Robot Begin
 		spawnRobot();
+		////////////////////Spawn Robot End
 
-		//Bidding using the getBidValue function
+
+		////////////////////Bid Begin
 		int bid_value = getBidValue();
 		if(rc.canBid(bid_value)){
+			System.out.println("I bid " + bid_value);
 			rc.bid(bid_value);
 		}
+		////////////////////Bid End
 
-		//Flag Send Communication
+
+		////////////////////Broadcast to Units Begin
 		int flag_value = generateFlagValue();
 		if(rc.canSetFlag(flag_value)){
 			rc.setFlag(flag_value);
 		}
 
 		System.out.println("Set Flag Value to: " + flag_value);
-
+		////////////////////Broadcast to Units End
 	}
 
 	/**
