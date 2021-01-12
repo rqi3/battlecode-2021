@@ -243,16 +243,21 @@ public class EnlightenmentCenter {
 	}
 
 	static int chooseRandomFreq(double[] freq){
-		double[] cum_freq = freq;
-		for(int i = 1; i < freq.length; i++){
-			cum_freq[i]+=cum_freq[i-1];
-		}
 		for(int i = 0; i < freq.length; i++){
-			cum_freq[i]/=cum_freq[freq.length-1];
+			assert(freq[i] >= 0);
+		}
+		for(int i = 1; i < freq.length; i++){
+			freq[i]+= freq[i-1];
+		}
+
+		if(freq[freq.length-1] < 0.001) return 0;
+
+		for(int i = 0; i < freq.length; i++){
+			freq[i]/= freq[freq.length-1];
 		}
 		double rand_val = Math.random();
-		for(int i = 0; i < cum_freq.length; i++){
-			if(rand_val <= cum_freq[i]){
+		for(int i = 0; i < freq.length; i++){
+			if(rand_val <= freq[i]){
 				return i;
 			}
 		}

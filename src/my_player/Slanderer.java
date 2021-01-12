@@ -40,8 +40,18 @@ public class Slanderer {
 
 
 	public static void run() throws GameActionException{
+
+		if(RobotPlayer.just_made){
+			rc = RobotPlayer.rc;
+			RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
+
+			System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
+			if(RobotPlayer.has_parent_EC){
+				System.out.println("parent Location: " + RobotPlayer.parent_EC.getLocation());
+			}
+		}
+
 		//Initialization
-		rc = RobotPlayer.rc;
 		updateParentEC();
 
 		//Receive broadcast from parent_EC

@@ -5,12 +5,6 @@ import java.util.*;
 public strictfp class RobotPlayer {
 	static RobotController rc;
 
-	static final RobotType[] spawnableRobot = {
-		RobotType.POLITICIAN,
-		RobotType.SLANDERER,
-		RobotType.MUCKRAKER,
-	};
-
 	static final Direction[] directions = {
 		Direction.NORTH,
 		Direction.NORTHEAST,
@@ -28,9 +22,9 @@ public strictfp class RobotPlayer {
 	static boolean has_parent_EC = false; //whether this unit spawned by an Enlightenment Center
 	static RobotInfo parent_EC; //the Enlightenment Center that spawned the unit, if it exists
 
-	static List<Neutral_EC_Info> neutral_ecs = new ArrayList<Neutral_EC_Info>();
-	static List<Enemy_EC_Info> enemy_ecs = new ArrayList<Enemy_EC_Info>();
-	static List<Friend_EC_Info> friend_ecs = new ArrayList<Friend_EC_Info>();;
+	static List<Neutral_EC_Info> neutral_ecs = new ArrayList<>(); //List of information about neutral ecs that it knows
+	static List<Enemy_EC_Info> enemy_ecs = new ArrayList<>(); //List of information about enemy ecs that it knows
+	static List<Friend_EC_Info> friend_ecs = new ArrayList<>();; //List of information about friend ecs that it knows
 
 	static Point convertToRelativeCoordinates(MapLocation loc)
 	/*
@@ -232,11 +226,7 @@ public strictfp class RobotPlayer {
 		turn_count = 0;
 
 		System.out.println("I'm a " + rc.getType() + " and I just got created!");
-		assignParentEC(); //after it spawns, record which EC spawned it (if any)
-		System.out.println("has_parent_EC: " + has_parent_EC);
-		if(has_parent_EC){
-			System.out.println("parent Location: " + parent_EC.getLocation());
-		}
+
 
 		while (true) {
 			turn_count += 1;
@@ -263,80 +253,7 @@ public strictfp class RobotPlayer {
 			}
 		}
 	}
-/* Example bot Code:
-	static void runEnlightenmentCenter() throws GameActionException {
-		RobotType toBuild = randomSpawnableRobotType();
-		int influence = 50;
-		for (Direction dir : directions) {
-			if (rc.canBuildRobot(toBuild, dir, influence)) {
-				rc.buildRobot(toBuild, dir, influence);
-			} else {
-				break;
-			}
-		}
-	}
 
-	static void runPolitician() throws GameActionException {
-		Team enemy = rc.getTeam().opponent();
-		int actionRadius = rc.getType().actionRadiusSquared;
-		RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
-		if (attackable.length != 0 && rc.canEmpower(actionRadius)) {
-			System.out.println("empowering...");
-			rc.empower(actionRadius);
-			System.out.println("empowered");
-			return;
-		}
-		if (tryMove(randomDirection()))
-			System.out.println("I moved!");
-	}
-
-	static void runSlanderer() throws GameActionException {
-		if (tryMove(randomDirection()))
-			System.out.println("I moved!");
-	}
-
-	static void runMuckraker() throws GameActionException {
-		Team enemy = rc.getTeam().opponent();
-		int actionRadius = rc.getType().actionRadiusSquared;
-		for (RobotInfo robot : rc.senseNearbyRobots(actionRadius, enemy)) {
-			if (robot.type.canBeExposed()) {
-				// It's a slanderer... go get them!
-				if (rc.canExpose(robot.location)) {
-					System.out.println("e x p o s e d");
-					rc.expose(robot.location);
-					return;
-				}
-			}
-		}
-		if (tryMove(randomDirection()))
-			System.out.println("I moved!");
-	}
-*/
-	/**
-	 * Returns a random Direction.
-	 *
-	 * @return a random Direction
-	 */
-	static Direction randomDirection() {
-		return directions[(int) (Math.random() * directions.length)];
-	}
-
-	/**
-	 * Returns a random spawnable RobotType
-	 *
-	 * @return a random RobotType
-	 */
-	static RobotType randomSpawnableRobotType() {
-		return spawnableRobot[(int) (Math.random() * spawnableRobot.length)];
-	}
-
-	/**
-	 * Attempts to move in a given direction.
-	 *
-	 * @param dir The intended direction of movement
-	 * @return true if a move was performed
-	 * @throws GameActionException
-	 */
 	static boolean tryMove(Direction dir) throws GameActionException {
 		System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
 		if (rc.canMove(dir)) {

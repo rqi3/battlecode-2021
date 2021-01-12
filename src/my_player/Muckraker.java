@@ -41,11 +41,6 @@ public class Muckraker {
 
 
 
-
-
-
-
-
     static void lookAround() throws GameActionException
     {
 
@@ -321,17 +316,34 @@ public class Muckraker {
     static Point goal = null;
 
     public static void run() throws GameActionException{
-        //Initialization
-        rc = RobotPlayer.rc;
-        Movement.rc = RobotPlayer.rc;
+        if(RobotPlayer.just_made){
+            rc = RobotPlayer.rc;
+            Movement.rc = RobotPlayer.rc;
+            RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
+
+            System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
+            if(RobotPlayer.has_parent_EC){
+                System.out.println("parent Location: " + RobotPlayer.parent_EC.getLocation());
+            }
+        }
+
+
+        //////////////////// Begin Initialization
+
         updateParentEC();
         if(rc.getInfluence() > 1) is_scout = false;
+        //////////////////// End Initialization
 
-        //sense around it
+        //////////////////// Begin Sense
         lookAround();
 
-        //Receive broadcast from parent_EC
+        //////////////////// End Sense
+
+
+        //////////////////// Begin Receive Broadcast
         RobotPlayer.receiveECBroadcast();
+
+        //////////////////// End Receive Broadcast
 
         //Attack
         Team enemy = rc.getTeam().opponent();

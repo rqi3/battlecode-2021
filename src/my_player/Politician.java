@@ -126,16 +126,27 @@ public class Politician {
     }
 
     public static void run() throws GameActionException{
-        //Initialization
+
         rc = RobotPlayer.rc;
         Movement.rc = RobotPlayer.rc;
-        updateParentEC();
+
 
         //Just spawned?
-        if(RobotPlayer.just_made && RobotPlayer.has_parent_EC){
-            isECAttacker = true;
+        if(RobotPlayer.just_made){
 
+            RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
+
+            if(RobotPlayer.has_parent_EC){
+                isECAttacker = true;
+            }
+
+            System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
+            if(RobotPlayer.has_parent_EC){
+                System.out.println("parent Location: " + RobotPlayer.parent_EC.getLocation());
+            }
         }
+        //Initialization
+        updateParentEC();
 
         //Receive broadcast from parent_EC
         RobotPlayer.receiveECBroadcast();
