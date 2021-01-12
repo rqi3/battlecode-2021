@@ -3,6 +3,10 @@ package my_player;
 import battlecode.common.*;
 import java.util.*;
 
+/**
+ * Movement facilitates the movement of different types of robots.
+ * @author    Coast
+ */
 public class Movement {
     static RobotController rc;
 

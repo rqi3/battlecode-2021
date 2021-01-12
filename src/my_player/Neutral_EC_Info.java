@@ -3,6 +3,10 @@ package my_player;
 import battlecode.common.*;
 import java.util.*;
 
+/**
+ * Neutral_EC_Info contains information about a neutral EC
+ * @author    Coast
+ */
 public class Neutral_EC_Info {
     public Point rel_loc; //position relative to parent EC of unit that is accessing this
     public MapLocation loc;

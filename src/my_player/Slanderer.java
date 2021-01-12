@@ -4,17 +4,14 @@ import battlecode.common.*;
 import java.util.*;
 import java.lang.Math.*;
 
+/**
+ * Controls our slanderers.
+ */
 public class Slanderer {
 	static RobotController rc;
 
 	public static final float EPS = 0.1f;
 	public static final float PI = (float)(Math.atan(1)*4);
-
-	static final RobotType[] spawnableRobot = {
-			RobotType.POLITICIAN,
-			RobotType.SLANDERER,
-			RobotType.MUCKRAKER,
-	};
 
 	static final Direction[] directions = {
 			Direction.NORTH,
@@ -73,15 +70,6 @@ public class Slanderer {
 	 */
 	static Direction randomDirection() {
 		return directions[(int) (Math.random() * directions.length)];
-	}
-
-	/**
-	 * Returns a random spawnable RobotType
-	 *
-	 * @return a random RobotType
-	 */
-	static RobotType randomSpawnableRobotType() {
-		return spawnableRobot[(int) (Math.random() * spawnableRobot.length)];
 	}
 
 	/**

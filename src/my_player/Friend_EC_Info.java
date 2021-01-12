@@ -3,6 +3,10 @@ package my_player;
 import battlecode.common.*;
 import java.util.*;
 
+/**
+ * Friend_EC_Info contains information about a friend EC
+ * @author    Coast
+ */
 public class Friend_EC_Info {
     public Point rel_loc; //position relative to parent EC of unit that is accessing this
     public MapLocation loc;
@@ -23,13 +27,21 @@ public class Friend_EC_Info {
         loc = _loc;
     }
 
-
+    /**
+     * Encodes the information into a flag value.
+     * @return flag value
+     */
     public int toFlagValue(){
         int flag_value = flag_signal;
         int flag_loc = RobotPlayer.convertToFlagRelativeLocation(rel_loc);
         return flag_value+flag_loc*(1<<10);
     }
 
+    /**
+     * Given a flag value, decodes it.
+     * @param flag_value
+     * @return EC Information
+     */
     public static Friend_EC_Info fromFlagValue(int flag_value){
         Friend_EC_Info friend_ec = new Friend_EC_Info();
         int location_bits = RobotPlayer.getBitsBetween(flag_value, 10, 23);

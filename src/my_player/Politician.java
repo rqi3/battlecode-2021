@@ -3,6 +3,10 @@ package my_player;
 import battlecode.common.*;
 import java.util.*;
 
+/**
+ * Politician controls the actions of our Politicians.
+ * @author    Coast
+ */
 public class Politician {
     static RobotController rc;
 

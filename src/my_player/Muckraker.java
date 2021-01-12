@@ -3,6 +3,10 @@ package my_player;
 import battlecode.common.*;
 import java.util.*;
 
+/**
+ * Muckraker controls the actions of our Muckrakers.
+ * @author    Coast
+ */
 public class Muckraker {
     static RobotController rc;
     static boolean is_scout = true; //whether this Muckraker will be communicating stuff it sees to parent_EC

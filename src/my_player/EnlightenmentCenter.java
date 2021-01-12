@@ -3,28 +3,47 @@ package my_player;
 import battlecode.common.*;
 import java.util.*;
 
+/**
+ * EnlightenmentCenter controls the actions of our Enlightenment Centers.
+ * @author    Coast
+ */
 public class EnlightenmentCenter {
-	static RobotController rc;
+	/**
+	 * Allows the robot to be controlled.
+	 */
+	public static RobotController rc;
 
-	public static final int MAX_SCOUTS = 16; //reduce bytecode usage. Currently accounts for ~7000 bytecode
+	/**
+	 * Maximum number of scouts this EC builds. More scouts = more bytecode usage by Enlightenment Center.
+	 */
+	public static final int MAX_SCOUTS = 16;
+
+	/**
+	 * ???
+	 */
 	public static final int[] OPTIMAL_SLANDERER_INFLUENCE = {21,41,63,85,107,130,154,178,203,228,255,282,310,339,368,399,431,463,497,532,568,605,643,683,724,766,810,855,902,949};
 
+	/**
+	 * Whether a bot was made last or this turn and which direction it was made in.
+	 */
 	static boolean bot_made_last_turn = false;
-	static Direction bot_direction_last_turn = Direction.NORTH; //
-	static boolean bot_made_this_turn = false; //was a bot made this turn?
-	static Direction bot_direction_this_turn = Direction.NORTH; //direction the bot is facing
+	static boolean bot_made_this_turn = false;
+	static Direction bot_direction_this_turn = Direction.NORTH;
 
+	/**
+	 * A list of the scout ids that this EC is keeping track of.
+	 */
 	static List<Integer> alive_scout_ids = new ArrayList<Integer>();
 
+	/**
+	 * ??
+	 */
 	static float slanderer_frequency;
 	static int slanderer_investment;
 
-	static final RobotType[] spawnableRobot = {
-		RobotType.POLITICIAN,
-		RobotType.SLANDERER,
-		RobotType.MUCKRAKER,
-	};
-
+	/**
+	 * List of possible directions.
+	 */
 	static final Direction[] directions = {
 		Direction.NORTH,
 		Direction.NORTHEAST,
@@ -36,13 +55,14 @@ public class EnlightenmentCenter {
 		Direction.NORTHWEST,
 	};
 
-	static void foundEnemyMuckraker(int x, int y)
-	/*
+	/**
 	Called when the EC receives communication that Enemy Muckraker is at relative position (x, y)
 	location relative to EC
+	 @param x The x coordinate of a found muckraker
+	 @param y The y coordinate of a found muckraker
 	*/
-	{
-		// maybe send politician/make fewer slanderers
+	static void foundEnemyMuckraker(int x, int y) {
+
 	}
 
 	////////////////////////////// Nathan Chen Bidder Code //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -94,31 +114,47 @@ public class EnlightenmentCenter {
     /////////////////////////////// END Nathan Chen Bidder Code ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-	static void update_bot_made_lastorthis_turn(){
+	/**
+	 * Updates bot_made_this/last_turn and bot_direction_this/last_turn
+	 */
+	private static void update_bot_made_lastorthis_turn(){
 		bot_made_last_turn = bot_made_this_turn;
 		bot_direction_last_turn = bot_direction_this_turn;
 		bot_made_this_turn = false;
 		bot_direction_this_turn = Direction.NORTH;
 	}
 
-	public static boolean getFlagBotMade(int flag_value)
-	/*
-	returns the value of bot_made_this_turn given only the flag value.
-	Depends on how we made the flag_value in generateFlagValue()
+	/**
+	 * Updates alive_scout_ids based on whether they are alive
 	 */
+	private static void updateScoutList()
+
 	{
-		if((flag_value&1) == 1){ //the first bit represented bot_made_this_turn
-			return true;
+		for(int i = alive_scout_ids.size()-1; i >= 0; i--){
+			Integer robot_id = alive_scout_ids.get(i);
+			if(!rc.canGetFlag(robot_id)){ //Can't get the flag if they are dead
+				alive_scout_ids.remove(robot_id); //Scout died, remove it from the list!
+			}
 		}
-		return false;
 	}
 
-	public static Direction getFlagDirectionMade(int flag_value)
-	/*
-	returns the value of bot_made_this_turn given only the flag value.
-	Depends on how we made the flag_value in generateFlagValue()
+
+	/**
+	 * Depends on how we made the flag_value in generateFlagValue()
+	 * @param flag_value The value of an Enlightenment Center flag
+	 * @return the value of bot_made_last_turn given only the flag value.
 	 */
-	{
+	public static boolean getFlagBotMade(int flag_value) {
+		//the first bit represented bot_made_this_turn
+		return (flag_value & 1) == 1;
+	}
+
+	/**
+	 * Depends on how we made the flag_value in generateFlagValue()
+	 * @param flag_value The value of an Enlightenment Center flag\
+	 * @return The value of bot_made_last_turn given only the flag value.
+	 */
+	public static Direction getFlagDirectionMade(int flag_value) {
 		int dir = 0;
 		for(int i = 1; i <= 3; i++){
 			int bit_value = ((flag_value>>i)&1);
@@ -127,6 +163,9 @@ public class EnlightenmentCenter {
 		return directions[dir];
 	}
 
+	/**
+	 * Receives communication from scouts
+	 */
 	public static void receiveScoutCommunication() throws GameActionException{
 		for(Integer scout_id: alive_scout_ids){
 			if(!rc.canGetFlag(scout_id)) continue;
@@ -172,12 +211,11 @@ public class EnlightenmentCenter {
 		}
 	}
 
-	public static int getOptimalSlandererInfluence(int max_val)
-		/*
-			 upper_bound-1 on OPTIMAL_SLANDERER_INFLUENCE;
-			 returns value, or -1 if no such value exists
-			 */
-	{
+	/**
+	 * upper_bound-1 on OPTIMAL_SLANDERER_INFLUENCE;
+	 * returns value, or -1 if no such value exists
+	 */
+	public static int getOptimalSlandererInfluence(int max_val) {
 		int l=-1;
 		int r=OPTIMAL_SLANDERER_INFLUENCE.length;
 		while(r-l>1)
@@ -192,25 +230,12 @@ public class EnlightenmentCenter {
 		return OPTIMAL_SLANDERER_INFLUENCE[l];
 	}
 
-	public static void updateScoutList()
-	/*
-	Updates the list of scouts based on whether one died or not
-	 */
-	{
-		for(int i = alive_scout_ids.size()-1; i >= 0; i--){
-			Integer robot_id = alive_scout_ids.get(i);
-			if(!rc.canGetFlag(robot_id)){ //Can't get the flag if they are dead
-				alive_scout_ids.remove(robot_id); //Scout died, remove it from the list!
-			}
-		}
-	}
 
-	public static boolean trySpawnScout() throws GameActionException
-	/*
+	/**
 	Tries to spawn a scout in a random direction.
-	Returns whether it did spawn a scout.
+	@return whether it did spawn a scout.
 	 */
-	{
+	private static boolean trySpawnScout() throws GameActionException {
 
 		int scout_influence = 1;
 
@@ -232,6 +257,11 @@ public class EnlightenmentCenter {
 		return false;
 	}
 
+	/**
+	 *
+	 * @param attacker_influence The influence that we will put into the attacker politican.
+	 * @return Whether a politician was spawned
+	 */
 	public static boolean trySpawnAttackerPolitician(int attacker_influence) throws GameActionException
 	{
 		for (Direction dir : directions) {
@@ -242,16 +272,18 @@ public class EnlightenmentCenter {
 				System.out.println("Made Attacker in Direction: " + dir);
 				/*MapLocation spawn_loc = rc.getLocation().add(dir);
 				int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();*/
-				break;
+				return true;
 			}
 		}
 		return false;
 	}
 
-	static int chooseRandomFreq(double[] freq){
-		for(int i = 0; i < freq.length; i++){
-			assert(freq[i] >= 0);
-		}
+	/**
+	 * Randomly chooses an index based on the frequencies of freq
+	 * @param freq The weights for each index (does not have to sum to 1)
+	 * @return A chosen index
+	 */
+	private static int chooseRandomFreq(double[] freq){
 		for(int i = 1; i < freq.length; i++){
 			freq[i]+= freq[i-1];
 		}
@@ -271,8 +303,11 @@ public class EnlightenmentCenter {
 		return 0;
 	}
 
-	static void trySpawnAttackerMuckraker() throws GameActionException
-	{
+	/**
+	 * Tries to spawn an Attack Muckraker
+	 * @throws GameActionException
+	 */
+	private static void trySpawnAttackerMuckraker() throws GameActionException {
 		int attacker_influence = 2;
 		for (Direction dir : directions) {
 			if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, attacker_influence)) {
@@ -287,14 +322,15 @@ public class EnlightenmentCenter {
 		}
 	}
 
-	public static void spawnRobot() throws GameActionException
-	/*
-			Spawns robots
-			Current algorithm:
-				Spawns muckraker by default. Randomly spawn slanderer according to slanderer_frequency
-				slanderer_investment is current set at 10% of enlightenment center influence
-	*/
-	{
+
+	/**
+	 * Chooses what robot to spawn and spawns it.
+	 *
+	 *
+	 *
+	 * @throws GameActionException
+	 */
+	public static void spawnRobot() throws GameActionException {
 		System.out.println("Spawning a robot...");
 		RobotType toBuild = RobotType.MUCKRAKER;
 		int influence = 1;
@@ -335,16 +371,12 @@ public class EnlightenmentCenter {
 				build_nothing = 0;
 			}
 		}
-		System.out.println("Breakpoint 2");
 		if(alive_scout_ids.size() >= 2*MAX_SCOUTS/3 && RobotPlayer.enemy_ecs.size() > 0){
 			build_attacker_muckraker = 0.5;
 			build_nothing = 0;
 		}
-
-		System.out.println("Breakpoint 3");
 		if(Math.random() < slanderer_frequency)
 		{
-			System.out.println("Breakpoint 4");
 			//Attempt to build slanderer
 			slanderer_investment = rc.getInfluence()/10;
 			int cost = getOptimalSlandererInfluence(slanderer_investment);
@@ -355,9 +387,7 @@ public class EnlightenmentCenter {
 				slanderer_frequency = Math.max(slanderer_frequency-0.5f, 0.0f);
 			}
 		}
-		System.out.println("Breakpoint 5");
 		if(toBuild == RobotType.SLANDERER){
-			System.out.println("Breakpoint 6");
 			for (Direction dir : directions) {
 				if (rc.canBuildRobot(RobotType.SLANDERER, dir, influence)) {
 					rc.buildRobot(RobotType.SLANDERER, dir, influence);
@@ -369,7 +399,6 @@ public class EnlightenmentCenter {
 			}
 		}
 		else{
-			System.out.println("Breakpoint 7");
 			double[] spawn_freq = new double[5];
 			spawn_freq[0] = build_scout_muckraker; //scale of 0 to 2 of spawning weights
 			spawn_freq[1] = build_attacker_politician;
@@ -397,7 +426,11 @@ public class EnlightenmentCenter {
 		slanderer_frequency = Math.min(slanderer_frequency+0.05f, 1f);
 	}
 
-
+	/**
+	 * Gives a local communication to a newly spawned unit
+	 * If no newly spawned unit, do a global broadcast
+	 * @return The flag value that this Enlightenment Center will set
+	 */
 	private static int generateFlagValue(){ //returns the flag this Enlightenment Center will set to
 		boolean global_broadcast; //will we be communicating to everyone
 
@@ -463,6 +496,9 @@ public class EnlightenmentCenter {
 		return returned_flag_value;
 	}
 
+	/**
+	 * Run the robot.
+	 */
 	public static void run() throws GameActionException{
 		////////////////////Creation Begin
 		if(RobotPlayer.just_made){
@@ -479,6 +515,7 @@ public class EnlightenmentCenter {
 
 		////////////////////Receive Communication Begin
 		receiveScoutCommunication();
+
 		for(Neutral_EC_Info a: RobotPlayer.neutral_ecs){
 			System.out.println("I know a neutral EC is here: " + a.rel_loc);
 		}
@@ -522,15 +559,5 @@ public class EnlightenmentCenter {
 	 */
 	static Direction randomDirection() {
 		return directions[(int) (Math.random() * directions.length)];
-	}
-
-	/**
-	 * Returns a random spawnable RobotType
-	 *
-	 * @return a random RobotType
-	 */
-
-	static RobotType randomSpawnableRobotType() {
-		return spawnableRobot[(int) (Math.random() * spawnableRobot.length)];
 	}
 }

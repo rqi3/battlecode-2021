@@ -2,10 +2,13 @@ package my_player;
 import battlecode.common.*;
 import java.util.*;
 
+/**
+ * RobotPlayer controls the actions of all robots and contains common methods.
+ */
 public strictfp class RobotPlayer {
-	static RobotController rc;
+	public static RobotController rc;
 
-	static final Direction[] directions = {
+	private static final Direction[] directions = {
 		Direction.NORTH,
 		Direction.NORTHEAST,
 		Direction.EAST,
@@ -26,11 +29,10 @@ public strictfp class RobotPlayer {
 	static List<Enemy_EC_Info> enemy_ecs = new ArrayList<>(); //List of information about enemy ecs that it knows
 	static List<Friend_EC_Info> friend_ecs = new ArrayList<>();; //List of information about friend ecs that it knows
 
-	static Point convertToRelativeCoordinates(MapLocation loc)
 	/**
 	 * Computes relative location of loc with respect to parent_EC, assuming that this Robot has a parent enlightenment center
-	 **/
-	{
+	 */
+	static Point convertToRelativeCoordinates(MapLocation loc) {
 		Point rel_loc = new Point();
 		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
 			rel_loc.x = loc.x-rc.getLocation().x;
@@ -44,16 +46,18 @@ public strictfp class RobotPlayer {
 		return rel_loc;
 	}
 
-	static MapLocation convertFromRelativeCoordinates(Point rel_loc)
-	/*
-	Computes relative coordinates, assuming that it has a parent enlightenment center
+	/**
+	 * Inverse of convertToRelativeCoordinates
 	 */
-	{
+	static MapLocation convertFromRelativeCoordinates(Point rel_loc) {
 		return parent_EC.getLocation().translate(rel_loc.x, rel_loc.y);
 	}
 
+	/**
+	 * Gets the nearest known neutral ec location by Euclidean Distance
+	 * @return relative location of neutral ec
+	 */
 	static Point getClosestNeutralECLocation(){
-		assert(RobotPlayer.neutral_ecs.size() > 0);
 		Point closest_neutral_ec = neutral_ecs.get(0).rel_loc;
 		Point my_rel_loc = convertToRelativeCoordinates(rc.getLocation());
 		for(int i = 1; i < RobotPlayer.neutral_ecs.size(); i++){
@@ -67,8 +71,11 @@ public strictfp class RobotPlayer {
 		return closest_neutral_ec;
 	}
 
+	/**
+	 * Gets the nearest known enemy ec location by Euclidean Distance
+	 * @return relative location of enemy ec
+	 */
 	static Point getClosestEnemyECLocation(){
-		assert(RobotPlayer.enemy_ecs.size() > 0);
 		Point closest_enemy_ec = RobotPlayer.enemy_ecs.get(0).rel_loc;
 		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 		for(int i = 1; i < RobotPlayer.enemy_ecs.size(); i++){
@@ -82,24 +89,32 @@ public strictfp class RobotPlayer {
 		return closest_enemy_ec;
 	}
 
-	static int convertToFlagRelativeLocation(Point rel_loc)
-	//takes a relative location and converts it to a single integer up to 2^14
-	{
+	/**
+	 * Converts relative location to a flag value up to 2^14
+	 * @param rel_loc a relative location
+	 * @return flag value
+	 */
+	static int convertToFlagRelativeLocation(Point rel_loc) {
 		int flag_loc = (rel_loc.x+63)+((rel_loc.y+63)<<7);
 		return flag_loc;
 	}
 
-	static Point convertFromFlagRelativeLocation(int flag_loc)
-	//Inverts convertToFlagRelativeLocation
-	{
+	/**
+	 * Inverts convertToFlagRelativeLocation
+	 */
+	static Point convertFromFlagRelativeLocation(int flag_loc) {
 		Point rel_loc = new Point();
 		rel_loc.x = flag_loc % (1<<7) - 63;
 		rel_loc.y = flag_loc/(1<<7) - 63;
 		return rel_loc;
 	}
 
+	/**
+	 * reads bits l to r and concatenates them to form an integer.
+	 * @return integer corresponding to the bits [l, r] in flag_value
+	 */
 	static int getBitsBetween(int flag_value, int l, int r){
-		//return integer corresponding to the bits [l, r] in flag_value
+		//
 		int res = 0;
 		for(int i = l; i <= r; i++){
 			if((((flag_value)>>i)&1) == 1){
@@ -109,30 +124,28 @@ public strictfp class RobotPlayer {
 		return res;
 	}
 
-	public static void removeECInfo(Point ec_rel_loc)
-	/*
-	If we just received information about an ec, remove it from the old information so we can safely add it.
+	/**
+	 * Removes this ec location from all ec lists, usually so we can add an updated version back if its team changes.
+	 * @param ec_rel_loc ec location in relative coordinates
 	 */
-	{
+	public static void removeECInfo(Point ec_rel_loc) {
 		RobotPlayer.neutral_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
 		RobotPlayer.enemy_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
 		RobotPlayer.friend_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
 	}
-	public static void removeECInfo(Neutral_EC_Info ec)
-	/*
-	If we just received information about an ec, remove it from the old information so we can safely add it.
-	 */
-	{
+
+	public static void removeECInfo(Neutral_EC_Info ec) {
 		removeECInfo(ec.rel_loc);
 	}
-	public static void removeECInfo(Enemy_EC_Info ec)
-	/*
-	If we just received information about an ec, remove it from the old information so we can safely add it.
-	 */
-	{
+	public static void removeECInfo(Enemy_EC_Info ec) {
 		removeECInfo(ec.rel_loc);
 	}
 
+	/**
+	 * Receives a broadcast from the parent_EC.
+	 * Updates ec lists.
+	 * @throws GameActionException
+	 */
 	public static void receiveECBroadcast() throws GameActionException{
 		if(!has_parent_EC) return;
 
@@ -167,7 +180,9 @@ public strictfp class RobotPlayer {
 		}
 	}
 
-
+	/**
+	 * When a unit is spawned, look for a parent EC that spawned it and edit parent_EC
+	 */
 	static void assignParentEC() throws GameActionException{ //create parent_EC value
 		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
 			has_parent_EC = false;
@@ -215,7 +230,6 @@ public strictfp class RobotPlayer {
 	 * If this method returns, the robot dies!
 	 **/
 	@SuppressWarnings("unused")
-
 	public static void run(RobotController rc) throws GameActionException {
 		// This is the RobotController object. You use it to perform actions from this robot,
 		// and to get information on its current status.
@@ -252,6 +266,12 @@ public strictfp class RobotPlayer {
 		}
 	}
 
+	/**
+	 * Tries to move in a specified direction
+	 * @param dir direction of movement
+	 * @return whether move succeeded
+	 * @throws GameActionException Bad battlecode call
+	 */
 	static boolean tryMove(Direction dir) throws GameActionException {
 		System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
 		if (rc.canMove(dir)) {
