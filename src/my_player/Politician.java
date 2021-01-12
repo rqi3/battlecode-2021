@@ -22,9 +22,6 @@ import java.util.*;
  */
 public class Politician {
     static RobotController rc;
-    static boolean is_EC_attacker = false;
-    static boolean is_slanderer_politician = true; //should be set to false if it is newly made from an EC
-    static boolean is_converted_politician = false;
 
     static final Direction[] directions = {
             Direction.NORTH,
@@ -49,7 +46,6 @@ public class Politician {
         }
     }
 
-<<<<<<< HEAD
 //////////////// PARAMETERS
 
 		static int politician_type = 0; // read above. By default, defense politician
@@ -59,11 +55,9 @@ public class Politician {
 		public static final int ENEMY_ATTACK = 3;
 
 		// Type 1 politican parameters
-=======
     /**
      * Targeting for Attacker Politicians
      */
->>>>>>> refs/remotes/origin/master
     static boolean hasECTarget = false;
     static int ec_target_type = 0; // 1 = neutral, 2 = enemy
     static Point ec_target = new Point(); //relative location
@@ -182,18 +176,13 @@ public class Politician {
     }
 
 
-<<<<<<< HEAD
 // General Politician Functions
 
-    static void doRandomAction() throws GameActionException
-    {
-=======
     /**
      * Attacks if it can. Otherwise, move randomly.
      * @throws GameActionException
      */
     private static void doRandomAction() throws GameActionException {
->>>>>>> refs/remotes/origin/master
         Team enemy = rc.getTeam().opponent();
         int actionRadius = rc.getType().actionRadiusSquared;
         RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
@@ -217,18 +206,11 @@ public class Politician {
         Movement.rc = RobotPlayer.rc;
         //TODO: Consider Slanderer-converted Politicians
         if(RobotPlayer.just_made){
-<<<<<<< HEAD
             politician_type = RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
+						// ASSERT politician_type != -1
+						if(politician_type == -1) politician_type = Politician.SLANDERER_DEFENSE; // if no parent EC make it slanderer defense
+
 						//Also record type of politician (note this will result in SLANDERER_DEFENSE by default)
-=======
-
-            RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
-
-            is_slanderer_politician = false;
-            if(RobotPlayer.has_parent_EC){
-                is_EC_attacker = true;
-            }
->>>>>>> refs/remotes/origin/master
 
             System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
             if(RobotPlayer.has_parent_EC){
@@ -240,9 +222,7 @@ public class Politician {
         ////////////////////Initialization Begin
         updateParentEC();
         if(!RobotPlayer.has_parent_EC){
-            is_EC_attacker = false;
-            is_slanderer_politician = false;
-            is_converted_politician = true;
+					politician_type = Politician.SLANDERER_DEFENSE;
         }
         ////////////////////Initialization End
 
@@ -251,10 +231,10 @@ public class Politician {
         ////////////////////Receive Broadcast End
 
         ////////////////////Action Begin
-        assignECTarget();
+        if(politician_type == Politician.EC_ATTACK)
+					assignECTarget();
 
         //Do an action (attack or move)
-<<<<<<< HEAD
 				switch(politician_type)
 				{
 					case SLANDERER_DEFENSE:
@@ -271,14 +251,6 @@ public class Politician {
 					default:
 						break;// or throw some exception
 				}
-=======
-        if(is_EC_attacker){
-            doECAttackerAction();
-        }
-        else{
-            doRandomAction();
-        }
->>>>>>> refs/remotes/origin/master
 
         ////////////////////Action End
 

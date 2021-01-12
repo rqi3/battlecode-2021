@@ -114,12 +114,8 @@ public strictfp class RobotPlayer {
 	 * @return integer corresponding to the bits [l, r] in flag_value
 	 */
 	static int getBitsBetween(int flag_value, int l, int r){
-<<<<<<< HEAD
 		//return integer corresponding to the bits [l, r] in flag_value
 		//return flag_value>>l&((1<<r-l+1)-1); //assuming java & cpp have same operator precedence, which I think is true
-=======
-		//
->>>>>>> refs/remotes/origin/master
 		int res = 0;
 		for(int i = l; i <= r; i++){
 			if((((flag_value)>>i)&1) == 1){
@@ -146,54 +142,15 @@ public strictfp class RobotPlayer {
 		removeECInfo(ec.rel_loc);
 	}
 
-<<<<<<< HEAD
-	public static void receiveECBroadcast() throws GameActionException{
-		if(!has_parent_EC) return;
-
-		int ec_flag_value = rc.getFlag(parent_EC.getID());
-		int is_global_broadcast_bit = getBitsBetween(ec_flag_value, 0, 0);
-		if(is_global_broadcast_bit == 1) return; //careful, 1 means it is NOT a global broadcast.
-		int flag_signal = getBitsBetween(ec_flag_value, 1, 3);
-
-		if(flag_signal == 1){
-			//neutral EC found
-			Neutral_EC_Info neutral_ec = Neutral_EC_Info.fromBroadcastFlagValue(ec_flag_value);
-			removeECInfo(neutral_ec);
-			neutral_ecs.add(neutral_ec);
-
-			System.out.println("Neutral EC at location " + neutral_ec.rel_loc + " was broadcast to me.");
-			System.out.println("Current neutral_ecs: ");
-			for(Neutral_EC_Info a: neutral_ecs){
-				System.out.println(a.rel_loc);
-			}
-		}
-		else if(flag_signal == 2){
-			//enemy EC found
-			Enemy_EC_Info enemy_ec = Enemy_EC_Info.fromBroadcastFlagValue(ec_flag_value);
-			removeECInfo(enemy_ec);
-			enemy_ecs.add(enemy_ec);
-
-			System.out.println("Enemy EC at location " + enemy_ec.rel_loc + " was broadcast to me.");
-			System.out.println("Current enemy_ecs: ");
-			for(Enemy_EC_Info a: enemy_ecs){
-				System.out.println(a.rel_loc);
-			}
-		}
-	}
-
-
+	/**
+	 * When a unit is spawned, look for a parent EC that spawned it and edit parent_EC
+	 * TODO: Local communication can also be stored in this information
+	 */
 	static int assignParentEC() throws GameActionException
 	/*
 		 Returns additional bot parameters (or 0 by default), and -1 if error occurred
 	*/
 	{ //create parent_EC value
-=======
-	/**
-	 * When a unit is spawned, look for a parent EC that spawned it and edit parent_EC
-	 * TODO: Local communication can also be stored in this information
-	 */
-	static void assignParentEC() throws GameActionException{ //create parent_EC value
->>>>>>> refs/remotes/origin/master
 		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
 			has_parent_EC = false;
 			return 0; //if the robot is an Enlightenment Center it has no parent
@@ -272,8 +229,6 @@ public strictfp class RobotPlayer {
 			}
 		}
 	}
-
-
 
 
 

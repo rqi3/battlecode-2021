@@ -27,17 +27,11 @@ public class EnlightenmentCenter {
 	 * Whether a bot was made last or this turn and which direction it was made in.
 	 */
 	static boolean bot_made_last_turn = false;
-<<<<<<< HEAD
 	static Direction bot_direction_last_turn = Direction.NORTH; //
 	static int bot_parameter_last_turn = 0;
 	static boolean bot_made_this_turn = false; //was a bot made this turn?
 	static Direction bot_direction_this_turn = Direction.NORTH; //direction the bot is facing
 	static int bot_parameter_this_turn = 0;
-=======
-	static Direction bot_direction_last_turn = Direction.NORTH;
-	static boolean bot_made_this_turn = false;
-	static Direction bot_direction_this_turn = Direction.NORTH;
->>>>>>> refs/remotes/origin/master
 
 	/**
 	 * A list of the scout ids that this EC is keeping track of.
@@ -75,8 +69,6 @@ public class EnlightenmentCenter {
 	}
 
 	////////////////////////////// Nathan Chen Bidder Code //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-<<<<<<< HEAD
-	
 	static ArrayList<Integer> previous_scores = new ArrayList<Integer>();
 	
 	static double current_bid_value = 5; //calibrate this based on what other bots are doing
@@ -96,6 +88,12 @@ public class EnlightenmentCenter {
 		
 		if(rc.getRoundNum() >= 2750) {
 			BID_PERCENTAGE_UPPER_BOUND = 0.40;
+		if(rc.getRoundNum() >= 2875) {
+			BID_PERCENTAGE_UPPER_BOUND = 0.45;
+			if(rc.getRoundNum() >= 2960) {
+				BID_PERCENTAGE_UPPER_BOUND = 0.50;	
+			}
+		}
 		}
 		
 		int check = Math.min(LAST_FEW_BIDS, previous_scores.size());
@@ -117,62 +115,10 @@ public class EnlightenmentCenter {
 	
 	/////////////////////////////// END Nathan Chen Bidder Code ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-	static void updateBotCreationInfo(){
-=======
-    
-    static ArrayList<Integer> previous_scores = new ArrayList<Integer>();
-    
-    static double current_bid_value = 5; //calibrate this based on what other bots are doing
-    static double BID_PERCENTAGE_UPPER_BOUND = 0.15; //don't spend too much... in theory if the opponent is going above our upper bound then they will be too poor to win remaining rounds
-    //though maybe we want to raise this upper bound in the the last 200 rounds?
-    static double volatility = 3; 
-    static double bid_multiplier = 1;
-    static final int LAST_FEW_BIDS = 4;
-    
-    static int getBidValue(){ //returns the value this Enlightenment Center will bid
-    	System.out.println("Current influence: " + rc.getInfluence());
-    	int us = rc.getTeamVotes();
-    	int them = rc.getRoundNum() - rc.getTeamVotes(); //might be slightly overestimated in the case of ties - in reality ties should be really unlikely
-    	bid_multiplier = 1; //reset
-    	
-    	if(us > 1500) return 0; //we have majority vote, just invest in full defense
-    	
-    	if(rc.getRoundNum() >= 2750) {
-    		BID_PERCENTAGE_UPPER_BOUND = 0.40;
-		if(rc.getRoundNum() >= 2875) {
-			BID_PERCENTAGE_UPPER_BOUND = 0.45;
-			if(rc.getRoundNum() >= 2960) {
-				BID_PERCENTAGE_UPPER_BOUND = 0.50;	
-			}
-		}
-    	}
-    	
-    	int check = Math.min(LAST_FEW_BIDS, previous_scores.size());
-    	if(previous_scores.size() > check) {
-    		int bids_lost = check - (us - previous_scores.get(previous_scores.size() - check));
-    		if(rc.getRoundNum() >= 2750) {
-    			bid_multiplier *= (.9996 + .02 * bids_lost);
-    		} else {
-    			bid_multiplier *= (.90 + .1 * bids_lost);
-    		}
-    	}
-    	
-    	current_bid_value *= Math.pow(bid_multiplier, volatility);
-    	current_bid_value = Math.min(current_bid_value, BID_PERCENTAGE_UPPER_BOUND * rc.getInfluence());
-    	previous_scores.add(rc.getTeamVotes());
-    	
-    	return (int) current_bid_value;
-    }
-    
-    /////////////////////////////// END Nathan Chen Bidder Code ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 	/**
 	 * Updates bot_made_this/last_turn and bot_direction_this/last_turn
 	 */
-	private static void update_bot_made_lastorthis_turn(){
->>>>>>> refs/remotes/origin/master
+	private static void updateBotCreationInfo(){
 		bot_made_last_turn = bot_made_this_turn;
 		bot_direction_last_turn = bot_direction_this_turn;
 		bot_parameter_last_turn = bot_parameter_this_turn;
@@ -201,10 +147,6 @@ public class EnlightenmentCenter {
 	 * @param flag_value The value of an Enlightenment Center flag
 	 * @return the value of bot_made_last_turn given only the flag value.
 	 */
-<<<<<<< HEAD
-	{
-		// return directions[flag_value>>1&7];
-=======
 	public static boolean getFlagBotMade(int flag_value) {
 		//the first bit represented bot_made_this_turn
 		return (flag_value & 1) == 1;
@@ -216,7 +158,7 @@ public class EnlightenmentCenter {
 	 * @return The value of bot_made_last_turn given only the flag value.
 	 */
 	public static Direction getFlagDirectionMade(int flag_value) {
->>>>>>> refs/remotes/origin/master
+		// return directions[flag_value>>1&7];
 		int dir = 0;
 		for(int i = 1; i <= 3; i++){
 			int bit_value = ((flag_value>>i)&1);
