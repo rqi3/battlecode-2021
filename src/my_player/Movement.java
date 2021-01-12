@@ -3,6 +3,10 @@ package my_player;
 import battlecode.common.*;
 import java.util.*;
 
+/**
+ * Movement facilitates the movement of different types of robots.
+ * @author    Coast
+ */
 public class Movement {
     static RobotController rc;
 
@@ -40,7 +44,11 @@ public class Movement {
     };
 
 
-
+    /**
+     * @param a integer
+     * @param b integer
+     * @return a/b rounded down
+     */
     public static int flooredDiv(int a, int b){
         if(b <= -1){
             a = -a;
@@ -55,9 +63,10 @@ public class Movement {
     }
 
 
-    /*
-    Store information about boundaries, north, east, south, west.
-    Boundary is the last coordinate that is still on the map.
+    /**
+     * Store information about boundaries: north, east, south, west.
+     *  Boundary is the last coordinate that is still on the map.
+     *  Default values are -1, -1, 1, 1.
      */
     static int[] boundaries = {-1, -1, 1, 1}; //relative location of boundaries
 
@@ -65,20 +74,20 @@ public class Movement {
     static int[] relative_boundary_directions = {1, 1, -1, -1};
 
 
-    private static int movementDistance(Point a, Point b)
-    /*
-    How many movements are needed to get from a to b
+    /**
+     * How many movements are needed to get from a to b
      */
-    {
+    public static int movementDistance(Point a, Point b) {
         return Math.max(Math.abs(b.x-a.x), Math.abs(b.y-a.y));
     }
 
-
-    public static void moveToNaive(Point destination) throws GameActionException
-    /*
-    Naively attempts to move the robot to the destination.
+    /**
+     * Naively attempts to move the robot to the destination according to Euclidean distance.
+     * Always tries to move, even if brings you farther away.
+     * @param destination destination in relative coordinates
+     * @throws GameActionException
      */
-    {
+    public static void moveToNaive(Point destination) throws GameActionException {
         System.out.println("moveToNaive: " + destination);
         assert(RobotPlayer.has_parent_EC); //destination was not defined if this has no parent_EC
         Point current_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
@@ -111,16 +120,25 @@ public class Movement {
 
     }
 
+    /**
+     * The relative location of our current destination and whether we have reached our current destination.
+     */
     static boolean moved_to_destination = true; //when this is true, we need a new destination
     static Point current_destination;
 
-    public static void moveToDestination() throws GameActionException
-    {
-        /*
-        TODO: If nowhere decreases distance, rotate around
-         */
-        Point current_location = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
+    /**
+     * Assigns this destination as the current destination
+     * @param dest destination
+     */
+    public static void assignDestination(Point dest){
+        current_destination = dest;
+        moved_to_destination = false;
+    }
 
+    /**
+     * Updates current location if we know it is off of the map
+     */
+    public static void updateCurrentLocationBoundary(){
         if(boundaries[0] >= 0){
             current_destination.y = Math.min(current_destination.y, boundaries[0]);
         }
@@ -133,40 +151,46 @@ public class Movement {
         if(boundaries[3] <= 0){
             current_destination.x = Math.max(current_destination.x, boundaries[3]);
         }
+    }
+    /**
+     * Moves rc closer to the current_destination.
+     * TODO: If nowhere decreases distance, rotate around
+    */
+    public static void moveToDestination() throws GameActionException {
+
+        Point current_location = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
+
+        updateCurrentLocationBoundary();
+
         moveToNaive(current_destination);
 
         if(RobotPlayer.convertToRelativeCoordinates(rc.getLocation()).equals(current_destination)){
             moved_to_destination = true;
         }
 
-        if(Point.getRadiusSquaredDistance(current_location, current_destination) <= 2){
-            if(rc.isLocationOccupied(RobotPlayer.convertFromRelativeCoordinates(current_destination))){
-                moved_to_destination = true; //give up if close and tile is occupied
+        if(Point.getRadiusSquaredDistance(current_location, current_destination) <= 2) {
+            if (rc.isLocationOccupied(RobotPlayer.convertFromRelativeCoordinates(current_destination))) {
+                moved_to_destination = true; //We give up and reaching the exact destination
             }
         }
-
-
     }
 
-    public static int getSector(int x_or_y)
-    /*
-    Given x or y coordinate relative to parent_EC, determine the x or y sector coordinate
+
+    /**
+     * Given x or y coordinate relative to parent_EC, determine the x or y sector coordinate
      */
-    {
-
-
-
+    public static int getSector(int x_or_y) {
         int rel_middle_sector = x_or_y+3; //relative to (0,0) of sector (8, 8)
-
-        System.out.println("getSector Debug: " + x_or_y + ", " + (flooredDiv(rel_middle_sector, 8) + 8));
+        //System.out.println("getSector Debug: " + x_or_y + ", " + (flooredDiv(rel_middle_sector, 8) + 8));
         return flooredDiv(rel_middle_sector, 8) + 8;
     }
 
-    public static Point getSectorLoc(Point sector)
-    /*
-    Returns a middle point of a sector in relative coordinates
+    /**
+     * Returns a random middle point of a sector in relative coordinates
+     * @param sector coordinates
+     * @return relative coordinates of a middle point
      */
-    {
+    public static Point getSectorLoc(Point sector) {
         Point sector_loc = new Point(8*(sector.x-8), 8*(sector.y-8));
         if(Math.random() < 0.5){
             sector_loc.x++;
@@ -177,18 +201,16 @@ public class Movement {
         return sector_loc;
     }
 
-    public static int distanceToSector(Point sector)
-    /*
-    Get distance from current location to a sector
+    /**
+     * Get distance from current location to a middle point of a sector
+     * @param sector sector coordinates
+     * @return distance to sector
      */
-    {
+    public static int distanceToSector(Point sector) {
         Point sector_loc = getSectorLoc(sector);
         Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
         return Point.getRadiusSquaredDistance(sector_loc, my_rel_loc);
     }
 
-    public static void assignDestination(Point dest){
-        current_destination = dest;
-        moved_to_destination = false;
-    }
+
 }

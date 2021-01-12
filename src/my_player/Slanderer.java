@@ -4,17 +4,14 @@ import battlecode.common.*;
 import java.util.*;
 import java.lang.Math.*;
 
+/**
+ * Controls our slanderers.
+ */
 public class Slanderer {
 	static RobotController rc;
 
 	public static final float EPS = 0.1f;
 	public static final float PI = (float)(Math.atan(1)*4);
-
-	static final RobotType[] spawnableRobot = {
-			RobotType.POLITICIAN,
-			RobotType.SLANDERER,
-			RobotType.MUCKRAKER,
-	};
 
 	static final Direction[] directions = {
 			Direction.NORTH,
@@ -27,11 +24,10 @@ public class Slanderer {
 			Direction.NORTHWEST,
 	};
 
-	static void updateParentEC()
-    /*
-    Check whether parent EC died
+	/**
+	 * Check whether parent EC died
      */
-	{
+	static void updateParentEC() {
 		if(!RobotPlayer.has_parent_EC) return;
 		if(!rc.canGetFlag(RobotPlayer.parent_EC.getID())){ //parent EC died
 			RobotPlayer.has_parent_EC = false; //should never change to true again
@@ -76,21 +72,11 @@ public class Slanderer {
 	}
 
 	/**
-	 * Returns a random spawnable RobotType
-	 *
-	 * @return a random RobotType
-	 */
-	static RobotType randomSpawnableRobotType() {
-		return spawnableRobot[(int) (Math.random() * spawnableRobot.length)];
-	}
-
-	/**
 	 * Returns the direction away from all enemy ECs
 	 *
 	 * @return a greedy Direction, or randomly if no enemy ecs are known
 	 */
-	static Direction greedyPathfinding()
-	{
+	static Direction greedyPathfinding() {
 		List<Enemy_EC_Info> enemy_ecs = RobotPlayer.enemy_ecs;
 		if(enemy_ecs.isEmpty())
 			return randomDirection();

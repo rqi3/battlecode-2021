@@ -3,6 +3,9 @@ package my_player;
 import battlecode.common.*;
 import java.util.*;
 
+/**
+ * A pair of integers, typically describing a relative location or coordinate.
+ */
 public class Point {
 
 	public int x, y;

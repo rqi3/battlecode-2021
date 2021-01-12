@@ -2,10 +2,13 @@ package my_player;
 import battlecode.common.*;
 import java.util.*;
 
+/**
+ * RobotPlayer controls the actions of all robots and contains common methods.
+ */
 public strictfp class RobotPlayer {
-	static RobotController rc;
+	public static RobotController rc;
 
-	static final Direction[] directions = {
+	private static final Direction[] directions = {
 		Direction.NORTH,
 		Direction.NORTHEAST,
 		Direction.EAST,
@@ -26,11 +29,10 @@ public strictfp class RobotPlayer {
 	static List<Enemy_EC_Info> enemy_ecs = new ArrayList<>(); //List of information about enemy ecs that it knows
 	static List<Friend_EC_Info> friend_ecs = new ArrayList<>();; //List of information about friend ecs that it knows
 
-	static Point convertToRelativeCoordinates(MapLocation loc)
-	/*
-	Computes relative coordinates, assuming that it has a parent enlightenment center
+	/**
+	 * Computes relative location of loc with respect to parent_EC, assuming that this Robot has a parent enlightenment center
 	 */
-	{
+	static Point convertToRelativeCoordinates(MapLocation loc) {
 		Point rel_loc = new Point();
 		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
 			rel_loc.x = loc.x-rc.getLocation().x;
@@ -44,20 +46,20 @@ public strictfp class RobotPlayer {
 		return rel_loc;
 	}
 
-	static MapLocation convertFromRelativeCoordinates(Point rel_loc)
-	/*
-	Computes relative coordinates, assuming that it has a parent enlightenment center
+	/**
+	 * Inverse of convertToRelativeCoordinates
 	 */
-	{
+	static MapLocation convertFromRelativeCoordinates(Point rel_loc) {
 		return parent_EC.getLocation().translate(rel_loc.x, rel_loc.y);
 	}
 
+	/**
+	 * Gets the nearest known neutral ec location by Euclidean Distance
+	 * @return relative location of neutral ec
+	 */
 	static Point getClosestNeutralECLocation(){
-		assert(RobotPlayer.neutral_ecs.size() > 0);
-		Point closest_neutral_ec = RobotPlayer.neutral_ecs.get(0).rel_loc;
-		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
-
-
+		Point closest_neutral_ec = neutral_ecs.get(0).rel_loc;
+		Point my_rel_loc = convertToRelativeCoordinates(rc.getLocation());
 		for(int i = 1; i < RobotPlayer.neutral_ecs.size(); i++){
 			int cur_dist = Point.getRadiusSquaredDistance(my_rel_loc, closest_neutral_ec);
 			Point this_neutral_ec = RobotPlayer.neutral_ecs.get(i).rel_loc;
@@ -69,8 +71,11 @@ public strictfp class RobotPlayer {
 		return closest_neutral_ec;
 	}
 
+	/**
+	 * Gets the nearest known enemy ec location by Euclidean Distance
+	 * @return relative location of enemy ec
+	 */
 	static Point getClosestEnemyECLocation(){
-		assert(RobotPlayer.enemy_ecs.size() > 0);
 		Point closest_enemy_ec = RobotPlayer.enemy_ecs.get(0).rel_loc;
 		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 		for(int i = 1; i < RobotPlayer.enemy_ecs.size(); i++){
@@ -84,25 +89,37 @@ public strictfp class RobotPlayer {
 		return closest_enemy_ec;
 	}
 
-	static int convertToFlagRelativeLocation(Point rel_loc)
-	//takes a relative location and converts it to a single integer up to 2^14
-	{
+	/**
+	 * Converts relative location to a flag value up to 2^14
+	 * @param rel_loc a relative location
+	 * @return flag value
+	 */
+	static int convertToFlagRelativeLocation(Point rel_loc) {
 		int flag_loc = (rel_loc.x+63)+((rel_loc.y+63)<<7);
 		return flag_loc;
 	}
 
-	static Point convertFromFlagRelativeLocation(int flag_loc)
-	//Inverts convertToFlagRelativeLocation
-	{
+	/**
+	 * Inverts convertToFlagRelativeLocation
+	 */
+	static Point convertFromFlagRelativeLocation(int flag_loc) {
 		Point rel_loc = new Point();
 		rel_loc.x = flag_loc % (1<<7) - 63;
 		rel_loc.y = flag_loc/(1<<7) - 63;
 		return rel_loc;
 	}
 
+	/**
+	 * reads bits l to r and concatenates them to form an integer.
+	 * @return integer corresponding to the bits [l, r] in flag_value
+	 */
 	static int getBitsBetween(int flag_value, int l, int r){
+<<<<<<< HEAD
 		//return integer corresponding to the bits [l, r] in flag_value
 		//return flag_value>>l&((1<<r-l+1)-1); //assuming java & cpp have same operator precedence, which I think is true
+=======
+		//
+>>>>>>> refs/remotes/origin/master
 		int res = 0;
 		for(int i = l; i <= r; i++){
 			if((((flag_value)>>i)&1) == 1){
@@ -112,30 +129,24 @@ public strictfp class RobotPlayer {
 		return res;
 	}
 
-	public static void removeECInfo(Point ec_rel_loc)
-	/*
-	If we just received information about an ec, remove it from the old information so we can safely add it.
+	/**
+	 * Removes this ec location from all ec lists, usually so we can add an updated version back if its team changes.
+	 * @param ec_rel_loc ec location in relative coordinates
 	 */
-	{
+	public static void removeECInfo(Point ec_rel_loc) {
 		RobotPlayer.neutral_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
 		RobotPlayer.enemy_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
 		RobotPlayer.friend_ecs.removeIf(ec -> ec.rel_loc.equals(ec_rel_loc));
 	}
-	public static void removeECInfo(Neutral_EC_Info ec)
-	/*
-	If we just received information about an ec, remove it from the old information so we can safely add it.
-	 */
-	{
+
+	public static void removeECInfo(Neutral_EC_Info ec) {
 		removeECInfo(ec.rel_loc);
 	}
-	public static void removeECInfo(Enemy_EC_Info ec)
-	/*
-	If we just received information about an ec, remove it from the old information so we can safely add it.
-	 */
-	{
+	public static void removeECInfo(Enemy_EC_Info ec) {
 		removeECInfo(ec.rel_loc);
 	}
 
+<<<<<<< HEAD
 	public static void receiveECBroadcast() throws GameActionException{
 		if(!has_parent_EC) return;
 
@@ -176,6 +187,13 @@ public strictfp class RobotPlayer {
 		 Returns additional bot parameters (or 0 by default), and -1 if error occurred
 	*/
 	{ //create parent_EC value
+=======
+	/**
+	 * When a unit is spawned, look for a parent EC that spawned it and edit parent_EC
+	 * TODO: Local communication can also be stored in this information
+	 */
+	static void assignParentEC() throws GameActionException{ //create parent_EC value
+>>>>>>> refs/remotes/origin/master
 		if(rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
 			has_parent_EC = false;
 			return 0; //if the robot is an Enlightenment Center it has no parent
@@ -216,6 +234,47 @@ public strictfp class RobotPlayer {
 		return -1;
 	}
 
+	/**
+	 * Receives a broadcast from the parent_EC, if it exists.
+	 * Updates ec lists.
+	 * @throws GameActionException
+	 */
+	public static void receiveECBroadcast() throws GameActionException{
+		if(!has_parent_EC) return;
+
+		int ec_flag_value = rc.getFlag(parent_EC.getID());
+		int is_global_broadcast_bit = getBitsBetween(ec_flag_value, 0, 0);
+		if(is_global_broadcast_bit == 1) return; //careful, 1 means it is NOT a global broadcast.
+		int flag_signal = getBitsBetween(ec_flag_value, 1, 3);
+
+		if(flag_signal == 1){
+			//neutral EC found
+			Neutral_EC_Info neutral_ec = Neutral_EC_Info.fromBroadcastFlagValue(ec_flag_value);
+			removeECInfo(neutral_ec);
+			neutral_ecs.add(neutral_ec);
+
+			System.out.println("Neutral EC at location " + neutral_ec.rel_loc + " was broadcast to me.");
+			System.out.println("Current neutral_ecs: ");
+			for(Neutral_EC_Info a: neutral_ecs){
+				System.out.println(a.rel_loc);
+			}
+		}
+		else if(flag_signal == 2){
+			//enemy EC found
+			Enemy_EC_Info enemy_ec = Enemy_EC_Info.fromBroadcastFlagValue(ec_flag_value);
+			removeECInfo(enemy_ec);
+			enemy_ecs.add(enemy_ec);
+
+			System.out.println("Enemy EC at location " + enemy_ec.rel_loc + " was broadcast to me.");
+			System.out.println("Current enemy_ecs: ");
+			for(Enemy_EC_Info a: enemy_ecs){
+				System.out.println(a.rel_loc);
+			}
+		}
+	}
+
+
+
 
 
 	/**
@@ -223,7 +282,6 @@ public strictfp class RobotPlayer {
 	 * If this method returns, the robot dies!
 	 **/
 	@SuppressWarnings("unused")
-
 	public static void run(RobotController rc) throws GameActionException {
 		// This is the RobotController object. You use it to perform actions from this robot,
 		// and to get information on its current status.
@@ -260,6 +318,12 @@ public strictfp class RobotPlayer {
 		}
 	}
 
+	/**
+	 * Tries to move in a specified direction
+	 * @param dir direction of movement
+	 * @return whether move succeeded
+	 * @throws GameActionException Bad battlecode call
+	 */
 	static boolean tryMove(Direction dir) throws GameActionException {
 		System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
 		if (rc.canMove(dir)) {
