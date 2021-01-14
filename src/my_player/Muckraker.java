@@ -235,11 +235,33 @@ public class Muckraker {
             tryMove(randomDirection());
         }
         else {
-            if(Point.getRadiusSquaredDistance(goal, my_rel_loc) <= 2){
+            System.out.println("moveAttacker: " + goal);
+            if(Point.getMaxXYDistance(goal, my_rel_loc) <= 1){
                 //it has done its job and is next to the enemy base
                 return;
             }
-            Movement.moveToNaive(goal);
+            assert(RobotPlayer.has_parent_EC); //destination was not defined if this has no parent_EC
+
+
+            Direction best_direction = Direction.CENTER;
+            int lowest_radius_squared = Point.getMaxXYDistance(my_rel_loc, goal);;
+
+            for(Direction dir: directions){
+                if(rc.canMove(dir)){
+                    Point new_loc = my_rel_loc.add(dir);
+
+                    int new_radius_squared = Point.getMaxXYDistance(new_loc, goal);
+                    if(new_radius_squared <= lowest_radius_squared){
+                        best_direction = dir;
+                        lowest_radius_squared = new_radius_squared;
+                    }
+                }
+
+            }
+
+            if(best_direction!=Direction.CENTER){
+                rc.move(best_direction);
+            }
         }
     }
 
