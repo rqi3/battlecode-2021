@@ -71,9 +71,7 @@ public class Muckraker {
                             }
                             Movement.boundaries[i] += Movement.relative_boundary_directions[i]*(j-1);
                             System.out.println("Found " + Movement.boundary_directions[i] + " boundary at location " + Movement.boundaries[i]);
-                            if(is_scout){
-                                updateBoundarySectors(i, Movement.boundaries[i]);
-                            }
+                            updateBoundarySectors(i, Movement.boundaries[i]);
                             break;
                         }
                     }
@@ -134,10 +132,111 @@ public class Muckraker {
         }
     }
 
+    /**
+     *
+     * @param sector coordinates of the sector
+     * @return whether the sector is on the map (based on current information)
+     */
+    private static boolean isValidSector(Point sector){
+        if(sector.x < 0 || sector.x > 16 || sector.y < 0 || sector.y > 16) return false;
+        if(visited_sectors[sector.x][sector.y] == 3) return false;
+        return true;
+    }
+
 
     static boolean roaming_sectors = false; //initially goes in the initial direction, then roams around sectors
-    static double scout_initial_direction = Math.random()*(2*Math.PI);
+    static double scout_initial_direction = 0;
+    static int scout_initial_quadrant = 0;
 
+    /**
+     *
+     * @return the value that scout_initial_direction will take on
+     */
+    static double getInitialDirection(){
+        double a = Math.random();
+        double b = Math.random();
+        double random_value = a+b;
+        if(random_value-1.0 >= 0) random_value-=1.0;
+        double cardinal_direction = (double)((int)(random_value*8))*0.25*Math.PI;
+        return cardinal_direction;
+    }
+    /**
+     * Assigns a next_sector based on the current sector (next_sector) and scout_initial_direction
+     * @return whether a next_sector was decided upon
+     */
+    static boolean assignInitialDirectionSector(){
+        if(scout_initial_quadrant == 0){
+            if(scout_initial_direction <= 0.5*Math.PI){
+                scout_initial_quadrant = 1;
+            }
+            else if(scout_initial_direction <= Math.PI){
+                scout_initial_quadrant = 2;
+            }
+            else if(scout_initial_direction <= 1.5*Math.PI){
+                scout_initial_quadrant = 3;
+            }
+            else{
+                scout_initial_quadrant = 4;
+            }
+        }
+        Point first_possible_sector = next_sector.clone(); //first in order of angle from theta=0
+        Point second_possible_sector = next_sector.clone();
+        double deciding_point_x = next_sector.x;
+        double deciding_point_y = next_sector.y;
+        if(scout_initial_quadrant == 1){
+            first_possible_sector.x++;
+            second_possible_sector.y++;
+            deciding_point_x+=0.5;
+            deciding_point_y+=0.5;
+        }
+        else if(scout_initial_quadrant == 2){
+            //System.out.println("possible sectors: " + first_possible_sector + second_possible_sector);
+            first_possible_sector.y++;
+            second_possible_sector.x--;
+            //System.out.println("possible sectors: " + first_possible_sector + second_possible_sector);
+            deciding_point_x-=0.5;
+            deciding_point_y+=0.5;
+        }
+        else if(scout_initial_quadrant == 3){
+            first_possible_sector.x--;
+            second_possible_sector.y--;
+            deciding_point_x-=0.5;
+            deciding_point_y-=0.5;
+        }
+        else if(scout_initial_quadrant == 4){
+            first_possible_sector.y--;
+            second_possible_sector.x++;
+            deciding_point_x+=0.5;
+            deciding_point_y-=0.5;
+        }
+
+        double deciding_angle = Math.atan2(deciding_point_y-8.0, deciding_point_x-8.0);
+        if(deciding_angle < 0.0) deciding_angle+=2*Math.PI;
+
+        //System.out.println("deciding point: " + deciding_point_x + ", " + deciding_point_y);
+        //System.out.println("deciding angle: " + deciding_angle);
+        Point correct_sector;
+        if(deciding_angle <= scout_initial_direction){
+            correct_sector = second_possible_sector;
+        }
+        else{
+            correct_sector = first_possible_sector;
+        }
+
+        if(isValidSector(correct_sector) && visited_sectors[correct_sector.x][correct_sector.y] == 0){
+            next_sector = correct_sector;
+            /*System.out.println("scout_initial_direction: " + scout_initial_direction);
+            System.out.println("scout_initial_quadrant: " + scout_initial_quadrant);
+            System.out.println("Possible sectors: " + first_possible_sector + ", " + second_possible_sector);
+            System.out.println("Angle method found a next_sector: " + next_sector);*/
+            return true;
+        }
+
+        return false;
+    }
+
+
+    static int[][] possible_new_sector_distances = new int[17][17];
     /**
      * Chooses a new sector for this scout; updates next_sector
      */
@@ -149,33 +248,53 @@ public class Muckraker {
         next_sector.y = Movement.getSector(my_rel_loc.y);
 
         if(!roaming_sectors){
-            //TODO: choose the sector along scout_initial_direction
+            boolean found_directional_sector = assignInitialDirectionSector();
+            if(found_directional_sector){
+                return;
+            }
+            roaming_sectors = true;
         }
 
-        List<Point> sector0s = new ArrayList<>();
+        int min_sector_dist = 9999;
+        for(int i = 0; i <= 16; i++){
+            for(int j = 0; j <= 16; j++){
+                if(visited_sectors[i][j] != 0) {
+                    possible_new_sector_distances[i][j] = 9999;
+                    continue;
+                }
+                possible_new_sector_distances[i][j] = Math.max(Math.abs(next_sector.x-i), Math.abs(next_sector.y-j));
+                min_sector_dist = Math.min(min_sector_dist, possible_new_sector_distances[i][j]);
+            }
+        }
+        if(min_sector_dist < 9999){
+            List<Point> min_sector0s = new ArrayList<>();
+            for(int i = 0; i <= 16; i++){
+                for(int j = 0; j <= 16; j++){
+                    if(possible_new_sector_distances[i][j] == min_sector_dist){
+                        min_sector0s.add(new Point(i, j));
+                    }
+                }
+            }
+            int min_sector0s_ind = (int)(Math.random()*min_sector0s.size());
+            next_sector = min_sector0s.get(min_sector0s_ind);
+            System.out.println("Found new unvisited sector: " + next_sector);
+            return;
+        }
+
         List<Point> sector1s = new ArrayList<>();
 
         for(int i = Math.max(0, next_sector.x-2); i <= Math.min(16, next_sector.x+2); i++){
             for(int j = Math.max(0, next_sector.y-2); j <= Math.min(16, next_sector.y+2); j++){
                 if(i == next_sector.x && j == next_sector.y) continue; //don't choose the same
-
-                if(visited_sectors[i][j] == 3) continue;
+                if(visited_sectors[i][j] == 3) continue; //impossible sector
 
                 Point new_sector = new Point(i, j);
-                if(visited_sectors[i][j] == 0){
-                    sector0s.add(new_sector);
-                }
-                else if(visited_sectors[i][j] == 1){
+                if(visited_sectors[i][j] == 1){
                     sector1s.add(new_sector);
                 }
             }
         }
-        //if sector hasn't been decided, choose the closest visited = 0 sector
-        if(sector0s.size() > 0){
-            int sector0s_ind = (int)(Math.random()*sector0s.size());
-            next_sector = sector0s.get(sector0s_ind);
-            return;
-        }
+
         //if sector hasn't been decided, choose the closest visited = 1 sector
         if(sector1s.size() > 0){
             int sector1s_ind = (int)(Math.random()*sector1s.size());
@@ -201,7 +320,7 @@ public class Muckraker {
         If you reached the destination sector or the sector is now invalid,
         assign a new sector & destination.
          */
-        if(Movement.moved_to_destination || visited_sectors[next_sector.x][next_sector.y] == 3) {
+        if(visited_sectors[next_sector.x][next_sector.y] != 0) {
             assignNewSector();
             Movement.assignDestination(Movement.getSectorLoc(next_sector));
         }
@@ -352,6 +471,8 @@ public class Muckraker {
     public static void run() throws GameActionException{
         ////////////////////Creation Begin
         if(RobotPlayer.just_made){
+            scout_initial_direction = getInitialDirection();
+            System.out.println("scout_initial_direction: " + scout_initial_direction);
             rc = RobotPlayer.rc;
             Movement.rc = RobotPlayer.rc;
             if(rc.getInfluence() == 1){

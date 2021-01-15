@@ -20,6 +20,8 @@ public class Point {
 		this(0, 0);
 	}
 
+	public Point clone(){ return new Point(x, y);}
+
 	public Point add(Direction dir){
 		Point newp = new Point(x, y);
 		for(int i = 0; i < 8; i++){
