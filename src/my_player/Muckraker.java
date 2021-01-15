@@ -153,12 +153,12 @@ public class Muckraker {
      * @return the value that scout_initial_direction will take on
      */
     static double getInitialDirection(){
-        double a = Math.random();
-        double b = Math.random();
-        double random_value = a+b;
-        if(random_value-1.0 >= 0) random_value-=1.0;
-        double cardinal_direction = (double)((int)(random_value*8))*0.25*Math.PI;
-        return cardinal_direction;
+        double random_value = Math.random()*Math.random()+Math.random();
+        while(random_value-1.0 >= 0) random_value-=1.0;
+        int cardinal_direction = (int)(random_value*8);
+        System.out.println("cardinal_direction: " + cardinal_direction);
+        double cardinal_angle = cardinal_direction*0.25*Math.PI;
+        return cardinal_angle;
     }
     /**
      * Assigns a next_sector based on the current sector (next_sector) and scout_initial_direction
@@ -181,11 +181,13 @@ public class Muckraker {
         }
         Point first_possible_sector = next_sector.clone(); //first in order of angle from theta=0
         Point second_possible_sector = next_sector.clone();
+        Point third_possible_sector = next_sector.clone();
         double deciding_point_x = next_sector.x;
         double deciding_point_y = next_sector.y;
         if(scout_initial_quadrant == 1){
             first_possible_sector.x++;
             second_possible_sector.y++;
+            third_possible_sector.x++; third_possible_sector.y++;
             deciding_point_x+=0.5;
             deciding_point_y+=0.5;
         }
@@ -193,6 +195,7 @@ public class Muckraker {
             //System.out.println("possible sectors: " + first_possible_sector + second_possible_sector);
             first_possible_sector.y++;
             second_possible_sector.x--;
+            third_possible_sector.y++; third_possible_sector.x--;
             //System.out.println("possible sectors: " + first_possible_sector + second_possible_sector);
             deciding_point_x-=0.5;
             deciding_point_y+=0.5;
@@ -200,27 +203,30 @@ public class Muckraker {
         else if(scout_initial_quadrant == 3){
             first_possible_sector.x--;
             second_possible_sector.y--;
+            third_possible_sector.x--; third_possible_sector.y--;
             deciding_point_x-=0.5;
             deciding_point_y-=0.5;
         }
         else if(scout_initial_quadrant == 4){
             first_possible_sector.y--;
             second_possible_sector.x++;
+            third_possible_sector.y--; third_possible_sector.x++;
             deciding_point_x+=0.5;
             deciding_point_y-=0.5;
         }
+        List<Point> possible_sectors = new ArrayList<>();
+        possible_sectors.add(first_possible_sector);
+        possible_sectors.add(second_possible_sector);
+        possible_sectors.add(third_possible_sector);
+        Point correct_sector = new Point();
+        double best_angle_dif = 9999;
+        for(Point p: possible_sectors){
+            double p_angle = Math.atan2(p.y, p.x);
+            if(p_angle < 0.0) p_angle+=2*Math.PI;
+            double p_dif = Math.abs(p_angle-scout_initial_direction);
+            p_dif = Math.min(p_dif, 2*Math.PI-p_dif);
 
-        double deciding_angle = Math.atan2(deciding_point_y-8.0, deciding_point_x-8.0);
-        if(deciding_angle < 0.0) deciding_angle+=2*Math.PI;
-
-        //System.out.println("deciding point: " + deciding_point_x + ", " + deciding_point_y);
-        //System.out.println("deciding angle: " + deciding_angle);
-        Point correct_sector;
-        if(deciding_angle <= scout_initial_direction){
-            correct_sector = second_possible_sector;
-        }
-        else{
-            correct_sector = first_possible_sector;
+            if(p_dif < best_angle_dif) correct_sector = p;
         }
 
         if(isValidSector(correct_sector) && visited_sectors[correct_sector.x][correct_sector.y] == 0){
@@ -363,16 +369,16 @@ public class Muckraker {
 
 
             Direction best_direction = Direction.CENTER;
-            int lowest_radius_squared = Point.getMaxXYDistance(my_rel_loc, goal);;
+            int lowest_maxXY_distance = Point.getMaxXYDistance(my_rel_loc, goal);;
 
             for(Direction dir: directions){
                 if(rc.canMove(dir)){
                     Point new_loc = my_rel_loc.add(dir);
 
-                    int new_radius_squared = Point.getMaxXYDistance(new_loc, goal);
-                    if(new_radius_squared <= lowest_radius_squared){
+                    int new_maxXY_distance = Point.getMaxXYDistance(new_loc, goal);
+                    if(new_maxXY_distance <= lowest_maxXY_distance){
                         best_direction = dir;
-                        lowest_radius_squared = new_radius_squared;
+                        lowest_maxXY_distance = new_maxXY_distance;
                     }
                 }
 
