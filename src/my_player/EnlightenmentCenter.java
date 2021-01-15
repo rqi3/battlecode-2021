@@ -84,25 +84,22 @@ public class EnlightenmentCenter {
 		int them = rc.getRoundNum() - rc.getTeamVotes(); //might be slightly overestimated in the case of ties - in reality ties should be really unlikely
 		bid_multiplier = 1; //reset
 		
-		if(us > 1500) return 0; //we have majority vote, just invest in full defense
+		if(us > 750) return 0; //we have majority vote, just invest in full defense
 		
-		if(rc.getRoundNum() >= 2750) {
-			BID_PERCENTAGE_UPPER_BOUND = 0.40;
-		if(rc.getRoundNum() >= 2875) {
-			BID_PERCENTAGE_UPPER_BOUND = 0.45;
-			if(rc.getRoundNum() >= 2960) {
-				BID_PERCENTAGE_UPPER_BOUND = 0.50;	
+		if(rc.getRoundNum() >= 1300) {
+			BID_PERCENTAGE_UPPER_BOUND = 0.50;
+			if(rc.getRoundNum() >= 1480) {
+				BID_PERCENTAGE_UPPER_BOUND = 0.80;
 			}
-		}
 		}
 		
 		int check = Math.min(LAST_FEW_BIDS, previous_scores.size());
-		if(previous_scores.size() > check) {
+		if(check > 0) {
 			int bids_lost = check - (us - previous_scores.get(previous_scores.size() - check));
-			if(rc.getRoundNum() >= 2750) {
+			if(rc.getRoundNum() >= 1300) {
 				bid_multiplier *= (.9996 + .02 * bids_lost);
 			} else {
-				bid_multiplier *= (.90 + .1 * bids_lost);
+				bid_multiplier *= (.95 + .1 * bids_lost);
 			}
 		}
 		
