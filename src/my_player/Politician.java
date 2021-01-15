@@ -174,9 +174,13 @@ public class Politician {
     }
 
 
-/*
- * IMPLEMENTATION OF POLICE POLITICIAN
-*/
+	/*
+	 * IMPLEMENTATION OF POLICE POLITICIAN
+	*/
+
+	public static void doPoliceAction()
+	{
+	}
 
 // General Politician Functions
 
