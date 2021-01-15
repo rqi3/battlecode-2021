@@ -90,7 +90,8 @@ public strictfp class RobotPlayer {
 	}
 
 	/**
-	 * Converts relative location to a flag value up to 2^14
+	 * Converts relative location to a flag value up to 2^14.
+	 * Coordinates are from 0 to 126.
 	 * @param rel_loc a relative location
 	 * @return flag value
 	 */

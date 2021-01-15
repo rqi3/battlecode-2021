@@ -24,11 +24,11 @@ public class EnlightenmentCenter {
 	public static final int[] OPTIMAL_SLANDERER_INFLUENCE = {21,41,63,85,107,130,154,178,203,228,255,282,310,339,368,399,431,463,497,532,568,605,643,683,724,766,810,855,902,949};
 
 	/**
-	 * Whether a bot was made last or this turn and which direction it was made in.
+	 * Whether a bot was made last or this turn and which direction it was made in. Used for local communication
 	 */
 	static boolean bot_made_last_turn = false;
 	static Direction bot_direction_last_turn = Direction.NORTH; //
-	static int bot_parameter_last_turn = 0;
+	static int bot_parameter_last_turn = 0; //extra communication bits 4...23, so can go up to 2^20-1
 	static boolean bot_made_this_turn = false; //was a bot made this turn?
 	static Direction bot_direction_this_turn = Direction.NORTH; //direction the bot is facing
 	static int bot_parameter_this_turn = 0;
@@ -468,7 +468,7 @@ public class EnlightenmentCenter {
 				}
 			}
 
-			returned_flag_value |= bot_parameter_last_turn << 4; // bits 4..?? are set to the bot's extra paramters. For example, whether politician is attack/defense
+			returned_flag_value |= bot_parameter_last_turn << 4; // bits 4..?? are set to the bot's extra parameters. For example, whether politician is attack/defense
 		}
 		else{
 			//broadcast an enemy or neutral EC
