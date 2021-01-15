@@ -3,6 +3,9 @@ package my_player;
 import battlecode.common.*;
 import java.util.*;
 
+import static java.lang.Math.abs;
+import static java.lang.Math.max;
+
 /**
  * A pair of integers, typically describing a relative location or coordinate.
  */
@@ -37,7 +40,9 @@ public class Point {
 	public static int getRadiusSquaredDistance(Point a, Point b){
 		return (b.x-a.x)*(b.x-a.x)+(b.y-a.y)*(b.y-a.y);
 	}
-
+	public static int getMaxXYDistance(Point a, Point b){
+		return max(abs(b.x-a.x),abs(b.y-a.y));
+	}
 	public boolean equals(Object o){
 		if(o == this) return true;
 
