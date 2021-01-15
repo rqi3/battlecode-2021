@@ -38,12 +38,6 @@ public class EnlightenmentCenter {
 	static List<Integer> alive_scout_ids = new ArrayList<Integer>();
 
 	/**
-	 * ??
-	 */
-	static float slanderer_frequency;
-	static int slanderer_investment;
-
-	/**
 	 * List of possible directions.
 	 */
 	static final Direction[] directions = {
@@ -344,8 +338,9 @@ public class EnlightenmentCenter {
 			}
 		}
 	}
-
-
+	
+	static double slanderer_probability = 1;
+	
 	/**
 	 * Chooses what robot to spawn and spawns it.
 	 *
@@ -402,16 +397,14 @@ public class EnlightenmentCenter {
 		}
 		*/
 
-		if(Math.random() < slanderer_frequency)
-		{
-			//Attempt to build slanderer
-			slanderer_investment = rc.getInfluence()*2/5; // 40%
-			int cost = getOptimalSlandererInfluence(slanderer_investment);
-			if(cost > 0)
-			{
+		double ran = Math.random();
+		if(ran < slanderer_probability) {
+		//	Attempt to build slanderer
+			int cost = getOptimalSlandererInfluence((int) (rc.getInfluence() * slanderer_probability));
+			if(cost > 0) {
 				toBuild = RobotType.SLANDERER;
 				influence = cost;
-				slanderer_frequency = Math.max(slanderer_frequency-0.5f, 0.0f);
+				slanderer_probability = 0;
 			}
 		}
 		if(toBuild == RobotType.SLANDERER){
@@ -450,8 +443,9 @@ public class EnlightenmentCenter {
 				trySpawnPolicePolitician(police_politician_influence);
 			}
 		}
-
-		slanderer_frequency = Math.min(slanderer_frequency+0.10f, 1f);
+		//slanderer_probability += .20;
+    slanderer_probability = Math.sqrt(0.01 + slanderer_probability * slanderer_probability);
+    if(slanderer_probability > 1.0) slanderer_probability = 1.0;
 	}
 
 	/**
