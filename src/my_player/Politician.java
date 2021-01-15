@@ -52,10 +52,10 @@ public class Politician {
 
 //////////////// PARAMETERS
 
-		static int politician_type = 0; // read above. By default, defense politician
 		public static final int SLANDERER_DEFENSE = 0;
 		public static final int EC_ATTACK = 1;
 		public static final int POLICE = 2;
+		static int politician_type = POLICE; // read above. By default, police politician
 
 		// Type 1 politican parameters
     /**
@@ -193,9 +193,12 @@ public class Politician {
 	{
 		double score[][] = new double[3][3];// each of the 9 square police can move to. Higher score is better
 		MapLocation cur = rc.getLocation();
+
+
+		//TODO Modify score based on passability
 		
 		//Modify score to naturally favor moving closer to home RC
-		{
+		if(rc.canGetFlag(RobotPlayer.parent_EC.getID())) { // parent EC alive
 			MapLocation home = RobotPlayer.parent_EC.getLocation();
 			for(int i=-1;i<=1;++i)
 				for(int j=-1;j<=1;++j)

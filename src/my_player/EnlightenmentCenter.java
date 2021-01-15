@@ -15,7 +15,7 @@ public class EnlightenmentCenter {
 	/**
 	 * Maximum number of scouts this EC builds. More scouts = more bytecode usage by Enlightenment Center.
 	 */
-	public static final int MAX_SCOUTS = 5;
+	public static final int MAX_SCOUTS = 16;
 
 	/**
 	 * ???
