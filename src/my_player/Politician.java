@@ -6,8 +6,7 @@ USEFUL INFORMATION;
  Bit 4..5:
 	00 = Defense Politician (Slanderers, default)
   01 = Attack Politician (EC)
-	10 = Defense Politician (Spawner EC) [Not implemented]
-	11 = Attack Politician (Enemy units) [Not implemented]
+	10 = Police Politician (basically, a type of defense politician)
 
 */
 
@@ -51,8 +50,7 @@ public class Politician {
 		static int politician_type = 0; // read above. By default, defense politician
 		public static final int SLANDERER_DEFENSE = 0;
 		public static final int EC_ATTACK = 1;
-		public static final int EC_DEFENSE = 2;
-		public static final int ENEMY_ATTACK = 3;
+		public static final int POLICE = 1;
 
 		// Type 1 politican parameters
     /**
@@ -176,6 +174,10 @@ public class Politician {
     }
 
 
+/*
+ * IMPLEMENTATION OF POLICE POLITICIAN
+*/
+
 // General Politician Functions
 
     /**
@@ -243,11 +245,8 @@ public class Politician {
 					case EC_ATTACK:
 						doECAttackerAction();
 						break;
-					case EC_DEFENSE:
-						doRandomAction(); // TODO Implement
-						break;
-					case ENEMY_ATTACK:
-						doRandomAction(); // TODO Implement
+					case POLICE:
+						doPoliecAction();
 					default:
 						break;// or throw some exception
 				}
