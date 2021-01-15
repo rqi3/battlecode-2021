@@ -6,8 +6,7 @@ USEFUL INFORMATION;
  Bit 4..5:
 	00 = Defense Politician (Slanderers, default)
   01 = Attack Politician (EC)
-	10 = Defense Politician (Spawner EC) [Not implemented]
-	11 = Attack Politician (Enemy units) [Not implemented]
+	10 = Police Politician (basically, a type of defense politician)
 
 */
 
@@ -33,6 +32,11 @@ public class Politician {
             Direction.WEST,
             Direction.NORTHWEST,
     };
+		
+		public static final Direction dir[][] = //[x][y]
+		{{Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST},
+			{Direction.SOUTH, null, Direction.NORTH},
+			{Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST}};
 
 
     /**
@@ -48,11 +52,10 @@ public class Politician {
 
 //////////////// PARAMETERS
 
-		static int politician_type = 0; // read above. By default, defense politician
 		public static final int SLANDERER_DEFENSE = 0;
 		public static final int EC_ATTACK = 1;
-		public static final int EC_DEFENSE = 2;
-		public static final int ENEMY_ATTACK = 3;
+		public static final int POLICE = 2;
+		static int politician_type = POLICE; // read above. By default, police politician
 
 		// Type 1 politican parameters
     /**
@@ -87,8 +90,7 @@ public class Politician {
 					return; // successfully empowered
 				}
 
-			//otherwise: copy slanderer pathfinding
-			tryMove(Slanderer.greedyPathfinding());
+			//otherwise: no move
 			return;
 		}
 
@@ -145,7 +147,7 @@ public class Politician {
     private static void doECAttackerAction() throws GameActionException {
         if(!hasECTarget){
             if (tryMove(randomDirection()))
-                System.out.println("I moved!");
+                //System.out.println("I moved!");
             return;
         }
 
@@ -176,6 +178,124 @@ public class Politician {
     }
 
 
+	/*
+	 * IMPLEMENTATION OF POLICE POLITICIAN
+	*/
+
+	public static final double HOME_WEIGHT = 1.0; 
+	public static final double REPEL_SL = 20.0; 
+	public static final double REPEL_EC = 100.0; 
+	public static final double REPEL_PT = 60.0; 
+	public static final double CHASE_WEIGHT = 1000.0; 
+	public static final int KILL_DISTANCE = 5; 
+
+	public static void doPoliceAction() throws GameActionException
+	{
+		double score[][] = new double[3][3];// each of the 9 square police can move to. Higher score is better
+		MapLocation cur = rc.getLocation();
+
+
+		//TODO Modify score based on passability
+		
+		//Modify score to naturally favor moving closer to home RC
+		if(rc.canGetFlag(RobotPlayer.parent_EC.getID())) { // parent EC alive
+			MapLocation home = RobotPlayer.parent_EC.getLocation();
+			for(int i=-1;i<=1;++i)
+				for(int j=-1;j<=1;++j)
+				{
+					int x=cur.x+i;
+					int y=cur.y+j;
+					score[i+1][j+1] -= home.distanceSquaredTo(new MapLocation(x, y))*HOME_WEIGHT; // subtract because we favor shorter locations
+				}
+		}
+
+		//Modify score based on nearby robots
+		RobotInfo closest_muckraker = null;
+		int closest_muckraker_dist = 1000000;
+		for(RobotInfo info : rc.senseNearbyRobots(20))
+			if(info.getTeam() == rc.getTeam()) // same team
+			{
+				double wt = 0.0;
+				switch(info.getType()) // MORE PARAMETERS
+				{
+					case SLANDERER:
+						wt = REPEL_SL;
+						break;
+					case ENLIGHTENMENT_CENTER:
+						wt = REPEL_EC;
+						break;
+					case POLITICIAN:
+						wt = REPEL_PT;
+						break;
+					default:
+						break;
+				}
+				MapLocation loc = info.getLocation();
+				for(int i=-1;i<=1;++i)
+					for(int j=-1;j<=1;++j)
+					{
+						int x=cur.x+i;
+						int y=cur.y+j;
+						//treat like magnets
+						score[i+1][j+1] -= wt/Math.sqrt((double)loc.distanceSquaredTo(new MapLocation(x, y))); // sub because we want to move away from other politicians
+					}
+			}
+			else // enemy team
+				switch(info.getType())
+				{
+					case MUCKRAKER:
+						int new_dist = info.getLocation().distanceSquaredTo(cur);
+						if(closest_muckraker == null || new_dist < closest_muckraker_dist)
+						{
+							closest_muckraker = info;
+							closest_muckraker_dist = new_dist;
+						}
+						break;
+					default:
+						break;
+			}
+
+		//Modify score to chase nearby muckraker
+		if(closest_muckraker != null)
+		{
+			MapLocation loc = closest_muckraker.getLocation();
+			for(int i=-1;i<=1;++i)
+				for(int j=-1;j<=1;++j)
+				{
+					int x=cur.x+i;
+					int y=cur.y+j;
+					score[i+1][j+1] -= loc.distanceSquaredTo(new MapLocation(x, y))*CHASE_WEIGHT; // subtract because we want to move to smaller distance
+				}
+		}
+
+		//AFTER SCORES ARE COMPUTED: DETERMINE ACTION
+
+		//Kill muckraker
+		if(closest_muckraker_dist < KILL_DISTANCE) // action radius is 9
+			if(rc.canEmpower(KILL_DISTANCE))
+			{
+				rc.empower(KILL_DISTANCE);
+				return;
+			}
+
+		//Move
+		double best = score[1][1]-1;
+		Direction to_go = null;
+		for(int i=-1;i<=1;++i)
+			for(int j=-1;j<=1;++j)
+				if(best < score[i+1][j+1])
+				{
+					best = score[i+1][j+1];
+					to_go = dir[i+1][j+1];
+				}
+		if(to_go != null)
+			if(rc.canMove(to_go))
+			{
+				rc.move(to_go);
+				return;
+			}
+	}
+
 // General Politician Functions
 
     /**
@@ -187,13 +307,11 @@ public class Politician {
         int actionRadius = rc.getType().actionRadiusSquared;
         RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
         if (attackable.length != 0 && rc.canEmpower(actionRadius)) {
-            System.out.println("empowering...");
+            //System.out.println("empowering...");
             rc.empower(actionRadius);
-            System.out.println("empowered");
+            //System.out.println("empowered");
             return;
         }
-        if (tryMove(Slanderer.greedyPathfinding()))// just use slanderer movement
-            System.out.println("I moved!");
     }
 
     /**
@@ -212,9 +330,9 @@ public class Politician {
 
 						//Also record type of politician (note this will result in SLANDERER_DEFENSE by default)
 
-            System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
+            //System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
             if(RobotPlayer.has_parent_EC){
-                System.out.println("parent Location: " + RobotPlayer.parent_EC.getLocation());
+                //System.out.println("parent Location: " + RobotPlayer.parent_EC.getLocation());
             }
         }
         ////////////////////Creation End
@@ -243,11 +361,8 @@ public class Politician {
 					case EC_ATTACK:
 						doECAttackerAction();
 						break;
-					case EC_DEFENSE:
-						doRandomAction(); // TODO Implement
-						break;
-					case ENEMY_ATTACK:
-						doRandomAction(); // TODO Implement
+					case POLICE:
+						doPoliceAction();
 					default:
 						break;// or throw some exception
 				}
@@ -274,7 +389,7 @@ public class Politician {
      * @throws GameActionException
      */
     static boolean tryMove(Direction dir) throws GameActionException {
-        System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
+        //System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
         if (rc.canMove(dir)) {
             rc.move(dir);
             return true;

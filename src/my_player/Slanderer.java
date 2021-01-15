@@ -14,15 +14,20 @@ public class Slanderer {
 	public static final float PI = (float)(Math.atan(1)*4);
 
 	static final Direction[] directions = {
-			Direction.NORTH,
-			Direction.NORTHEAST,
-			Direction.EAST,
-			Direction.SOUTHEAST,
-			Direction.SOUTH,
-			Direction.SOUTHWEST,
-			Direction.WEST,
-			Direction.NORTHWEST,
+		Direction.NORTH,
+		Direction.NORTHEAST,
+		Direction.EAST,
+		Direction.SOUTHEAST,
+		Direction.SOUTH,
+		Direction.SOUTHWEST,
+		Direction.WEST,
+		Direction.NORTHWEST,
 	};
+
+	public static final Direction dir[][] = //[x][y]
+	{{Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST},
+		{Direction.SOUTH, null, Direction.NORTH},
+		{Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST}};
 
 	/**
 	 * Check whether parent EC died
@@ -57,8 +62,7 @@ public class Slanderer {
 		////////////////////Receive Broadcast End
 
 		////////////////////Movement Begin
-		if (tryMove(greedyPathfinding()))
-			System.out.println("I moved!");
+		moveAction();
 		////////////////////Movement End
 	}
 
@@ -71,37 +75,107 @@ public class Slanderer {
 		return directions[(int) (Math.random() * directions.length)];
 	}
 
-	/**
-	 * Returns the direction away from all enemy ECs
-	 *
-	 * @return a greedy Direction, or randomly if no enemy ecs are known
-	 */
-	static Direction greedyPathfinding() {
-		List<Enemy_EC_Info> enemy_ecs = RobotPlayer.enemy_ecs;
-		if(enemy_ecs.isEmpty())
-			return randomDirection();
-		Vec dir = new Vec();
-		for(Enemy_EC_Info ec : enemy_ecs)
-		{
-			Vec ec_dir = new Vec();//formula for this_position - ec_position??? (depends on relative/absolute)
-			float mag2 = ec_dir.mag2();
-			if(mag2 > EPS)
-				ec_dir.mul(1/mag2);
-			dir.add(ec_dir);
-		}
-		if(dir.mag2() < EPS)
-			return randomDirection(); // OR RETURN NO MOVEMENT!!!
+	// FROM POLICE POLITICIAN MOVEMENT
 
-		float ang = dir.ang(); // hardcoding cancer
-		if(ang < PI/8) return Direction.EAST;
-		if(ang < 3*PI/8) return Direction.NORTHEAST;
-		if(ang < 5*PI/8) return Direction.NORTH;
-		if(ang < 7*PI/8) return Direction.NORTHWEST;
-		if(ang < 9*PI/8) return Direction.WEST;
-		if(ang < 11*PI/8) return Direction.SOUTHWEST;
-		if(ang < 13*PI/8) return Direction.SOUTH;
-		if(ang < 15*PI/8) return Direction.SOUTHEAST;
-		return Direction.EAST;
+	public static final double HOME_WEIGHT = 1.0; 
+	public static final double REPEL_SL = 20.0; 
+	public static final double REPEL_EC = 20.0; 
+	public static final double REPEL_PT = 20.0; 
+	public static final double CHASE_WEIGHT = -1000.0;  // tendency to move towards enemy muckrakers
+
+	public static void moveAction() throws GameActionException
+	{
+		double score[][] = new double[3][3];// each of the 9 square police can move to. Higher score is better
+		MapLocation cur = rc.getLocation();
+		
+		//Modify score to naturally favor moving closer to home RC
+		{
+			MapLocation home = RobotPlayer.parent_EC.getLocation();
+			for(int i=-1;i<=1;++i)
+				for(int j=-1;j<=1;++j)
+				{
+					int x=cur.x+i;
+					int y=cur.y+j;
+					score[i+1][j+1] -= home.distanceSquaredTo(new MapLocation(x, y))*HOME_WEIGHT; // subtract because we favor shorter locations
+				}
+		}
+
+		//Modify score based on nearby robots
+		RobotInfo closest_muckraker = null;
+		int closest_muckraker_dist = 1000000;
+		for(RobotInfo info : rc.senseNearbyRobots(20))
+			if(info.getTeam() == rc.getTeam()) // same team
+			{
+				double wt = 0.0;
+				switch(info.getType()) // MORE PARAMETERS
+				{
+					case SLANDERER:
+						wt = REPEL_SL;
+						break;
+					case ENLIGHTENMENT_CENTER:
+						wt = REPEL_EC;
+						break;
+					case POLITICIAN:
+						wt = REPEL_PT;
+						break;
+					default:
+						break;
+				}
+				MapLocation loc = info.getLocation();
+				for(int i=-1;i<=1;++i)
+					for(int j=-1;j<=1;++j)
+					{
+						int x=cur.x+i;
+						int y=cur.y+j;
+						//treat like magnets
+						score[i+1][j+1] -= wt/Math.sqrt((double)loc.distanceSquaredTo(new MapLocation(x, y))); // sub because we want to move away from other politicians
+					}
+			}
+			else // enemy team
+				switch(info.getType())
+				{
+					case MUCKRAKER:
+						int new_dist = info.getLocation().distanceSquaredTo(cur);
+						if(closest_muckraker == null || new_dist < closest_muckraker_dist)
+						{
+							closest_muckraker = info;
+							closest_muckraker_dist = new_dist;
+						}
+						break;
+					default:
+						break;
+			}
+
+		//Modify score to chase nearby muckraker
+		//TODO Can change this to weighting ALL muckrakers as well
+		if(closest_muckraker != null)
+		{
+			MapLocation loc = closest_muckraker.getLocation();
+			for(int i=-1;i<=1;++i)
+				for(int j=-1;j<=1;++j)
+				{
+					int x=cur.x+i;
+					int y=cur.y+j;
+					score[i+1][j+1] -= loc.distanceSquaredTo(new MapLocation(x, y))*CHASE_WEIGHT; // subtract because we want to move to smaller distance
+				}
+		}
+
+		//Move
+		double best = score[1][1]-1;
+		Direction to_go = null;
+		for(int i=-1;i<=1;++i)
+			for(int j=-1;j<=1;++j)
+				if(best < score[i+1][j+1])
+				{
+					best = score[i+1][j+1];
+					to_go = dir[i+1][j+1];
+				}
+		if(to_go != null)
+			if(rc.canMove(to_go))
+			{
+				rc.move(to_go);
+				return;
+			}
 	}
 
 	/**

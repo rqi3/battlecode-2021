@@ -10,8 +10,7 @@ import java.util.*;
 public class EnlightenmentCenter {
 	/**
 	 * Allows the robot to be controlled.
-	 */
-	public static RobotController rc;
+	 */ public static RobotController rc;
 
 	/**
 	 * Maximum number of scouts this EC builds. More scouts = more bytecode usage by Enlightenment Center.
@@ -73,7 +72,7 @@ public class EnlightenmentCenter {
 	static final int LAST_FEW_BIDS = 4;
 	
 	static int getBidValue(){ //returns the value this Enlightenment Center will bid
-		System.out.println("Current influence: " + rc.getInfluence());
+		//System.out.println("Current influence: " + rc.getInfluence());
 		int us = rc.getTeamVotes();
 		int them = rc.getRoundNum() - rc.getTeamVotes(); //might be slightly overestimated in the case of ties - in reality ties should be really unlikely
 		bid_multiplier = 1; //reset
@@ -175,9 +174,9 @@ public class EnlightenmentCenter {
 				RobotPlayer.removeECInfo(neutral_ec.rel_loc);
 
 				RobotPlayer.neutral_ecs.add(neutral_ec);
-				System.out.println("Neutral EC Information Received:");
-				System.out.println("Influence: " + neutral_ec.influence);
-				System.out.println("Relative Position: " + neutral_ec.rel_loc);
+				//System.out.println("Neutral EC Information Received:");
+				//System.out.println("Influence: " + neutral_ec.influence);
+				//System.out.println("Relative Position: " + neutral_ec.rel_loc);
 			}
 			else if(flag_signal == 2){
 				//Enemy_EC_Info
@@ -188,8 +187,8 @@ public class EnlightenmentCenter {
 				RobotPlayer.removeECInfo(enemy_ec.rel_loc);
 
 				RobotPlayer.enemy_ecs.add(enemy_ec);
-				System.out.println("Enemy EC Information Received:");
-				System.out.println("Relative Position: " + enemy_ec.rel_loc);
+				//System.out.println("Enemy EC Information Received:");
+				//System.out.println("Relative Position: " + enemy_ec.rel_loc);
 			}
 			else if(flag_signal == 3){
 				//Friend_EC_Info
@@ -200,8 +199,8 @@ public class EnlightenmentCenter {
 				RobotPlayer.removeECInfo(friend_ec.rel_loc);
 
 				RobotPlayer.friend_ecs.add(friend_ec);
-				System.out.println("Friend EC Information Received:");
-				System.out.println("Relative Position: " + friend_ec.rel_loc);
+				//System.out.println("Friend EC Information Received:");
+				//System.out.println("Relative Position: " + friend_ec.rel_loc);
 			}
 		}
 	}
@@ -240,7 +239,7 @@ public class EnlightenmentCenter {
 					rc.buildRobot(RobotType.MUCKRAKER, dir, scout_influence);
 					bot_made_this_turn = true;
 					bot_direction_this_turn = dir;
-					System.out.println("Made bot in Direction: " + dir);
+					//System.out.println("Made bot in Direction: " + dir);
 					MapLocation spawn_loc = rc.getLocation().add(dir);
 					int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();
 					alive_scout_ids.add(spawn_id);
@@ -265,7 +264,29 @@ public class EnlightenmentCenter {
 				bot_made_this_turn = true;
 				bot_direction_this_turn = dir;
 				bot_parameter_this_turn = Politician.EC_ATTACK;
-				System.out.println("Made Attacker in Direction: " + dir);
+				//System.out.println("Made Attacker in Direction: " + dir);
+				/*MapLocation spawn_loc = rc.getLocation().add(dir);
+				int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();*/
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 *
+	 * @param influence The influence that we will put into the police politican.
+	 * @return Whether a politician was spawned
+	 */
+	public static boolean trySpawnPolicePolitician(int influence) throws GameActionException
+	{
+		for (Direction dir : directions) {
+			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, influence)) {
+				rc.buildRobot(RobotType.POLITICIAN, dir, influence);
+				bot_made_this_turn = true;
+				bot_direction_this_turn = dir;
+				bot_parameter_this_turn = Politician.POLICE;
+				//System.out.println("Made Police Politician in Direction: " + dir);
 				/*MapLocation spawn_loc = rc.getLocation().add(dir);
 				int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();*/
 				return true;
@@ -310,7 +331,7 @@ public class EnlightenmentCenter {
 				rc.buildRobot(RobotType.MUCKRAKER, dir, attacker_influence);
 				bot_made_this_turn = true;
 				bot_direction_this_turn = dir;
-				System.out.println("Made Attacker in Direction: " + dir);
+				//System.out.println("Made Attacker in Direction: " + dir);
 				/*MapLocation spawn_loc = rc.getLocation().add(dir);
 				int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();*/
 				break;
@@ -328,24 +349,26 @@ public class EnlightenmentCenter {
 	 * @throws GameActionException
 	 */
 	public static void spawnRobot() throws GameActionException {
-		System.out.println("Spawning a robot...");
+		//System.out.println("Spawning a robot...");
 		RobotType toBuild = RobotType.MUCKRAKER;
 		int influence = 1;
 
 		int attacker_politician_influence = 1;
+		int police_politician_influence = 20;
 
 		double build_scout_muckraker = 0; //scale of 0 to 2 of spawning weights
 		double build_attacker_politician = 0;
-		double build_attacker_muckraker = 0.1;
-		double build_defender_politician = 0;
-		double build_nothing = 0;
+		double build_attacker_muckraker = 0.3;
+		double build_police_politician = 1.0;
+		double build_nothing = 40.0/rc.getInfluence();
 
+		/*
 		if(alive_scout_ids.size() < MAX_SCOUTS){
 			build_scout_muckraker = 1.0;
 		}
 
 		if(RobotPlayer.neutral_ecs.size() > 0){
-			System.out.println(RobotPlayer.neutral_ecs.size());
+			//System.out.println(RobotPlayer.neutral_ecs.size());
 			Point ec_target = RobotPlayer.getClosestNeutralECLocation();
 			int ec_target_influence = 1;
 			for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
@@ -372,6 +395,8 @@ public class EnlightenmentCenter {
 			build_attacker_muckraker = 0.5;
 			build_nothing = 0;
 		}
+		*/
+
 		double ran = Math.random();
 		if(ran < slanderer_probability) {
 		//	Attempt to build slanderer
@@ -388,7 +413,7 @@ public class EnlightenmentCenter {
 					rc.buildRobot(RobotType.SLANDERER, dir, influence);
 					bot_made_this_turn = true;
 					bot_direction_this_turn = dir;
-					System.out.println("Made bot in Direction: " + dir);
+					//System.out.println("Made bot in Direction: " + dir);
 					break;
 				}
 			}
@@ -398,10 +423,10 @@ public class EnlightenmentCenter {
 			spawn_freq[0] = build_scout_muckraker; //scale of 0 to 2 of spawning weights
 			spawn_freq[1] = build_attacker_politician;
 			spawn_freq[2] = build_attacker_muckraker;
-			spawn_freq[3] = build_defender_politician;
+			spawn_freq[3] = build_police_politician;
 			spawn_freq[4] = build_nothing; // build nothing
 
-			System.out.println("spawn_freq: " + spawn_freq[0] + ", " + spawn_freq[1] + ", " + spawn_freq[2] + ", " + spawn_freq[3] + ", "+ spawn_freq[4]);
+			//System.out.println("spawn_freq: " + spawn_freq[0] + ", " + spawn_freq[1] + ", " + spawn_freq[2] + ", " + spawn_freq[3] + ", "+ spawn_freq[4]);
 
 			int spawn_type = chooseRandomFreq(spawn_freq);
 			if(spawn_type == 0){
@@ -415,10 +440,12 @@ public class EnlightenmentCenter {
 			}
 			else if(spawn_type == 3){
 				// Spawn politician with bot parameter = Politician.SLANDERER_DEFENSE or Politician.EC_DEFENSE
+				trySpawnPolicePolitician(police_politician_influence);
 			}
 		}
-		
-		slanderer_probability += .20;
+		//slanderer_probability += .20;
+    slanderer_probability = Math.sqrt(0.01 + slanderer_probability * slanderer_probability);
+    if(slanderer_probability > 1.0) slanderer_probability = 1.0;
 	}
 
 	/**
@@ -441,7 +468,7 @@ public class EnlightenmentCenter {
 			for(int dir = 0; dir < 8; dir++){
 				if(directions[dir].equals(bot_direction_last_turn)){
 					//direction index is dir
-					System.out.println("Bot was made in direction: " + dir + " " + directions[dir]);
+					//System.out.println("Bot was made in direction: " + dir + " " + directions[dir]);
 					for(int j = 0; j < 3; j++){
 						if(((dir>>j)&1) == 1){
 							flag_bits[j+1] = true; //sets the 1st, 2nd, 3rd flag_bits
@@ -515,13 +542,13 @@ public class EnlightenmentCenter {
 		receiveScoutCommunication();
 
 		for(Neutral_EC_Info a: RobotPlayer.neutral_ecs){
-			System.out.println("I know a neutral EC is here: " + a.rel_loc);
+			//System.out.println("I know a neutral EC is here: " + a.rel_loc);
 		}
 		for(Enemy_EC_Info a: RobotPlayer.enemy_ecs){
-			System.out.println("I know an enemy EC is here: " + a.rel_loc);
+			//System.out.println("I know an enemy EC is here: " + a.rel_loc);
 		}
 		for(Friend_EC_Info a: RobotPlayer.friend_ecs){
-			System.out.println("I know a friend EC is here: " + a.rel_loc);
+			//System.out.println("I know a friend EC is here: " + a.rel_loc);
 		}
 		////////////////////Receive Communication End
 
@@ -546,7 +573,7 @@ public class EnlightenmentCenter {
 			rc.setFlag(flag_value);
 		}
 
-		System.out.println("Set Flag Value to: " + flag_value);
+		//System.out.println("Set Flag Value to: " + flag_value);
 		////////////////////Broadcast to Units End
 	}
 
