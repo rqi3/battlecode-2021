@@ -90,8 +90,7 @@ public class Politician {
 					return; // successfully empowered
 				}
 
-			//otherwise: copy slanderer pathfinding
-			tryMove(Slanderer.greedyPathfinding());
+			//otherwise: no move
 			return;
 		}
 
@@ -184,9 +183,11 @@ public class Politician {
 	*/
 
 	public static final double HOME_WEIGHT = 1.0; 
-	public static final double REPEL_WEIGHT = 50.0; 
+	public static final double REPEL_SL = 20.0; 
+	public static final double REPEL_EC = 100.0; 
+	public static final double REPEL_PT = 60.0; 
 	public static final double CHASE_WEIGHT = 1000.0; 
-	public static final int KILL_DISTANCE = 9; 
+	public static final int KILL_DISTANCE = 5; 
 
 	public static void doPoliceAction() throws GameActionException
 	{
@@ -210,23 +211,32 @@ public class Politician {
 		int closest_muckraker_dist = 1000000;
 		for(RobotInfo info : rc.senseNearbyRobots(20))
 			if(info.getTeam() == rc.getTeam()) // same team
-				switch(info.getType())
+			{
+				double wt = 0.0;
+				switch(info.getType()) // MORE PARAMETERS
 				{
-					case POLITICIAN:
+					case SLANDERER:
+						wt = REPEL_SL;
+						break;
 					case ENLIGHTENMENT_CENTER:
-						MapLocation loc = info.getLocation();
-						for(int i=-1;i<=1;++i)
-							for(int j=-1;j<=1;++j)
-							{
-								int x=cur.x+i;
-								int y=cur.y+j;
-								//treat like magnets
-								score[i+1][j+1] -= REPEL_WEIGHT/Math.sqrt((double)loc.distanceSquaredTo(new MapLocation(x, y))); // sub because we want to move away from other politicians
-							}
+						wt = REPEL_EC;
+						break;
+					case POLITICIAN:
+						wt = REPEL_PT;
 						break;
 					default:
 						break;
 				}
+				MapLocation loc = info.getLocation();
+				for(int i=-1;i<=1;++i)
+					for(int j=-1;j<=1;++j)
+					{
+						int x=cur.x+i;
+						int y=cur.y+j;
+						//treat like magnets
+						score[i+1][j+1] -= wt/Math.sqrt((double)loc.distanceSquaredTo(new MapLocation(x, y))); // sub because we want to move away from other politicians
+					}
+			}
 			else // enemy team
 				switch(info.getType())
 				{
@@ -299,10 +309,6 @@ public class Politician {
             //System.out.println("empowered");
             return;
         }
-        if (tryMove(Slanderer.greedyPathfinding()))// just use slanderer movement
-				{
-            //System.out.println("I moved!");
-				}
     }
 
     /**

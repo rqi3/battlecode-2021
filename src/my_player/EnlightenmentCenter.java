@@ -10,8 +10,7 @@ import java.util.*;
 public class EnlightenmentCenter {
 	/**
 	 * Allows the robot to be controlled.
-	 */
-	public static RobotController rc;
+	 */ public static RobotController rc;
 
 	/**
 	 * Maximum number of scouts this EC builds. More scouts = more bytecode usage by Enlightenment Center.
@@ -364,10 +363,11 @@ public class EnlightenmentCenter {
 
 		double build_scout_muckraker = 0; //scale of 0 to 2 of spawning weights
 		double build_attacker_politician = 0;
-		double build_attacker_muckraker = 0.05;
-		double build_police_politician = 0.8; // arbitrary number to test whether they work
-		double build_nothing = 0;
+		double build_attacker_muckraker = 0.3;
+		double build_police_politician = 1.0;
+		double build_nothing = 40.0/rc.getInfluence();
 
+		/*
 		if(alive_scout_ids.size() < MAX_SCOUTS){
 			build_scout_muckraker = 1.0;
 		}
@@ -400,10 +400,12 @@ public class EnlightenmentCenter {
 			build_attacker_muckraker = 0.5;
 			build_nothing = 0;
 		}
+		*/
+
 		if(Math.random() < slanderer_frequency)
 		{
 			//Attempt to build slanderer
-			slanderer_investment = rc.getInfluence()/10;
+			slanderer_investment = rc.getInfluence()*2/5; // 40%
 			int cost = getOptimalSlandererInfluence(slanderer_investment);
 			if(cost > 0)
 			{
@@ -449,7 +451,7 @@ public class EnlightenmentCenter {
 			}
 		}
 
-		slanderer_frequency = Math.min(slanderer_frequency+0.05f, 1f);
+		slanderer_frequency = Math.min(slanderer_frequency+0.10f, 1f);
 	}
 
 	/**
