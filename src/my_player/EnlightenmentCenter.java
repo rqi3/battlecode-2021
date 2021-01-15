@@ -16,7 +16,7 @@ public class EnlightenmentCenter {
 	/**
 	 * Maximum number of scouts this EC builds. More scouts = more bytecode usage by Enlightenment Center.
 	 */
-	public static final int MAX_SCOUTS = 16;
+	public static final int MAX_SCOUTS = 5;
 
 	/**
 	 * ???
@@ -285,11 +285,11 @@ public class EnlightenmentCenter {
 	 * @param influence The influence that we will put into the police politican.
 	 * @return Whether a politician was spawned
 	 */
-	public static boolean trySpawnPolicPolitician(int influence) throws GameActionException
+	public static boolean trySpawnPolicePolitician(int influence) throws GameActionException
 	{
 		for (Direction dir : directions) {
-			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, attacker_influence)) {
-				rc.buildRobot(RobotType.POLITICIAN, dir, attacker_influence);
+			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, influence)) {
+				rc.buildRobot(RobotType.POLITICIAN, dir, influence);
 				bot_made_this_turn = true;
 				bot_direction_this_turn = dir;
 				bot_parameter_this_turn = Politician.POLICE;
@@ -323,7 +323,7 @@ public class EnlightenmentCenter {
 				return i;
 			}
 		}
-		//System.out.println("chooseRandomFreq error");
+		System.out.println("chooseRandomFreq error");
 		return 0;
 	}
 
@@ -360,11 +360,12 @@ public class EnlightenmentCenter {
 		int influence = 1;
 
 		int attacker_politician_influence = 1;
+		int police_politician_influence = 20;
 
 		double build_scout_muckraker = 0; //scale of 0 to 2 of spawning weights
 		double build_attacker_politician = 0;
-		double build_attacker_muckraker = 0.1;
-		double build_defender_politician = 0;
+		double build_attacker_muckraker = 0.05;
+		double build_police_politician = 0.8; // arbitrary number to test whether they work
 		double build_nothing = 0;
 
 		if(alive_scout_ids.size() < MAX_SCOUTS){
@@ -427,7 +428,7 @@ public class EnlightenmentCenter {
 			spawn_freq[0] = build_scout_muckraker; //scale of 0 to 2 of spawning weights
 			spawn_freq[1] = build_attacker_politician;
 			spawn_freq[2] = build_attacker_muckraker;
-			spawn_freq[3] = build_defender_politician;
+			spawn_freq[3] = build_police_politician;
 			spawn_freq[4] = build_nothing; // build nothing
 
 			//System.out.println("spawn_freq: " + spawn_freq[0] + ", " + spawn_freq[1] + ", " + spawn_freq[2] + ", " + spawn_freq[3] + ", "+ spawn_freq[4]);
@@ -444,6 +445,7 @@ public class EnlightenmentCenter {
 			}
 			else if(spawn_type == 3){
 				// Spawn politician with bot parameter = Politician.SLANDERER_DEFENSE or Politician.EC_DEFENSE
+				trySpawnPolicePolitician(police_politician_influence);
 			}
 		}
 
