@@ -146,6 +146,7 @@ public strictfp class RobotPlayer {
 	/**
 	 * When a unit is spawned, look for a parent EC that spawned it and edit parent_EC
 	 * TODO: Local communication can also be stored in this information
+	 * @return The value of the additional information on the flag of the parent EC, -1 if it does not exist
 	 */
 	static int assignParentEC() throws GameActionException
 	/*
@@ -163,7 +164,7 @@ public strictfp class RobotPlayer {
 			if(!(possible_parent.getType() == RobotType.ENLIGHTENMENT_CENTER)){
 				continue; //skip over it if it's not an Enlightenment Center
 			}
-			System.out.println("FOUND CANDIDATE EC");
+			//System.out.println("FOUND CANDIDATE EC");
 			if(possible_parent.getTeam() != rc.getTeam()){
 				continue; //skip over if it's on the enemy team
 			}
@@ -188,7 +189,7 @@ public strictfp class RobotPlayer {
 			}
 
 		}
-		System.out.println("DID NOT FIND PARENT EC"); //should only occur for converted
+		//System.out.println("DID NOT FIND PARENT EC"); //should only occur for converted
 		return -1;
 	}
 
@@ -211,11 +212,13 @@ public strictfp class RobotPlayer {
 			removeECInfo(neutral_ec);
 			neutral_ecs.add(neutral_ec);
 
+			/*
 			System.out.println("Neutral EC at location " + neutral_ec.rel_loc + " was broadcast to me.");
 			System.out.println("Current neutral_ecs: ");
 			for(Neutral_EC_Info a: neutral_ecs){
 				System.out.println(a.rel_loc);
 			}
+			*/
 		}
 		else if(flag_signal == 2){
 			//enemy EC found
@@ -223,11 +226,13 @@ public strictfp class RobotPlayer {
 			removeECInfo(enemy_ec);
 			enemy_ecs.add(enemy_ec);
 
+			/*
 			System.out.println("Enemy EC at location " + enemy_ec.rel_loc + " was broadcast to me.");
 			System.out.println("Current enemy_ecs: ");
 			for(Enemy_EC_Info a: enemy_ecs){
 				System.out.println(a.rel_loc);
 			}
+			*/
 		}
 	}
 
@@ -245,7 +250,7 @@ public strictfp class RobotPlayer {
 
 		turn_count = 0;
 
-		System.out.println("I'm a " + rc.getType() + " and I just got created!");
+		//System.out.println("I'm a " + rc.getType() + " and I just got created!");
 
 
 		while (true) {
@@ -255,7 +260,7 @@ public strictfp class RobotPlayer {
 				// Here, we've separated the controls into a different method for each RobotType.
 				// You may rewrite this into your own control structure if you wish.
 
-				System.out.println("I'm a " + rc.getType() + "! Location " + rc.getLocation());
+				//System.out.println("I'm a " + rc.getType() + "! Location " + rc.getLocation());
 
 				switch (rc.getType()) {
 					case ENLIGHTENMENT_CENTER: EnlightenmentCenter.run(); break;
@@ -281,7 +286,7 @@ public strictfp class RobotPlayer {
 	 * @throws GameActionException Bad battlecode call
 	 */
 	static boolean tryMove(Direction dir) throws GameActionException {
-		System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
+		//System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
 		if (rc.canMove(dir)) {
 			rc.move(dir);
 			return true;
