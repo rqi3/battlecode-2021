@@ -480,14 +480,9 @@ public class EnlightenmentCenter {
 			}
 		}
 		//slanderer_probability += .20;
-<<<<<<< HEAD
     //slanderer_probability = Math.sqrt(0.01 + slanderer_probability * slanderer_probability);
     //if(slanderer_probability > 1.0) slanderer_probability = 1.0;
 		slanderer_probability = (slanderer_probability + 0.3)/1.3;
-=======
-    slanderer_probability = Math.sqrt(0.01 + slanderer_probability * slanderer_probability);
-    if(slanderer_probability > 1.0) slanderer_probability = 1.0;
->>>>>>> 23d3d96890e665e6911772aa69b06aa8f1704e8b
 	}
 
 	/**

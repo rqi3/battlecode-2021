@@ -19,7 +19,6 @@ import java.util.*;
  * @author	Coast
  */
 public class Politician {
-<<<<<<< HEAD
 	static RobotController rc;
 
 	static final Direction[] directions = {
@@ -32,28 +31,13 @@ public class Politician {
 			Direction.WEST,
 			Direction.NORTHWEST,
 	};
-=======
-    static RobotController rc;
-
-    static final Direction[] directions = {
-            Direction.NORTH,
-            Direction.NORTHEAST,
-            Direction.EAST,
-            Direction.SOUTHEAST,
-            Direction.SOUTH,
-            Direction.SOUTHWEST,
-            Direction.WEST,
-            Direction.NORTHWEST,
-    };
->>>>>>> 23d3d96890e665e6911772aa69b06aa8f1704e8b
 		
-		public static final Direction dir[][] = //[x][y]
-		{{Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST},
-			{Direction.SOUTH, null, Direction.NORTH},
-			{Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST}};
+	public static final Direction dir[][] = //[x][y]
+	{{Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST},
+		{Direction.SOUTH, null, Direction.NORTH},
+		{Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST}};
 
 
-<<<<<<< HEAD
 	/**
 	 * Check whether parent EC died and updates parent_EC
 	 * possibly change the way the politician acts now
@@ -64,18 +48,6 @@ public class Politician {
 			RobotPlayer.has_parent_EC = false; //should never change to true again
 		}
 	}
-=======
-    /**
-     * Check whether parent EC died and updates parent_EC
-     * possibly change the way the politician acts now
-     */
-    private static void updateParentEC() {
-        if(!RobotPlayer.has_parent_EC) return;
-        if(!rc.canGetFlag(RobotPlayer.parent_EC.getID())){ //parent EC died
-            RobotPlayer.has_parent_EC = false; //should never change to true again
-        }
-    }
->>>>>>> 23d3d96890e665e6911772aa69b06aa8f1704e8b
 
 //////////////// PARAMETERS
 		public static final int LOST_POLITICIAN = 0;
@@ -177,21 +149,8 @@ public class Politician {
 			return;
 		}
 
-<<<<<<< HEAD
 		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 		int distance_to_target = Point.getRadiusSquaredDistance(ec_target, my_rel_loc);
-=======
-    /*
-    EC Attacker
-    Decide to Empower or Move to EC
-     */
-    private static void doECAttackerAction() throws GameActionException {
-        if(!hasECTarget){
-            if (tryMove(randomDirection()))
-                //System.out.println("I moved!");
-            return;
-        }
->>>>>>> 23d3d96890e665e6911772aa69b06aa8f1704e8b
 
 		boolean moveAction = false;
 		for(Direction dir: directions){
@@ -214,125 +173,6 @@ public class Politician {
 
 		Movement.assignDestination(ec_target);
 		Movement.moveToDestination();
-	}
-
-
-	/*
-	 * IMPLEMENTATION OF POLICE POLITICIAN
-	*/
-
-	public static final double HOME_WEIGHT = 1.0; 
-	public static final double REPEL_SL = 20.0; 
-	public static final double REPEL_EC = 100.0; 
-	public static final double REPEL_PT = 60.0; 
-	public static final double CHASE_WEIGHT = 1000.0; 
-	public static final int KILL_DISTANCE = 5; 
-
-	public static void doPoliceAction() throws GameActionException
-	{
-		double score[][] = new double[3][3];// each of the 9 square police can move to. Higher score is better
-		MapLocation cur = rc.getLocation();
-
-
-		//TODO Modify score based on passability
-		
-		//Modify score to naturally favor moving closer to home RC
-		if(rc.canGetFlag(RobotPlayer.parent_EC.getID())) { // parent EC alive
-			MapLocation home = RobotPlayer.parent_EC.getLocation();
-			for(int i=-1;i<=1;++i)
-				for(int j=-1;j<=1;++j)
-				{
-					int x=cur.x+i;
-					int y=cur.y+j;
-					score[i+1][j+1] -= home.distanceSquaredTo(new MapLocation(x, y))*HOME_WEIGHT; // subtract because we favor shorter locations
-				}
-		}
-
-		//Modify score based on nearby robots
-		RobotInfo closest_muckraker = null;
-		int closest_muckraker_dist = 1000000;
-		for(RobotInfo info : rc.senseNearbyRobots(20))
-			if(info.getTeam() == rc.getTeam()) // same team
-			{
-				double wt = 0.0;
-				switch(info.getType()) // MORE PARAMETERS
-				{
-					case SLANDERER:
-						wt = REPEL_SL;
-						break;
-					case ENLIGHTENMENT_CENTER:
-						wt = REPEL_EC;
-						break;
-					case POLITICIAN:
-						wt = REPEL_PT;
-						break;
-					default:
-						break;
-				}
-				MapLocation loc = info.getLocation();
-				for(int i=-1;i<=1;++i)
-					for(int j=-1;j<=1;++j)
-					{
-						int x=cur.x+i;
-						int y=cur.y+j;
-						//treat like magnets
-						score[i+1][j+1] -= wt/Math.sqrt((double)loc.distanceSquaredTo(new MapLocation(x, y))); // sub because we want to move away from other politicians
-					}
-			}
-			else // enemy team
-				switch(info.getType())
-				{
-					case MUCKRAKER:
-						int new_dist = info.getLocation().distanceSquaredTo(cur);
-						if(closest_muckraker == null || new_dist < closest_muckraker_dist)
-						{
-							closest_muckraker = info;
-							closest_muckraker_dist = new_dist;
-						}
-						break;
-					default:
-						break;
-			}
-
-		//Modify score to chase nearby muckraker
-		if(closest_muckraker != null)
-		{
-			MapLocation loc = closest_muckraker.getLocation();
-			for(int i=-1;i<=1;++i)
-				for(int j=-1;j<=1;++j)
-				{
-					int x=cur.x+i;
-					int y=cur.y+j;
-					score[i+1][j+1] -= loc.distanceSquaredTo(new MapLocation(x, y))*CHASE_WEIGHT; // subtract because we want to move to smaller distance
-				}
-		}
-
-		//AFTER SCORES ARE COMPUTED: DETERMINE ACTION
-
-		//Kill muckraker
-		if(closest_muckraker_dist < KILL_DISTANCE) // action radius is 9
-			if(rc.canEmpower(KILL_DISTANCE))
-			{
-				rc.empower(KILL_DISTANCE);
-				return;
-			}
-
-		//Move
-		double best = score[1][1]-1;
-		Direction to_go = null;
-		for(int i=-1;i<=1;++i)
-			for(int j=-1;j<=1;++j)
-				if(best < score[i+1][j+1])
-				{
-					best = score[i+1][j+1];
-					to_go = dir[i+1][j+1];
-				}
-		if(to_go != null)
-			if(rc.canMove(to_go))
-			{
-				rc.move(to_go);
-				return;
-			}
 	}
 
 	/*
@@ -455,7 +295,6 @@ public class Politician {
 
 // General Politician Functions
 
-<<<<<<< HEAD
 	/**
 	 * Attacks if it can. Otherwise, move randomly.
 	 * @throws GameActionException
@@ -484,9 +323,9 @@ public class Politician {
 		if(RobotPlayer.just_made){
 			politician_type = RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
 						// ASSERT politician_type != -1
-						if(politician_type == -1) politician_type = Politician.SLANDERER_DEFENSE; // if no parent EC make it slanderer defense
+						if(politician_type == -1) politician_type = Politician.LOST_POLITICIAN; // if no parent EC make it LOST_POLITICIAN
 
-						//Also record type of politician (note this will result in SLANDERER_DEFENSE by default)
+						//Also record type of politician (note this will result in LOST_POLITICIAN by default)
 
 						/*
 			System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
@@ -500,54 +339,9 @@ public class Politician {
 		////////////////////Initialization Begin
 		updateParentEC();
 		if(!RobotPlayer.has_parent_EC){
-					politician_type = Politician.SLANDERER_DEFENSE;
+			politician_type = Politician.LOST_POLITICIAN;
 		}
 		////////////////////Initialization End
-=======
-    /**
-     * Attacks if it can. Otherwise, move randomly.
-     * @throws GameActionException
-     */
-    private static void doRandomAction() throws GameActionException {
-        Team enemy = rc.getTeam().opponent();
-        int actionRadius = rc.getType().actionRadiusSquared;
-        RobotInfo[] attackable = rc.senseNearbyRobots(actionRadius, enemy);
-        if (attackable.length != 0 && rc.canEmpower(actionRadius)) {
-            //System.out.println("empowering...");
-            rc.empower(actionRadius);
-            //System.out.println("empowered");
-            return;
-        }
-    }
-
-    /**
-     * Controls this Politician
-     * @throws GameActionException
-     */
-    public static void run() throws GameActionException{
-        ////////////////////Creation Begin
-        rc = RobotPlayer.rc;
-        Movement.rc = RobotPlayer.rc;
-        //TODO: Consider Slanderer-converted Politicians
-        if(RobotPlayer.just_made){
-            int parent_ec_info = RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
-			if(politician_type == -1){
-				politician_type = Politician.LOST_POLITICIAN; // if no parent EC make it slanderer defense
-			}
-			else{
-				politician_type = RobotPlayer.getBitsBetween(parent_ec_info, 0, 1); //Record type of politician
-			}
-			System.out.println("I am a type " + politician_type + " politician.");
-        }
-        ////////////////////Creation End
-
-        ////////////////////Initialization Begin
-        updateParentEC();
-        if(!RobotPlayer.has_parent_EC){
-        	politician_type = Politician.LOST_POLITICIAN;
-        }
-        ////////////////////Initialization End
->>>>>>> refs/remotes/origin/master
 
 		////////////////////Receive Broadcast Begin
 		RobotPlayer.receiveECBroadcast();
@@ -555,24 +349,23 @@ public class Politician {
 
 		////////////////////Action Begin
 		if(politician_type == Politician.EC_ATTACK)
-					assignECTarget();
+			assignECTarget();
 
 		//Do an action (attack or move)
-				switch(politician_type)
-				{
-					case LOST_POLITICIAN:
-						doLostPoliticianAction();
-						break;
-					case EC_ATTACK:
-						doECAttackerAction();
-						break;
-					case POLICE:
-						doPoliceAction();
-					default:
-						break;// or throw some exception
-				}
+		switch(politician_type)
+		{
+			case LOST_POLITICIAN:
+				doLostPoliticianAction();
+				break;
+			case EC_ATTACK:
+				doECAttackerAction();
+				break;
+			case POLICE:
+				doPoliceAction();
+			default:
+				break;// or throw some exception
+		}
 
-<<<<<<< HEAD
 		////////////////////Action End
 
 
@@ -601,34 +394,4 @@ public class Politician {
 			return true;
 		} else return false;
 	}
-=======
-        ////////////////////Action End
-
-
-    }
-
-    /**
-     * Returns a random Direction.
-     *
-     * @return a random Direction
-     */
-    static Direction randomDirection() {
-        return directions[(int) (Math.random() * directions.length)];
-    }
-
-    /**
-     * Attempts to move in a given direction.
-     *
-     * @param dir The intended direction of movement
-     * @return true if a move was performed
-     * @throws GameActionException
-     */
-    static boolean tryMove(Direction dir) throws GameActionException {
-        //System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
-        if (rc.canMove(dir)) {
-            rc.move(dir);
-            return true;
-        } else return false;
-    }
->>>>>>> 23d3d96890e665e6911772aa69b06aa8f1704e8b
 }
