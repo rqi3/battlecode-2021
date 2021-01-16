@@ -229,7 +229,7 @@ public class EnlightenmentCenter {
 		return OPTIMAL_SLANDERER_INFLUENCE[l];
 	}
 
-
+	static int current_scout_direction = 0;
 	/**
 	Tries to spawn a scout in a random direction.
 	@return whether it did spawn a scout.
@@ -243,6 +243,9 @@ public class EnlightenmentCenter {
 				if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, scout_influence)) {
 					rc.buildRobot(RobotType.MUCKRAKER, dir, scout_influence);
 					int bot_parameter = Muckraker.SCOUT;
+					bot_parameter += current_scout_direction<<2;
+					current_scout_direction = (current_scout_direction+5) % 8;
+
 					bot_made_this_turn = true;
 					bot_direction_this_turn = dir;
 					bot_parameter_this_turn = bot_parameter;

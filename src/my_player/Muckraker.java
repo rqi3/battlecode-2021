@@ -221,15 +221,20 @@ public class Muckraker {
         possible_sectors.add(first_possible_sector);
         possible_sectors.add(second_possible_sector);
         possible_sectors.add(third_possible_sector);
+
+        System.out.println("possible sectors: " + first_possible_sector + second_possible_sector + third_possible_sector);
         Point correct_sector = new Point();
         double best_angle_dif = 9999;
         for(Point p: possible_sectors){
-            double p_angle = Math.atan2(p.y, p.x);
+            double p_angle = Math.atan2(p.y-8.0, p.x-8.0);
             if(p_angle < 0.0) p_angle+=2*Math.PI;
             double p_dif = Math.abs(p_angle-scout_initial_direction);
             p_dif = Math.min(p_dif, 2*Math.PI-p_dif);
 
-            if(p_dif < best_angle_dif) correct_sector = p;
+            if(p_dif < best_angle_dif){
+                correct_sector = p;
+                best_angle_dif = p_dif;
+            }
         }
 
         if(isValidSector(correct_sector) && visited_sectors[correct_sector.x][correct_sector.y] == 0){
@@ -259,6 +264,8 @@ public class Muckraker {
         if(!roaming_sectors){
             boolean found_directional_sector = assignInitialDirectionSector();
             if(found_directional_sector){
+                System.out.println("Initial direction: " + scout_initial_direction);
+                System.out.println("next_sector: " + next_sector);
                 return;
             }
             roaming_sectors = true;
@@ -505,7 +512,7 @@ public class Muckraker {
         ////////////////////Creation Begin
         if(RobotPlayer.just_made){
             scout_initial_direction = getInitialDirection();
-            System.out.println("scout_initial_direction: " + scout_initial_direction);
+
             rc = RobotPlayer.rc;
             Movement.rc = RobotPlayer.rc;
 
@@ -517,6 +524,12 @@ public class Muckraker {
             else{
                 muckraker_type = RobotPlayer.getBitsBetween(parent_ec_info, 0, 1);
             }
+
+            if(muckraker_type == SCOUT){
+                scout_initial_direction = RobotPlayer.getBitsBetween(parent_ec_info, 2, 4)*0.25*Math.PI;
+            }
+            System.out.println("parent EC direction: " + RobotPlayer.getBitsBetween(parent_ec_info, 2, 4));
+            System.out.println("scout_initial_direction: " + scout_initial_direction);
         }
         ////////////////////Creation End
 
