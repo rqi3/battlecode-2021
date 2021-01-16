@@ -143,6 +143,33 @@ public strictfp class RobotPlayer {
 	public static void removeECInfo(Enemy_EC_Info ec) {
 		removeECInfo(ec.rel_loc);
 	}
+    public static void removeECInfo(Friend_EC_Info ec) {
+        removeECInfo(ec.rel_loc);
+    }
+
+    public static void addECInfo(Neutral_EC_Info ec){
+		removeECInfo(ec.rel_loc);
+		neutral_ecs.add(ec);
+	}
+
+	public static void addECInfo(Enemy_EC_Info ec){
+		removeECInfo(ec.rel_loc);
+		enemy_ecs.add(ec);
+	}
+
+	public static void addECInfo(Friend_EC_Info ec){
+		removeECInfo(ec.rel_loc);
+		friend_ecs.add(ec);
+	}
+
+	public static void addEnemyUnitInfo(EnemyUnitInfo eu){
+		if(!enemy_units.contains(eu)){
+			enemy_units.add(eu);
+			for(EnemyUnitInfo info: enemy_units){
+				System.out.println(info.turn_received + " " + info.loc);
+			}
+		}
+	}
 
 	/**
 	 * When a unit is spawned, look for a parent EC that spawned it and edit parent_EC

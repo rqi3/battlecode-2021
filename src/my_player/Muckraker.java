@@ -413,7 +413,6 @@ public class Muckraker {
             100 - Neutral EC, next 7 bits are Influence*double(127/500), last 14 bits are location
             010 - Enemy EC, last 14 bits are location
             110 - Friend EC, last 14 bits are location
-            001 - Enemy Muckraker, next 7 bits are Conviction*double(127/500), last 14 bits are location
             Todo: Whether Neutral EC is being contested, Map Edges
             000 - not communicating anything on this list
              */
@@ -438,11 +437,11 @@ public class Muckraker {
                     neutral_EC_nearby = true;
                     if(!communicated_ecs.contains(nearby_robot.getLocation())){
                         neutral_EC_just_found = true;
-                        neutral_ec.setPosition(nearby_robot.getLocation(), RobotPlayer.parent_EC.getLocation());
+                        neutral_ec.setPosition(nearby_robot.getLocation());
                         neutral_ec.setInfluence(nearby_robot.getInfluence());
                     }
                     else if(!neutral_EC_just_found){
-                        neutral_ec.setPosition(nearby_robot.getLocation(), RobotPlayer.parent_EC.getLocation());
+                        neutral_ec.setPosition(nearby_robot.getLocation());
                         neutral_ec.setInfluence(nearby_robot.getInfluence());
                     }
                 }
@@ -451,10 +450,10 @@ public class Muckraker {
                     enemy_EC_nearby = true;
                     if(!communicated_ecs.contains(nearby_robot.getLocation())){
                         enemy_EC_just_found = true;
-                        enemy_ec.setPosition(nearby_robot.getLocation(), RobotPlayer.parent_EC.getLocation());
+                        enemy_ec.setPosition(nearby_robot.getLocation());
                     }
                     else if(!enemy_EC_just_found){
-                        enemy_ec.setPosition(nearby_robot.getLocation(), RobotPlayer.parent_EC.getLocation());
+                        enemy_ec.setPosition(nearby_robot.getLocation());
                     }
                 }
                 else if(nearby_robot.getTeam() == rc.getTeam() && nearby_robot.getType() == RobotType.ENLIGHTENMENT_CENTER){
@@ -463,10 +462,10 @@ public class Muckraker {
                     friend_EC_nearby = true;
                     if(!communicated_ecs.contains(nearby_robot.getLocation())){
                         friend_EC_just_found = true;
-                        friend_ec.setPosition(nearby_robot.getLocation(), RobotPlayer.parent_EC.getLocation());
+                        friend_ec.setPosition(nearby_robot.getLocation());
                     }
                     else if(!friend_EC_just_found){
-                        friend_ec.setPosition(nearby_robot.getLocation(), RobotPlayer.parent_EC.getLocation());
+                        friend_ec.setPosition(nearby_robot.getLocation());
                     }
                 }
                 else if(nearby_robot.getTeam() == rc.getTeam().opponent() && nearby_robot.getType() == RobotType.MUCKRAKER){

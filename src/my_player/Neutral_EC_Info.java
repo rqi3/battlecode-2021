@@ -23,7 +23,14 @@ public class Neutral_EC_Info {
         rel_loc = _rel_loc;
     }
 
-    public void setPosition(MapLocation _loc, MapLocation origin){
+    public void setPosition(MapLocation _loc){
+        MapLocation origin;
+        if(RobotPlayer.rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
+            origin = RobotPlayer.rc.getLocation();
+        }
+        else{
+            origin = RobotPlayer.parent_EC.getLocation();
+        }
         rel_loc.x = _loc.x-origin.x;
         rel_loc.y = _loc.y-origin.y;
         loc = _loc;
