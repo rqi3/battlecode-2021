@@ -46,10 +46,12 @@ public class Slanderer {
 			rc = RobotPlayer.rc;
 			RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
 
+			/*
 			System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
 			if(RobotPlayer.has_parent_EC){
 				System.out.println("parent Location: " + RobotPlayer.parent_EC.getLocation());
 			}
+			*/
 		}
 		////////////////////Creation End
 
@@ -186,7 +188,7 @@ public class Slanderer {
 	 * @throws GameActionException
 	 */
 	static boolean tryMove(Direction dir) throws GameActionException {
-		System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
+		//System.out.println("I am trying to move " + dir + "; " + rc.isReady() + " " + rc.getCooldownTurns() + " " + rc.canMove(dir));
 		if (rc.canMove(dir)) {
 			rc.move(dir);
 			return true;

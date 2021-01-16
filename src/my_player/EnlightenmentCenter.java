@@ -354,7 +354,7 @@ public class EnlightenmentCenter {
 
 
 	
-	static double slanderer_probability = 1;
+	static double slanderer_probability = 1.0;
 	
 	/**
 	 * Chooses what robot to spawn and spawns it.
@@ -480,8 +480,9 @@ public class EnlightenmentCenter {
 			}
 		}
 		//slanderer_probability += .20;
-    slanderer_probability = Math.sqrt(0.01 + slanderer_probability * slanderer_probability);
-    if(slanderer_probability > 1.0) slanderer_probability = 1.0;
+    //slanderer_probability = Math.sqrt(0.01 + slanderer_probability * slanderer_probability);
+    //if(slanderer_probability > 1.0) slanderer_probability = 1.0;
+		slanderer_probability = (slanderer_probability + 0.3)/1.3;
 	}
 
 	/**

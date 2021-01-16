@@ -88,7 +88,7 @@ public class Movement {
      * @throws GameActionException
      */
     public static void moveToNaive(Point destination) throws GameActionException {
-        System.out.println("moveToNaive: " + destination);
+        //System.out.println("moveToNaive: " + destination);
         assert(RobotPlayer.has_parent_EC); //destination was not defined if this has no parent_EC
         Point current_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
