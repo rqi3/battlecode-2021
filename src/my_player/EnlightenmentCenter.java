@@ -364,7 +364,7 @@ public class EnlightenmentCenter {
 	 * @throws GameActionException
 	 */
 	public static void spawnRobot() throws GameActionException {
-		System.out.println("Spawning a robot...");
+		//System.out.println("Spawning a robot...");
 		RobotType toBuild = RobotType.MUCKRAKER;
 		int influence = 1;
 
@@ -463,9 +463,14 @@ public class EnlightenmentCenter {
 			}
 		}
 		//slanderer_probability += .20;
+<<<<<<< HEAD
     //slanderer_probability = Math.sqrt(0.01 + slanderer_probability * slanderer_probability);
     //if(slanderer_probability > 1.0) slanderer_probability = 1.0;
 		slanderer_probability = (slanderer_probability + 0.3)/1.3;
+=======
+    slanderer_probability = Math.sqrt(0.01 + slanderer_probability * slanderer_probability);
+    if(slanderer_probability > 1.0) slanderer_probability = 1.0;
+>>>>>>> 23d3d96890e665e6911772aa69b06aa8f1704e8b
 	}
 
 	/**
