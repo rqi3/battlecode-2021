@@ -263,7 +263,7 @@ public class EnlightenmentCenter {
 	 * @throws GameActionException
 	 */
 	private static void trySpawnAttackerMuckraker() throws GameActionException {
-		int attacker_influence = 2;
+		int attacker_influence = 1;
 		for (Direction dir : directions) {
 			if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, attacker_influence)) {
 				rc.buildRobot(RobotType.MUCKRAKER, dir, attacker_influence);
@@ -380,7 +380,24 @@ public class EnlightenmentCenter {
 		if(alive_scout_ids.size() < MAX_SCOUTS){
 			build_scout_muckraker = 1.0;
 		}
+		if(RobotPlayer.neutral_ecs.size() > 0){
+			build_attacker_politician = 10.0;
+			Point ec_target = RobotPlayer.getClosestNeutralECLocation();
+			int ec_target_influence = 1;
+			for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
+				if(neutral_ec.rel_loc == ec_target){
+					ec_target_influence = neutral_ec.influence;
+					break;
+				}
+			}
 
+			attacker_politician_influence = ec_target_influence+20;
+
+			if(attacker_politician_influence >= rc.getInfluence()/2){
+				build_attacker_politician = 0;
+				build_attacker_muckraker = 10.0;
+			}
+		}
 		/*
 		if(alive_scout_ids.size() < MAX_SCOUTS){
 			build_scout_muckraker = 1.0;

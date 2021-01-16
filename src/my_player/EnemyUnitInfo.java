@@ -5,4 +5,7 @@ package my_player;
  */
 public class EnemyUnitInfo {
     int turn_received;
+    int unit_type; //1 = muckraker, 2 = politician, 3 = slanderer
+
+
 }

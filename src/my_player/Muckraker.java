@@ -550,6 +550,8 @@ public class Muckraker {
         //////////////////// Movement End
 
 
+        //TODO: CHANGE TYPE FROM SCOUT TO ATTACKER BASED ON SOME CONDITION
+
         ////////////////////Send Communication Begin
         int flag_value = generateFlagValue();
         if(rc.canSetFlag(flag_value)){
