@@ -475,10 +475,12 @@ public class Muckraker {
             if(neutral_EC_just_found){
                 flag_value = neutral_ec.toFlagValue();
                 communicated_ecs.add(neutral_ec.loc);
+                System.out.println("Just found a neutral EC!");
             }
             else if(enemy_EC_just_found){
                 flag_value = enemy_ec.toFlagValue();
                 communicated_ecs.add(enemy_ec.loc);
+                System.out.println("Just found an enemy EC!");
             }
             else if(neutral_EC_nearby){
                 flag_value = neutral_ec.toFlagValue();
@@ -515,8 +517,6 @@ public class Muckraker {
             else{
                 muckraker_type = RobotPlayer.getBitsBetween(parent_ec_info, 0, 1);
             }
-
-            System.out.println("I am a type " + muckraker_type + " muckraker.");
         }
         ////////////////////Creation End
 
@@ -526,9 +526,10 @@ public class Muckraker {
             muckraker_type = LOST_MUCKRAKER;
         }
         //////////////////// End Initialization
-
+        System.out.println("I am a type " + muckraker_type + " muckraker.");
         //////////////////// Begin Sense
         lookAround();
+        UnitComms.lookAround();
         //////////////////// End Sense
 
 

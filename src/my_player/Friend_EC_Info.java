@@ -12,7 +12,7 @@ public class Friend_EC_Info {
     public MapLocation loc;
     public int influence;
 
-    final int flag_signal = 1;
+    final int flag_signal = 3;
 
     Friend_EC_Info(){
         rel_loc = new Point();

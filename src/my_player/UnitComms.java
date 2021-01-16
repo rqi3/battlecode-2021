@@ -26,12 +26,14 @@ public class UnitComms {
                 Neutral_EC_Info neutral_ec = new Neutral_EC_Info();
                 neutral_ec.setPosition(nearby_robot.getLocation(), RobotPlayer.parent_EC.getLocation());
                 neutral_ec.setInfluence(nearby_robot.getInfluence());
+                System.out.println("Neutral EC found");
             }
             else if(nearby_robot.getTeam() == rc.getTeam().opponent() && nearby_robot.getType() == RobotType.ENLIGHTENMENT_CENTER){
                 //Enemy Enlightenment Center found
                 Enemy_EC_Info enemy_ec = new Enemy_EC_Info();
                 enemy_ec.setPosition(nearby_robot.getLocation(), RobotPlayer.parent_EC.getLocation());
                 enemy_ec.setInfluence(nearby_robot.getInfluence());
+                System.out.println("Enemy EC found");
             }
             else if(nearby_robot.getTeam() == rc.getTeam() && nearby_robot.getType() == RobotType.ENLIGHTENMENT_CENTER){
                 if(nearby_robot.getLocation().equals(RobotPlayer.parent_EC.getLocation())) continue; //don't need to communicate this
@@ -63,10 +65,11 @@ public class UnitComms {
      * @return
      */
     static int generateFlagValue(){
-        int[] possible_flag_values = new int[30];
         /**
-         * In order of priority:
+         * Possible flag values to communicate in order of priority
          */
+        int[] possible_flag_values = new int[30];
+
 
 
         for(int i = 0; i < 30; i++){

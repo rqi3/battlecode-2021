@@ -192,8 +192,8 @@ public class EnlightenmentCenter {
 				RobotPlayer.removeECInfo(enemy_ec.rel_loc);
 
 				RobotPlayer.enemy_ecs.add(enemy_ec);
-				//System.out.println("Enemy EC Information Received:");
-				//System.out.println("Relative Position: " + enemy_ec.rel_loc);
+				System.out.println("Enemy EC Information Received:");
+				System.out.println("Relative Position: " + enemy_ec.rel_loc);
 			}
 			else if(flag_signal == 3){
 				//Friend_EC_Info
