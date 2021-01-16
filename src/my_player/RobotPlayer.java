@@ -29,6 +29,7 @@ public strictfp class RobotPlayer {
 	static List<Enemy_EC_Info> enemy_ecs = new ArrayList<>(); //List of information about enemy ecs that it knows
 	static List<Friend_EC_Info> friend_ecs = new ArrayList<>();; //List of information about friend ecs that it knows
 
+	static List<EnemyUnitInfo> enemy_units = new ArrayList<>(); //List of information about enemy units in order of increasing time
 	/**
 	 * Computes relative location of loc with respect to parent_EC, assuming that this Robot has a parent enlightenment center
 	 */
@@ -247,6 +248,8 @@ public strictfp class RobotPlayer {
 		// This is the RobotController object. You use it to perform actions from this robot,
 		// and to get information on its current status.
 		RobotPlayer.rc = rc;
+		Movement.rc = rc;
+		UnitComms.rc = rc;
 
 		turn_count = 0;
 

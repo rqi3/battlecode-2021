@@ -6,11 +6,13 @@ import java.util.*;
 public class Enemy_EC_Info {
     public Point rel_loc; //position relative to parent EC of unit that is accessing this
     public MapLocation loc;
+    public int influence;
 
-    final int flag_signal = 2;
+    final int flag_signal = 1;
 
     Enemy_EC_Info(){
         rel_loc = new Point();
+        influence = 0;
     }
 
     public void setPosition(Point _rel_loc){
@@ -24,17 +26,27 @@ public class Enemy_EC_Info {
     }
 
 
-    public int toFlagValue(){
-        int flag_value = flag_signal;
-        int flag_loc = RobotPlayer.convertToFlagRelativeLocation(rel_loc);
-        return flag_value+flag_loc*(1<<10);
+    public void setInfluence(int _influence){
+        influence = _influence;
     }
 
-    public static Enemy_EC_Info fromFlagValue(int flag_value){
-        Enemy_EC_Info enemy_ec = new Enemy_EC_Info();
+    public int toFlagValue(){ //Muckraker uses this to convert EC they see into flag
+        int flag_influence = (int)((double)(influence)*127.0/500.0);
+        int flag_loc = RobotPlayer.convertToFlagRelativeLocation(rel_loc);
+
+        return flag_signal+flag_influence*(1<<3)+flag_loc*(1<<10);
+    }
+
+    public static Enemy_EC_Info fromFlagValue(int flag_value){ //parent_EC uses this to convert flag into EC found by scout
+        Enemy_EC_Info Enemy_ec = new Enemy_EC_Info();
+
         int location_bits = RobotPlayer.getBitsBetween(flag_value, 10, 23);
-        enemy_ec.setPosition(RobotPlayer.convertFromFlagRelativeLocation(location_bits));
-        return enemy_ec;
+        int influence_bits = RobotPlayer.getBitsBetween(flag_value, 3, 9);
+
+        Enemy_ec.setPosition(RobotPlayer.convertFromFlagRelativeLocation(location_bits));
+        Enemy_ec.setInfluence((int)(influence_bits*500.0/127.0));
+
+        return Enemy_ec;
     }
 
     public int toBroadcastFlagValue() //parent_EC uses this to broadcast to all units
@@ -55,9 +67,12 @@ public class Enemy_EC_Info {
     {
         int location_bits = RobotPlayer.getBitsBetween(flag_value, 10, 23);
 
-        Enemy_EC_Info enemy_ec = new Enemy_EC_Info();
-        enemy_ec.setPosition(RobotPlayer.convertFromFlagRelativeLocation(location_bits));
+        Enemy_EC_Info Enemy_ec = new Enemy_EC_Info();
+        Enemy_ec.setPosition(RobotPlayer.convertFromFlagRelativeLocation(location_bits));
 
-        return enemy_ec;
+        return Enemy_ec;
     }
+
+
 }
+
