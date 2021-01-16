@@ -95,9 +95,14 @@ public class EnlightenmentCenter {
 				bid_multiplier *= (.95 + .1 * bids_lost);
 			}
 		}
-		
+
+		/*System.out.println("current_bid_value: " + current_bid_value);
+		System.out.println("bid_multiplier: " + bid_multiplier);
+		System.out.println("BID_PERCENTAGE_UPPER_BOUND: " + BID_PERCENTAGE_UPPER_BOUND);*/
+
 		current_bid_value *= Math.pow(bid_multiplier, volatility);
 		current_bid_value = Math.min(current_bid_value, BID_PERCENTAGE_UPPER_BOUND * rc.getInfluence());
+		current_bid_value = Math.max(current_bid_value, 0.1);
 		previous_scores.add(rc.getTeamVotes());
 		
 		return (int) current_bid_value;
@@ -237,8 +242,10 @@ public class EnlightenmentCenter {
 			for (Direction dir : directions) {
 				if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, scout_influence)) {
 					rc.buildRobot(RobotType.MUCKRAKER, dir, scout_influence);
+					int bot_parameter = Muckraker.SCOUT;
 					bot_made_this_turn = true;
 					bot_direction_this_turn = dir;
+					bot_parameter_this_turn = bot_parameter;
 					//System.out.println("Made bot in Direction: " + dir);
 					MapLocation spawn_loc = rc.getLocation().add(dir);
 					int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();
@@ -252,6 +259,30 @@ public class EnlightenmentCenter {
 	}
 
 	/**
+	 * Tries to spawn an Attack Muckraker
+	 * @throws GameActionException
+	 */
+	private static void trySpawnAttackerMuckraker() throws GameActionException {
+		int attacker_influence = 2;
+		for (Direction dir : directions) {
+			if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, attacker_influence)) {
+				rc.buildRobot(RobotType.MUCKRAKER, dir, attacker_influence);
+				int bot_parameter = Muckraker.EC_ATTACKER;
+
+				bot_made_this_turn = true;
+				bot_direction_this_turn = dir;
+				bot_parameter_this_turn = bot_parameter;
+
+
+				//System.out.println("Made Attacker in Direction: " + dir);
+				/*MapLocation spawn_loc = rc.getLocation().add(dir);
+				int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();*/
+				break;
+			}
+		}
+	}
+
+	/**
 	 *
 	 * @param attacker_influence The influence that we will put into the attacker politican.
 	 * @return Whether a politician was spawned
@@ -261,9 +292,10 @@ public class EnlightenmentCenter {
 		for (Direction dir : directions) {
 			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, attacker_influence)) {
 				rc.buildRobot(RobotType.POLITICIAN, dir, attacker_influence);
+				int bot_parameter = Politician.EC_ATTACK;
 				bot_made_this_turn = true;
 				bot_direction_this_turn = dir;
-				bot_parameter_this_turn = Politician.EC_ATTACK;
+				bot_parameter_this_turn = bot_parameter;
 				//System.out.println("Made Attacker in Direction: " + dir);
 				/*MapLocation spawn_loc = rc.getLocation().add(dir);
 				int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();*/
@@ -320,24 +352,7 @@ public class EnlightenmentCenter {
 		return 0;
 	}
 
-	/**
-	 * Tries to spawn an Attack Muckraker
-	 * @throws GameActionException
-	 */
-	private static void trySpawnAttackerMuckraker() throws GameActionException {
-		int attacker_influence = 2;
-		for (Direction dir : directions) {
-			if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, attacker_influence)) {
-				rc.buildRobot(RobotType.MUCKRAKER, dir, attacker_influence);
-				bot_made_this_turn = true;
-				bot_direction_this_turn = dir;
-				//System.out.println("Made Attacker in Direction: " + dir);
-				/*MapLocation spawn_loc = rc.getLocation().add(dir);
-				int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();*/
-				break;
-			}
-		}
-	}
+
 	
 	static double slanderer_probability = 1;
 	
@@ -361,6 +376,10 @@ public class EnlightenmentCenter {
 		double build_attacker_muckraker = 0.3;
 		double build_police_politician = 1.0;
 		double build_nothing = 40.0/rc.getInfluence();
+
+		if(alive_scout_ids.size() < MAX_SCOUTS){
+			build_scout_muckraker = 1.0;
+		}
 
 		/*
 		if(alive_scout_ids.size() < MAX_SCOUTS){
@@ -478,14 +497,13 @@ public class EnlightenmentCenter {
 				}
 			}
 
-
-			for(int bit_position = 0; bit_position < 24; bit_position++){
+			for(int bit_position = 0; bit_position <= 3; bit_position++){
 				if(flag_bits[bit_position]) {
 					returned_flag_value += (1 << bit_position);
 				}
 			}
 
-			returned_flag_value |= bot_parameter_last_turn << 4; // bits 4..?? are set to the bot's extra parameters. For example, whether politician is attack/defense
+			returned_flag_value |= (bot_parameter_last_turn << 4); // bits 4..?? are set to the bot's extra parameters. For example, whether politician is attack/defense
 		}
 		else{
 			//broadcast an enemy or neutral EC
@@ -541,17 +559,16 @@ public class EnlightenmentCenter {
 		////////////////////Receive Communication Begin
 		receiveScoutCommunication();
 
-		for(Neutral_EC_Info a: RobotPlayer.neutral_ecs){
-			//System.out.println("I know a neutral EC is here: " + a.rel_loc);
+		/*for(Neutral_EC_Info a: RobotPlayer.neutral_ecs){
+			System.out.println("I know a neutral EC is here: " + a.rel_loc);
 		}
 		for(Enemy_EC_Info a: RobotPlayer.enemy_ecs){
-			//System.out.println("I know an enemy EC is here: " + a.rel_loc);
+			System.out.println("I know an enemy EC is here: " + a.rel_loc);
 		}
 		for(Friend_EC_Info a: RobotPlayer.friend_ecs){
-			//System.out.println("I know a friend EC is here: " + a.rel_loc);
-		}
+			System.out.println("I know a friend EC is here: " + a.rel_loc);
+		}*/
 		////////////////////Receive Communication End
-
 
 		////////////////////Spawn Robot Begin
 		spawnRobot();
@@ -560,6 +577,7 @@ public class EnlightenmentCenter {
 
 		////////////////////Bid Begin
 		int bid_value = getBidValue();
+		//System.out.println("bid_value: " + bid_value);
 		if(rc.canBid(bid_value)){
 			System.out.println("I bid " + bid_value);
 			rc.bid(bid_value);
@@ -567,7 +585,7 @@ public class EnlightenmentCenter {
 		////////////////////Bid End
 
 
-		////////////////////Broadcast to Units Begin
+		////////////////////Broadcast to Units Begin (or individual communication to newly spawned unit)
 		int flag_value = generateFlagValue();
 		if(rc.canSetFlag(flag_value)){
 			rc.setFlag(flag_value);

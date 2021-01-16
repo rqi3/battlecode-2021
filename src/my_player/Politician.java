@@ -4,9 +4,8 @@ USEFUL INFORMATION;
  *** BOT PARAMETERS ***
 
  Bit 4..5:
-	00 = Defense Politician (Slanderers, default)
-  01 = Attack Politician (EC)
-	10 = Police Politician (basically, a type of defense politician)
+  01 = Attack Politician (attacks neutral/enemy EC)
+	10 = Police Politician (defends EC)
 
 */
 
@@ -51,8 +50,7 @@ public class Politician {
     }
 
 //////////////// PARAMETERS
-
-		public static final int SLANDERER_DEFENSE = 0;
+		public static final int LOST_POLITICIAN = 0;
 		public static final int EC_ATTACK = 1;
 		public static final int POLICE = 2;
 		static int politician_type = POLICE; // read above. By default, police politician
@@ -69,7 +67,7 @@ public class Politician {
 
 
 		// Type 0 Politician Functions
-		static void doSlandererDefenseAction() throws GameActionException
+		static void doLostPoliticianAction() throws GameActionException
 		/*
 			Summary of Algorithm:
 			* Copy slanderer pathfinding (to hopefully find them)
@@ -324,23 +322,21 @@ public class Politician {
         Movement.rc = RobotPlayer.rc;
         //TODO: Consider Slanderer-converted Politicians
         if(RobotPlayer.just_made){
-            politician_type = RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
-						// ASSERT politician_type != -1
-						if(politician_type == -1) politician_type = Politician.SLANDERER_DEFENSE; // if no parent EC make it slanderer defense
-
-						//Also record type of politician (note this will result in SLANDERER_DEFENSE by default)
-
-            //System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
-            if(RobotPlayer.has_parent_EC){
-                //System.out.println("parent Location: " + RobotPlayer.parent_EC.getLocation());
-            }
+            int parent_ec_info = RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
+			if(politician_type == -1){
+				politician_type = Politician.LOST_POLITICIAN; // if no parent EC make it slanderer defense
+			}
+			else{
+				politician_type = RobotPlayer.getBitsBetween(parent_ec_info, 0, 1); //Record type of politician
+			}
+			System.out.println("I am a type " + politician_type + " politician.");
         }
         ////////////////////Creation End
 
         ////////////////////Initialization Begin
         updateParentEC();
         if(!RobotPlayer.has_parent_EC){
-					politician_type = Politician.SLANDERER_DEFENSE;
+        	politician_type = Politician.LOST_POLITICIAN;
         }
         ////////////////////Initialization End
 
@@ -355,8 +351,8 @@ public class Politician {
         //Do an action (attack or move)
 				switch(politician_type)
 				{
-					case SLANDERER_DEFENSE:
-						doSlandererDefenseAction();
+					case LOST_POLITICIAN:
+						doLostPoliticianAction();
 						break;
 					case EC_ATTACK:
 						doECAttackerAction();

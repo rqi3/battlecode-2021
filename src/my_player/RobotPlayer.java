@@ -146,6 +146,7 @@ public strictfp class RobotPlayer {
 	/**
 	 * When a unit is spawned, look for a parent EC that spawned it and edit parent_EC
 	 * TODO: Local communication can also be stored in this information
+	 * @return The value of the additional information on the flag of the parent EC, -1 if it does not exist
 	 */
 	static int assignParentEC() throws GameActionException
 	/*

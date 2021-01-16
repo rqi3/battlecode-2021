@@ -9,8 +9,6 @@ import java.util.*;
  */
 public class Muckraker {
     static RobotController rc;
-    static boolean is_scout = true; //whether this Muckraker will be communicating stuff it sees to parent_EC
-    static boolean is_attacker = false;
     static List<MapLocation> communicated_ecs = new ArrayList<>();
 
     static final Direction[] directions = {
@@ -23,6 +21,11 @@ public class Muckraker {
             Direction.WEST,
             Direction.NORTHWEST,
     };
+    public static final int LOST_MUCKRAKER = 0;
+    public static final int SCOUT = 1;
+    public static final int EC_ATTACKER = 2;
+
+    static int muckraker_type = SCOUT;
 
     /**
      * Check whether parent EC died and possibly change type if this happens.
@@ -397,7 +400,7 @@ public class Muckraker {
     private static int generateFlagValue(){
         int flag_value = 0;
 
-        if(is_scout && RobotPlayer.has_parent_EC){
+        if(muckraker_type == SCOUT && RobotPlayer.has_parent_EC){
             /*
             Communication Type (first 3 flag bits):
             100 - Neutral EC, next 7 bits are Influence*double(127/500), last 14 bits are location
@@ -503,28 +506,24 @@ public class Muckraker {
             System.out.println("scout_initial_direction: " + scout_initial_direction);
             rc = RobotPlayer.rc;
             Movement.rc = RobotPlayer.rc;
-            if(rc.getInfluence() == 1){
-                is_scout = true;
-                is_attacker = false;
-            }
-            else if(rc.getInfluence() > 1){
-                is_scout = false;
-                is_attacker = true;
-            }
-            RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
 
-            System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
-            if(RobotPlayer.has_parent_EC){
-                System.out.println("parent Location: " + RobotPlayer.parent_EC.getLocation());
+            int parent_ec_info = RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
+
+            if(parent_ec_info == -1){
+                muckraker_type = LOST_MUCKRAKER;
             }
+            else{
+                muckraker_type = RobotPlayer.getBitsBetween(parent_ec_info, 0, 1);
+            }
+
+            System.out.println("I am a type " + muckraker_type + " muckraker.");
         }
         ////////////////////Creation End
 
         //////////////////// Begin Initialization
         updateParentEC();
         if(!RobotPlayer.has_parent_EC){
-            is_scout = false;
-            is_attacker = true;
+            muckraker_type = LOST_MUCKRAKER;
         }
         //////////////////// End Initialization
 
@@ -542,10 +541,10 @@ public class Muckraker {
         //////////////////// Attack End
 
         //////////////////// Movement Begin
-        if(is_scout){ //movement for scout
+        if(muckraker_type == SCOUT){ //movement for scout
             moveScout();
         }
-        else if(is_attacker){
+        else if(muckraker_type == EC_ATTACKER){
             moveAttacker();
         }
         //////////////////// Movement End
