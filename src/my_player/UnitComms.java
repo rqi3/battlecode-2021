@@ -77,7 +77,7 @@ public class UnitComms {
                 friend_ec.setPosition(nearby_robot.getLocation());
                 friend_ec.setInfluence(nearby_robot.getInfluence());
 
-                //RobotPlayer.addECInfo(friend_ec);
+                RobotPlayer.addECInfo(friend_ec);
             }
             if(Clock.getBytecodeNum()-starting_bytecode > BYTECODE_LIMIT){
                 break;
