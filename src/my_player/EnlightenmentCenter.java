@@ -577,6 +577,11 @@ public class EnlightenmentCenter {
 		////////////////////Initialization End
 
 
+		////////////////////Sensing Begin
+		UnitComms.BYTECODE_LIMIT = 3000;
+		UnitComms.lookAround();
+		////////////////////Sensing End
+
 		////////////////////Receive Communication Begin
 		receiveScoutCommunication();
 

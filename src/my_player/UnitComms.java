@@ -18,6 +18,7 @@ public class UnitComms {
     static RobotInfo[] all_nearby_robots;
     static Point my_rel_loc = new Point();
 
+    static int BYTECODE_LIMIT = 1300;
     /**
      * Method for Any Robot:
      * Updates ec lists and enemy_units
@@ -78,7 +79,7 @@ public class UnitComms {
 
                 //RobotPlayer.addECInfo(friend_ec);
             }
-            if(Clock.getBytecodeNum()-starting_bytecode > 1300){
+            if(Clock.getBytecodeNum()-starting_bytecode > BYTECODE_LIMIT){
                 break;
             }
         }
