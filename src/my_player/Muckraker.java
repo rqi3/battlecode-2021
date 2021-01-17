@@ -537,6 +537,7 @@ public class Muckraker {
         if(!RobotPlayer.has_parent_EC){
             muckraker_type = LOST_MUCKRAKER;
         }
+
         //////////////////// End Initialization
         System.out.println("I am a type " + muckraker_type + " muckraker.");
         //////////////////// Begin Sense
@@ -562,15 +563,18 @@ public class Muckraker {
         }
         //////////////////// Movement End
 
-
-        //TODO: CHANGE TYPE FROM SCOUT TO ATTACKER BASED ON SOME CONDITION
+        lookAround();
+        UnitComms.lookAround();
 
         ////////////////////Send Communication Begin
+        RobotPlayer.updateEnemyUnitList(); //make sure we don't communicate something ambiguous
         int flag_value = generateFlagValue();
         if(rc.canSetFlag(flag_value)){
             rc.setFlag(flag_value);
         }
         ////////////////////Send Communication End
+
+        //TODO: CHANGE TYPE FROM SCOUT TO ATTACKER BASED ON SOME CONDITION, which will change flag
     }
 
     /**

@@ -39,6 +39,9 @@ public class Slanderer {
 		}
 	}
 
+	private static int generateFlagValue(){
+		return 0;
+	}
 
 	public static void run() throws GameActionException{
 		////////////////////Creation Begin
@@ -57,6 +60,7 @@ public class Slanderer {
 
 		////////////////////Initialization Begin
 		updateParentEC();
+		RobotPlayer.updateEnemyUnitList();
 		////////////////////Initialization End
 
 		////////////////////Receive Broadcast Begin
@@ -66,6 +70,12 @@ public class Slanderer {
 		////////////////////Movement Begin
 		moveAction();
 		////////////////////Movement End
+
+		RobotPlayer.updateEnemyUnitList(); //make sure we don't communicate something ambiguous
+		int flag_value = generateFlagValue();
+		if(rc.canSetFlag(flag_value)){
+			rc.setFlag(flag_value);
+		}
 	}
 
 	/**

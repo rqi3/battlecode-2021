@@ -8,13 +8,13 @@ import java.util.*;
  */
 public class EnemyUnitInfo {
     static final int ENEMY_MEMORY = 2; //how many bits will be used to communicate turn_received. Units must remove according to (1<<ENEMY_MEMORY)
-    int turn_received;
+    int round_received;
     int unit_type; //1 = muckraker, 2 = politician, 3 = slanderer
     public Point rel_loc; //position relative to parent EC of unit that is accessing this
     public MapLocation loc;
 
     EnemyUnitInfo(){
-        turn_received = 0;
+        round_received = 0;
         unit_type = 0;
         rel_loc = new Point();
     }
@@ -29,11 +29,11 @@ public class EnemyUnitInfo {
         }
 
         EnemyUnitInfo e = (EnemyUnitInfo)(o);
-        return turn_received == e.turn_received && unit_type == e.unit_type && rel_loc.equals(e.rel_loc);
+        return round_received == e.round_received && unit_type == e.unit_type && rel_loc.equals(e.rel_loc);
     }
 
-    void setTurn(int t){
-        turn_received = t;
+    void setRound(int r){
+        round_received = r;
     }
 
     void setType(RobotType rt){

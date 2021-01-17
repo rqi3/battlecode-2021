@@ -60,7 +60,7 @@ public class UnitComms {
                 //TODO: ENEMY UNIT (NON EC)
                 EnemyUnitInfo enemy_unit = new EnemyUnitInfo();
                 enemy_unit.setType(nearby_robot.getType());
-                enemy_unit.setTurn(rc.getRoundNum());
+                enemy_unit.setRound(rc.getRoundNum());
                 enemy_unit.setLocation(nearby_robot.getLocation());
 
                 RobotPlayer.addEnemyUnitInfo(enemy_unit);

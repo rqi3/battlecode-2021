@@ -574,6 +574,7 @@ public class EnlightenmentCenter {
 		////////////////////Initialization Begin
 		updateBotCreationInfo();
 		updateScoutList();
+		RobotPlayer.updateEnemyUnitList();
 		////////////////////Initialization End
 
 
@@ -607,6 +608,7 @@ public class EnlightenmentCenter {
 
 
 		////////////////////Broadcast to Units Begin (or individual communication to newly spawned unit)
+		RobotPlayer.updateEnemyUnitList(); //make sure we don't communicate something ambiguous
 		int flag_value = generateFlagValue();
 		if(rc.canSetFlag(flag_value)){
 			rc.setFlag(flag_value);

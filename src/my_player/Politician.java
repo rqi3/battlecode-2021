@@ -311,6 +311,10 @@ public class Politician {
 		}
 	}
 
+	private static int generateFlagValue(){
+		return 0;
+	}
+
 	/**
 	 * Controls this Politician
 	 * @throws GameActionException
@@ -341,6 +345,7 @@ public class Politician {
 		if(!RobotPlayer.has_parent_EC){
 			politician_type = Politician.LOST_POLITICIAN;
 		}
+		RobotPlayer.updateEnemyUnitList();
 		////////////////////Initialization End
 
 		////////////////////Receive Broadcast Begin
@@ -368,6 +373,11 @@ public class Politician {
 
 		////////////////////Action End
 
+		RobotPlayer.updateEnemyUnitList(); //make sure we don't communicate something ambiguous
+		int flag_value = generateFlagValue();
+		if(rc.canSetFlag(flag_value)){
+			rc.setFlag(flag_value);
+		}
 
 	}
 
