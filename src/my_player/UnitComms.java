@@ -29,6 +29,13 @@ public class UnitComms {
         System.out.println("Bytecode 1.2: " + Clock.getBytecodeNum());
         my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
+        RobotInfo intermediate;
+        for(int i = all_nearby_robots.length-1; i >= 0; i--){
+            int j = (int)(Math.random()*(i+1));
+            intermediate = all_nearby_robots[i];
+            all_nearby_robots[i] = all_nearby_robots[j];
+            all_nearby_robots[j] = intermediate;
+        }
         int starting_bytecode = Clock.getBytecodeNum();
         for(RobotInfo nearby_robot: all_nearby_robots){
             if(nearby_robot.getTeam() == Team.NEUTRAL){
