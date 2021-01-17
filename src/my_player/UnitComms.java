@@ -18,25 +18,48 @@ public class UnitComms {
     static RobotInfo[] all_nearby_robots;
     static Point my_rel_loc = new Point();
 
+    static int BYTECODE_LIMIT = 1300;
     /**
      * Method for Any Robot:
      * Updates ec lists and enemy_units
      */
     static void lookAround() throws GameActionException {
         if(rc.getType() != RobotType.ENLIGHTENMENT_CENTER && !RobotPlayer.has_parent_EC) return;
-
+        System.out.println("Bytecode 1.1: " + Clock.getBytecodeNum());
         all_nearby_robots = rc.senseNearbyRobots();
+        System.out.println("Bytecode 1.2: " + Clock.getBytecodeNum());
         my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
+        RobotInfo intermediate;
+        for(int i = all_nearby_robots.length-1; i >= 0; i--){
+            int j = (int)(Math.random()*(i+1));
+            intermediate = all_nearby_robots[i];
+            all_nearby_robots[i] = all_nearby_robots[j];
+            all_nearby_robots[j] = intermediate;
+        }
+        int starting_bytecode = Clock.getBytecodeNum();
         for(RobotInfo nearby_robot: all_nearby_robots){
-            if(nearby_robot.getTeam() == Team.NEUTRAL && nearby_robot.getType() == RobotType.ENLIGHTENMENT_CENTER){
+            if(nearby_robot.getTeam() == Team.NEUTRAL){
                 //Neutral Enlightenment Center found
                 Neutral_EC_Info neutral_ec = new Neutral_EC_Info();
                 neutral_ec.setPosition(nearby_robot.getLocation());
                 neutral_ec.setInfluence(nearby_robot.getInfluence());
 
                 RobotPlayer.addECInfo(neutral_ec);
-                System.out.println("Neutral EC found");
+                //System.out.println("Neutral EC found");
+            }
+            else if(nearby_robot.getTeam() == rc.getTeam().opponent()){
+                //TODO: ENEMY UNIT (NON EC)
+                EnemyUnitInfo enemy_unit = new EnemyUnitInfo();
+                enemy_unit.setType(nearby_robot.getType());
+                enemy_unit.setRound(rc.getRoundNum());
+                enemy_unit.setLocation(nearby_robot.getLocation());
+                RobotPlayer.addEnemyUnitInfo(enemy_unit);
+                //System.out.println("Found enemy unit at: " + nearby_robot.getLocation());
+
+            }
+            else if(nearby_robot.getTeam() == rc.getTeam()){
+                //TODO: FRIENDLY UNIT COMMUNICATION, LOOK AT THEIR FLAG FOR PROPAGATED ENEMY UNITS
             }
             else if(nearby_robot.getTeam() == rc.getTeam().opponent() && nearby_robot.getType() == RobotType.ENLIGHTENMENT_CENTER){
                 //Enemy Enlightenment Center found
@@ -45,7 +68,7 @@ public class UnitComms {
                 enemy_ec.setInfluence(nearby_robot.getInfluence());
 
                 RobotPlayer.addECInfo(enemy_ec);
-                System.out.println("Enemy EC found");
+                //System.out.println("Enemy EC found");
             }
             else if(nearby_robot.getTeam() == rc.getTeam() && nearby_robot.getType() == RobotType.ENLIGHTENMENT_CENTER){
                 if(nearby_robot.getLocation().equals(RobotPlayer.parent_EC.getLocation())) continue; //don't need to communicate this
@@ -54,24 +77,14 @@ public class UnitComms {
                 friend_ec.setPosition(nearby_robot.getLocation());
                 friend_ec.setInfluence(nearby_robot.getInfluence());
 
-                RobotPlayer.addECInfo(friend_ec);
+                //RobotPlayer.addECInfo(friend_ec);
             }
-            else if(nearby_robot.getTeam() == rc.getTeam().opponent()){
-                //TODO: ENEMY UNIT (NON EC)
-                EnemyUnitInfo enemy_unit = new EnemyUnitInfo();
-                enemy_unit.setType(nearby_robot.getType());
-                enemy_unit.setRound(rc.getRoundNum());
-                enemy_unit.setLocation(nearby_robot.getLocation());
-
-                RobotPlayer.addEnemyUnitInfo(enemy_unit);
-                System.out.println("Found enemy unit at: " + nearby_robot.getLocation());
-
+            if(Clock.getBytecodeNum()-starting_bytecode > BYTECODE_LIMIT){
+                break;
             }
-            else if(nearby_robot.getTeam() == rc.getTeam()){
-                //TODO: FRIENDLY UNIT COMMUNICATION, LOOK AT THEIR FLAG FOR PROPAGATED ENEMY UNITS
-            }
-
         }
+
+        System.out.println("Bytecode 1.3: " + Clock.getBytecodeNum());
     }
 
     /**

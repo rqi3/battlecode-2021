@@ -345,7 +345,6 @@ public class Politician {
 		if(!RobotPlayer.has_parent_EC){
 			politician_type = Politician.LOST_POLITICIAN;
 		}
-		RobotPlayer.updateEnemyUnitList();
 		////////////////////Initialization End
 
 		////////////////////Receive Broadcast Begin

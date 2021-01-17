@@ -574,9 +574,13 @@ public class EnlightenmentCenter {
 		////////////////////Initialization Begin
 		updateBotCreationInfo();
 		updateScoutList();
-		RobotPlayer.updateEnemyUnitList();
 		////////////////////Initialization End
 
+
+		////////////////////Sensing Begin
+		UnitComms.BYTECODE_LIMIT = 3000;
+		UnitComms.lookAround();
+		////////////////////Sensing End
 
 		////////////////////Receive Communication Begin
 		receiveScoutCommunication();
