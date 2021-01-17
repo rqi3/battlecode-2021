@@ -245,7 +245,7 @@ public class Muckraker {
             System.out.println("Angle method found a next_sector: " + next_sector);*/
             return true;
         }
-        System.out.println("Directional sector not found: " + Clock.getBytecodeNum());
+
         return false;
     }
 
@@ -271,16 +271,9 @@ public class Muckraker {
             roaming_sectors = true;
         }
 
-
-
         int min_sector_dist = 9999;
-
-        int low_x = Math.max(0, next_sector.x-2);
-        int high_x = Math.min(16, next_sector.x+2);
-        int low_y = Math.max(0, next_sector.y-2);
-        int high_y = Math.min(16, next_sector.y+2);
-        for(int i = low_x; i <= high_x; i++){
-            for(int j = low_y; j <= high_y; j++){
+        for(int i = 0; i <= 16; i++){
+            for(int j = 0; j <= 16; j++){
                 if(visited_sectors[i][j] != 0) {
                     possible_new_sector_distances[i][j] = 9999;
                     continue;
@@ -291,9 +284,8 @@ public class Muckraker {
         }
         if(min_sector_dist < 9999){
             List<Point> min_sector0s = new ArrayList<>();
-            System.out.println("Curbytecode Sector: " + Clock.getBytecodeNum());
-            for(int i = low_x; i <= high_x; i++){
-                for(int j = low_y; j <= high_y; j++){
+            for(int i = 0; i <= 16; i++){
+                for(int j = 0; j <= 16; j++){
                     if(possible_new_sector_distances[i][j] == min_sector_dist){
                         min_sector0s.add(new Point(i, j));
                     }
@@ -302,14 +294,13 @@ public class Muckraker {
             int min_sector0s_ind = (int)(Math.random()*min_sector0s.size());
             next_sector = min_sector0s.get(min_sector0s_ind);
             System.out.println("Found new unvisited sector: " + next_sector);
-            System.out.println("Found new unvisited bytecode: " + Clock.getBytecodeNum());
             return;
         }
 
         List<Point> sector1s = new ArrayList<>();
 
-        for(int i = low_x; i <= high_x; i++){
-            for(int j = low_y; j <= high_y; j++){
+        for(int i = Math.max(0, next_sector.x-2); i <= Math.min(16, next_sector.x+2); i++){
+            for(int j = Math.max(0, next_sector.y-2); j <= Math.min(16, next_sector.y+2); j++){
                 if(i == next_sector.x && j == next_sector.y) continue; //don't choose the same
                 if(visited_sectors[i][j] == 3) continue; //impossible sector
 
@@ -554,15 +545,15 @@ public class Muckraker {
         UnitComms.lookAround();
         //////////////////// End Sense
 
-        System.out.println("Bytecode 1: " + Clock.getBytecodeNum());
+
         //////////////////// Begin Receive Broadcast
         RobotPlayer.receiveECBroadcast();
         //////////////////// End Receive Broadcast
-        System.out.println("Bytecode 2: " + Clock.getBytecodeNum());
+
         //////////////////// Attack Begin
         attackSlanderer(); //assume that we always want to attack if we can
         //////////////////// Attack End
-        System.out.println("Bytecode 3: " + Clock.getBytecodeNum());
+
         //////////////////// Movement Begin
         if(muckraker_type == SCOUT){ //movement for scout
             moveScout();
@@ -570,10 +561,9 @@ public class Muckraker {
         else if(muckraker_type == EC_ATTACKER){
             moveAttacker();
         }
-
-        System.out.println("Bytecode 4: " + Clock.getBytecodeNum());
         //////////////////// Movement End
 
+        lookAround();
         UnitComms.lookAround();
 
         ////////////////////Send Communication Begin

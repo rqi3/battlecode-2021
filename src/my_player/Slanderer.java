@@ -60,7 +60,7 @@ public class Slanderer {
 
 		////////////////////Initialization Begin
 		updateParentEC();
-		UnitComms.lookAround();
+		RobotPlayer.updateEnemyUnitList();
 		////////////////////Initialization End
 
 		////////////////////Receive Broadcast Begin
@@ -68,9 +68,7 @@ public class Slanderer {
 		////////////////////Receive Broadcast End
 
 		////////////////////Movement Begin
-		System.out.println("Bytecode before movement: " + Clock.getBytecodeNum());
 		moveAction();
-		System.out.println("Bytecode after movement: " + Clock.getBytecodeNum());
 		////////////////////Movement End
 
 		RobotPlayer.updateEnemyUnitList(); //make sure we don't communicate something ambiguous

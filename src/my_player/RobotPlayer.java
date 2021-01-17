@@ -29,8 +29,8 @@ public strictfp class RobotPlayer {
 	static List<Enemy_EC_Info> enemy_ecs = new ArrayList<>(); //List of information about enemy ecs that it knows
 	static List<Friend_EC_Info> friend_ecs = new ArrayList<>();; //List of information about friend ecs that it knows
 
-	static final int MAX_ENEMY_UNITS_SIZE = 10;
-	static HashSet<EnemyUnitInfo> enemy_units = new HashSet<>(); //List of information about enemy units in order of increasing time
+	static final int MAX_ENEMY_UNITS_SIZE = 20;
+	static List<EnemyUnitInfo> enemy_units = new ArrayList<>(); //List of information about enemy units in order of increasing time
 	/**
 	 * Computes relative location of loc with respect to parent_EC, assuming that this Robot has a parent enlightenment center
 	 */
@@ -168,7 +168,9 @@ public strictfp class RobotPlayer {
 	 * @param eu the enemy unit information
 	 */
 	public static void addEnemyUnitInfo(EnemyUnitInfo eu){
-		if(enemy_units.size() < MAX_ENEMY_UNITS_SIZE) enemy_units.add(eu);
+		if(!enemy_units.contains(eu)){
+			enemy_units.add(eu);
+		}
 	}
 
 	/**
@@ -178,12 +180,25 @@ public strictfp class RobotPlayer {
 		/**
 		 * Sort by decreasing turn number
 		 */
-		enemy_units.removeIf(element -> element.round_received <= rc.getRoundNum()+1-(1<<EnemyUnitInfo.ENEMY_MEMORY));
+		Collections.sort(enemy_units, new Comparator<EnemyUnitInfo>(){
+			public int compare(EnemyUnitInfo e1, EnemyUnitInfo e2){
+				if(e1.round_received == e2.round_received) return 0;
+				return e1.round_received > e2.round_received ? -1 : 1;
+			}
+		});
 
-		/*System.out.println("current enemy_units: ");
+		while(enemy_units.size() > 0){
+			int earliest_turn_count = enemy_units.get(enemy_units.size()-1).round_received;
+			if(earliest_turn_count <= rc.getRoundNum()+1-(1<<EnemyUnitInfo.ENEMY_MEMORY) || enemy_units.size() > MAX_ENEMY_UNITS_SIZE){
+				enemy_units.remove(enemy_units.size()-1);
+			}
+			else break;
+		}
+
+		System.out.println("current enemy_units: ");
 		for(EnemyUnitInfo info: enemy_units){
 			System.out.println("Round & Location of enemy unit: " + info.round_received + " " + info.loc);
-		}*/
+		}
 	}
 
 	/**
