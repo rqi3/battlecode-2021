@@ -574,7 +574,6 @@ public class EnlightenmentCenter {
 		////////////////////Initialization Begin
 		updateBotCreationInfo();
 		updateScoutList();
-		RobotPlayer.updateEnemyUnitList();
 		////////////////////Initialization End
 
 
