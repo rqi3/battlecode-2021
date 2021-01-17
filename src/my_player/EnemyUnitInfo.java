@@ -19,6 +19,7 @@ public class EnemyUnitInfo {
         rel_loc = new Point();
     }
 
+    @Override
     public boolean equals(Object o){
         if(o == this){
             return true;
@@ -30,6 +31,11 @@ public class EnemyUnitInfo {
 
         EnemyUnitInfo e = (EnemyUnitInfo)(o);
         return round_received == e.round_received && unit_type == e.unit_type && rel_loc.equals(e.rel_loc);
+    }
+
+    @Override
+    public int hashCode(){
+        return (int)(round_received+1000*loc.x+10*loc.y);
     }
 
     void setRound(int r){
