@@ -301,6 +301,20 @@ public class EnlightenmentCenter {
 		}
 		return false;
 	}
+	
+	public static boolean trySpawnMoneyPolitician(int money_influence) throws GameActionException {
+		for (Direction dir : directions) {
+			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, money_influence)) {
+				rc.buildRobot(RobotType.POLITICIAN, dir, money_influence);
+				int bot_parameter = Politician.MONEY;
+				bot_made_this_turn = true;
+				bot_direction_this_turn = dir;
+				bot_parameter_this_turn = bot_parameter;
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 *
