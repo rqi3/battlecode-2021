@@ -99,17 +99,14 @@ public class Slanderer {
 	public static final double REPEL_SL = 20.0; 
 	public static final double REPEL_EC = 20.0; 
 	public static final double REPEL_PT = 20.0; 
-	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
-	public static final double CHASE_WEIGHTS[] = {0.0, -10000.0, -10.0};  // tendency to move towards enemy muckrakers
-	public static final double INF = 1e12;
+	public static final double CHASE_WEIGHT = -1000.0;  // tendency to move towards enemy muckrakers
 
 	public static void moveAction() throws GameActionException
 	{
-		double score[][] = new double[3][3];// each of the 9 squares it can move to. Higher score is better
+		double score[][] = new double[3][3];// each of the 9 square police can move to. Higher score is better
 		MapLocation cur = rc.getLocation();
 		
 		//Modify score to naturally favor moving closer to home RC
-		if(RobotPlayer.parent_EC != null)
 		{
 			MapLocation home = RobotPlayer.parent_EC.getLocation();
 			for(int i=-1;i<=1;++i)
@@ -117,93 +114,86 @@ public class Slanderer {
 				{
 					int x=cur.x+i;
 					int y=cur.y+j;
-					int dist = home.distanceSquaredTo(new MapLocation(x, y));
-					if(dist <= 2)
-						score[i+1][j+1] += SPAWN_BLOCK_WEIGHT;
-					else
-						score[i+1][j+1] += HOME_WEIGHT/Math.sqrt(dist+1);
+					score[i+1][j+1] -= home.distanceSquaredTo(new MapLocation(x, y))*HOME_WEIGHT; // subtract because we favor shorter locations
 				}
 		}
 
 		//Modify score based on nearby robots
-		RobotInfo closest_friendly = null;
-		int closest_friendly_dist = 1000000;
-		for(RobotInfo info : rc.senseNearbyRobots(20, rc.getTeam()))
-		{
-			int dist = cur.distanceSquaredTo(info.getLocation());
-			if(dist < closest_friendly_dist)
+		RobotInfo closest_muckraker = null;
+		int closest_muckraker_dist = 1000000;
+		for(RobotInfo info : rc.senseNearbyRobots(20))
+			if(info.getTeam() == rc.getTeam()) // same team
 			{
-				closest_friendly_dist = dist;
-				closest_friendly = info;
-			}
-		}
-
-		//Handle nearest friendly
-		if(closest_friendly != null)
-		{
-			double wt = 0.0;
-			switch(closest_friendly.getType()) // MORE PARAMETERS
-			{
-				case SLANDERER:
-					wt = REPEL_SL;
-					break;
-				case ENLIGHTENMENT_CENTER:
-					wt = REPEL_EC;
-					break;
-				case POLITICIAN:
-					wt = REPEL_PT;
-					break;
-				default:
-					break;
-			}
-			MapLocation loc = closest_friendly.getLocation();
-			for(int i=-1;i<=1;++i)
-				for(int j=-1;j<=1;++j)
+				double wt = 0.0;
+				switch(info.getType()) // MORE PARAMETERS
 				{
-					int x=cur.x+i;
-					int y=cur.y+j;
-					//treat like magnets
-					score[i+1][j+1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(x, y))); // sub because we want to move away from other politicians
+					case SLANDERER:
+						wt = REPEL_SL;
+						break;
+					case ENLIGHTENMENT_CENTER:
+						wt = REPEL_EC;
+						break;
+					case POLITICIAN:
+						wt = REPEL_PT;
+						break;
+					default:
+						break;
 				}
-		}
-
-		//Handle nearest enemy
-		if(ClosestEnemyAttacker.enemy_exists)
-		{
-			double wt = CHASE_WEIGHTS[ClosestEnemyAttacker.enemy_type];
-			MapLocation loc = ClosestEnemyAttacker.enemy_position;
-			for(int i=-1;i<=1;++i)
-				for(int j=-1;j<=1;++j)
-				{
-					int x=cur.x+i;
-					int y=cur.y+j;
-					score[i+1][j+1] -= loc.distanceSquaredTo(new MapLocation(x, y))*wt; // subtract because we want to move to smaller distance
-				}
-		}
-
-		//Move (should take at most (9 * (4 + 9*5 + 2)) = 459 bytecodes
-		while(true)
-		{
-			double best = score[1][1]-1;
-			int bi=-1, bj=-1;
-			Direction to_go = null;
-			for(int i=-1;i<=1;++i)
-				for(int j=-1;j<=1;++j)
-					if(best < score[i+1][j+1])
+				MapLocation loc = info.getLocation();
+				for(int i=-1;i<=1;++i)
+					for(int j=-1;j<=1;++j)
 					{
-						best = score[i+1][j+1];
-						bi=i+1; bj=j+1;
-						to_go = dir[i+1][j+1];
+						int x=cur.x+i;
+						int y=cur.y+j;
+						//treat like magnets
+						score[i+1][j+1] -= wt/Math.sqrt((double)loc.distanceSquaredTo(new MapLocation(x, y))); // sub because we want to move away from other politicians
 					}
-			if(to_go == null) // no movement
-				return;
+			}
+			else // enemy team
+				switch(info.getType())
+				{
+					case MUCKRAKER:
+						int new_dist = info.getLocation().distanceSquaredTo(cur);
+						if(closest_muckraker == null || new_dist < closest_muckraker_dist)
+						{
+							closest_muckraker = info;
+							closest_muckraker_dist = new_dist;
+						}
+						break;
+					default:
+						break;
+			}
+
+		//Modify score to chase nearby muckraker
+		//TODO Can change this to weighting ALL muckrakers as well
+		if(closest_muckraker != null)
+		{
+			MapLocation loc = closest_muckraker.getLocation();
+			for(int i=-1;i<=1;++i)
+				for(int j=-1;j<=1;++j)
+				{
+					int x=cur.x+i;
+					int y=cur.y+j;
+					score[i+1][j+1] -= loc.distanceSquaredTo(new MapLocation(x, y))*CHASE_WEIGHT; // subtract because we want to move to smaller distance
+				}
+		}
+
+		//Move
+		double best = score[1][1]-1;
+		Direction to_go = null;
+		for(int i=-1;i<=1;++i)
+			for(int j=-1;j<=1;++j)
+				if(best < score[i+1][j+1])
+				{
+					best = score[i+1][j+1];
+					to_go = dir[i+1][j+1];
+				}
+		if(to_go != null)
 			if(rc.canMove(to_go))
 			{
 				rc.move(to_go);
-				score[bi][bj] -= INF;
 				return;
 			}
-		}
 	}
 
 	/**

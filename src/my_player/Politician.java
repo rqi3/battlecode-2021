@@ -31,11 +31,11 @@ public class Politician {
 			Direction.WEST,
 			Direction.NORTHWEST,
 	};
-
+		
 	public static final Direction dir[][] = //[x][y]
-			{{Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST},
-					{Direction.SOUTH, null, Direction.NORTH},
-					{Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST}};
+	{{Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST},
+		{Direction.SOUTH, null, Direction.NORTH},
+		{Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST}};
 
 
 	/**
@@ -49,14 +49,14 @@ public class Politician {
 		}
 	}
 
-	//////////////// PARAMETERS
-	public static final int LOST_POLITICIAN = 0;
-	public static final int EC_ATTACK = 1;
-	public static final int POLICE = 2;
-	public static final int MONEY = 3;
-	static int politician_type = POLICE; // read above. By default, police politician
+//////////////// PARAMETERS
+		public static final int LOST_POLITICIAN = 0;
+		public static final int EC_ATTACK = 1;
+		public static final int POLICE = 2;
+		public static final int MONEY = 3;
+		static int politician_type = POLICE; // read above. By default, police politician
 
-	// Type 1 politican parameters
+		// Type 1 politican parameters
 	/**
 	 * Targeting for Attacker Politicians
 	 */
@@ -67,33 +67,33 @@ public class Politician {
 ////////////////
 
 
-	// Type 0 Politician Functions
-	static void doLostPoliticianAction() throws GameActionException
+		// Type 0 Politician Functions
+		static void doLostPoliticianAction() throws GameActionException
 		/*
 			Summary of Algorithm:
 			* Copy slanderer pathfinding (to hopefully find them)
 			* If you see enemy muckraker within range, use empower
 		*/
-	{
-		RobotInfo[] close_robots = rc.senseNearbyRobots(2); //If there are nearby enemy units, empower
-		boolean do_empower = false;
-		for(RobotInfo x : close_robots)
 		{
-			//check whether robot x is an enemy muckraker
-			if(x.getTeam() != rc.getTeam() && x.getType() == RobotType.MUCKRAKER)
-				do_empower = true;
-		}
-		if(do_empower)
-			if(rc.canEmpower(2)){ // TODO what should we do about empower parameter?
-				rc.empower(2);
-				return; // successfully empowered
+			RobotInfo[] close_robots = rc.senseNearbyRobots(2); //If there are nearby enemy units, empower
+			boolean do_empower = false;
+			for(RobotInfo x : close_robots)
+			{
+				//check whether robot x is an enemy muckraker
+				if(x.getTeam() != rc.getTeam() && x.getType() == RobotType.MUCKRAKER)
+					do_empower = true;
 			}
+			if(do_empower)
+				if(rc.canEmpower(2)){ // TODO what should we do about empower parameter?
+					rc.empower(2);
+					return; // successfully empowered
+				}
 
-		//otherwise: no move
-		return;
-	}
+			//otherwise: no move
+			return;
+		}
 
-	// Type 1 Politician Functions
+		// Type 1 Politician Functions
 
 
 	/**
@@ -147,7 +147,7 @@ public class Politician {
 		if(!hasECTarget){
 			if (tryMove(randomDirection()))
 				//System.out.println("I moved!");
-				return;
+			return;
 		}
 
 		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
@@ -178,14 +178,14 @@ public class Politician {
 
 	/*
 	 * IMPLEMENTATION OF POLICE POLITICIAN
-	 */
+	*/
 
-	public static final double HOME_WEIGHT = 1.0;
-	public static final double REPEL_SL = 20.0;
-	public static final double REPEL_EC = 100.0;
-	public static final double REPEL_PT = 60.0;
-	public static final double CHASE_WEIGHT = 1000.0;
-	public static final int KILL_DISTANCE = 5;
+	public static final double HOME_WEIGHT = 1.0; 
+	public static final double REPEL_SL = 20.0; 
+	public static final double REPEL_EC = 100.0; 
+	public static final double REPEL_PT = 60.0; 
+	public static final double CHASE_WEIGHT = 1000.0; 
+	public static final int KILL_DISTANCE = 5; 
 
 	public static void doPoliceAction() throws GameActionException
 	{
@@ -194,7 +194,7 @@ public class Politician {
 
 
 		//TODO Modify score based on passability
-
+		
 		//Modify score to naturally favor moving closer to home RC
 		if(rc.canGetFlag(RobotPlayer.parent_EC.getID())) { // parent EC alive
 			MapLocation home = RobotPlayer.parent_EC.getLocation();
@@ -251,7 +251,7 @@ public class Politician {
 						break;
 					default:
 						break;
-				}
+			}
 
 		//Modify score to chase nearby muckraker
 		if(closest_muckraker != null)
@@ -333,10 +333,10 @@ public class Politician {
 					System.out.println("ec_target: " + ec_target);
 				}
 			}
-			// ASSERT politician_type != -1
-			if(politician_type == -1) politician_type = Politician.LOST_POLITICIAN; // if no parent EC make it LOST_POLITICIAN
+						// ASSERT politician_type != -1
+						if(politician_type == -1) politician_type = Politician.LOST_POLITICIAN; // if no parent EC make it LOST_POLITICIAN
 
-			//Also record type of politician (note this will result in LOST_POLITICIAN by default)
+						//Also record type of politician (note this will result in LOST_POLITICIAN by default)
 
 						/*
 			System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
@@ -396,7 +396,7 @@ public class Politician {
 		}
 
 	}
-
+	
 	public static void doMoneyAction() throws GameActionException {
 		if(rc.getEmpowerFactor(rc.getTeam(), 0) >= 10.0){
 			for(Direction dir: directions){
