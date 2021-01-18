@@ -350,6 +350,8 @@ public class Politician {
 
 		UnitComms.lookAroundBeforeMovement();
 		////////////////////Action Begin
+		doMoneyAction(); //does money action if possible
+
 		if(politician_type == Politician.EC_ATTACK)
 			assignECTarget();
 
@@ -386,8 +388,17 @@ public class Politician {
 	}
 	
 	public static void doMoneyAction() throws GameActionException {
-		if(rc.canEmpower(2))
-			rc.empower(2);
+		if(rc.getEmpowerFactor(rc.getTeam(), 0) >= 10.0){
+			for(Direction dir: directions){
+				RobotInfo possible_ec = rc.senseRobotAtLocation(rc.getLocation().add(dir));
+				if(possible_ec != null){
+					if(possible_ec.getType() == RobotType.ENLIGHTENMENT_CENTER){
+						rc.empower(rc.getLocation().distanceSquaredTo(possible_ec.getLocation()));
+					}
+				}
+			}
+		}
+
 	}
 
 	/**
