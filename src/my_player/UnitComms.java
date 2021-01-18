@@ -36,7 +36,7 @@ public class UnitComms {
         int enemy_propagated = 0;
         for(RobotInfo nearby_robot: all_nearby_robots){
             RobotType nearby_robot_type = nearby_robot.getType();
-            if(nearby_robot.getTeam() == rc.getTeam()){
+            if(nearby_robot.getTeam() == rc.getTeam() && nearby_robot_type != RobotType.ENLIGHTENMENT_CENTER){
                 int robot_flag = rc.getFlag(nearby_robot.getID());
                 if(enemy_propagated < 4){
                     int before_update = Clock.getBytecodeNum();
