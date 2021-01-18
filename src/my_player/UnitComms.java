@@ -18,7 +18,7 @@ public class UnitComms {
     static RobotInfo[] all_nearby_robots;
     static Point my_rel_loc = new Point();
 
-    static int BYTECODE_LIMIT = 1300;
+    static int BYTECODE_LIMIT = 1000;
 
 
 
@@ -36,11 +36,10 @@ public class UnitComms {
         for(RobotInfo nearby_robot: all_nearby_robots){
             RobotType nearby_robot_type = nearby_robot.getType();
             if(nearby_robot.getTeam() == rc.getTeam() && nearby_robot_type != RobotType.ENLIGHTENMENT_CENTER){
+                if(enemy_propagated >= 4) continue;
                 int robot_flag = rc.getFlag(nearby_robot.getID());
-                if(enemy_propagated < 4){
-                    if(ClosestEnemyAttacker.updateUsingSeenFlagValue(robot_flag)){
-                        enemy_propagated++;
-                    }
+                if(ClosestEnemyAttacker.updateUsingSeenFlagValue(robot_flag)){
+                    enemy_propagated++;
                 }
             }
             else if(nearby_robot.getTeam() == rc.getTeam().opponent() && nearby_robot_type != RobotType.ENLIGHTENMENT_CENTER){
@@ -61,6 +60,8 @@ public class UnitComms {
                 }
                 //System.out.println("Found enemy unit at: " + nearby_robot.getLocation());
             }
+
+            if(Clock.getBytecodeNum()-bytecode_before > BYTECODE_LIMIT) break;
         }
         System.out.println("Bytecode used in UnitComms.lookAroundBeforeMovement(): " + (Clock.getBytecodeNum()-bytecode_before));
     }
@@ -119,7 +120,7 @@ public class UnitComms {
 
                 RobotPlayer.addECInfo(friend_ec);
             }
-
+            if(Clock.getBytecodeNum()-bytecode_before > BYTECODE_LIMIT) break;
         }
         System.out.println("Bytecode used in UnitComms.lookAroundAfterMovement(): " + (Clock.getBytecodeNum()-bytecode_before));
         System.out.println("Bytecode 1.2: " + Clock.getBytecodeNum());
