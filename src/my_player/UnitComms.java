@@ -28,7 +28,6 @@ public class UnitComms {
      */
     static void lookAroundBeforeMovement() throws GameActionException {
         if(rc.getType() != RobotType.ENLIGHTENMENT_CENTER && !RobotPlayer.has_parent_EC) return;
-        System.out.println("Bytecode 1.1: " + Clock.getBytecodeNum());
         all_nearby_robots = rc.senseNearbyRobots();
         my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
@@ -39,7 +38,6 @@ public class UnitComms {
             if(nearby_robot.getTeam() == rc.getTeam() && nearby_robot_type != RobotType.ENLIGHTENMENT_CENTER){
                 int robot_flag = rc.getFlag(nearby_robot.getID());
                 if(enemy_propagated < 4){
-                    int before_update = Clock.getBytecodeNum();
                     if(ClosestEnemyAttacker.updateUsingSeenFlagValue(robot_flag)){
                         enemy_propagated++;
                     }
@@ -65,7 +63,6 @@ public class UnitComms {
             }
         }
         System.out.println("Bytecode used in UnitComms.lookAroundBeforeMovement(): " + (Clock.getBytecodeNum()-bytecode_before));
-        System.out.println("Bytecode 1.2: " + Clock.getBytecodeNum());
     }
 
     static void lookAroundAfterMovement() throws GameActionException {
@@ -192,6 +189,8 @@ public class UnitComms {
         for(int priority = 1; priority <= 20; priority++){
             if(priority == NEW_NEUTRAL_EC){
                 for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
+                    if(!rc.canSenseLocation(neutral_ec.loc) || neutral_ec.influence == -1) continue; //make sure you are communicating seen, correct info
+
                     if(!communicated_neutral_ecs.contains(neutral_ec.loc)){
                         communicated_enemy_ecs.removeIf(ec_loc -> (ec_loc.equals(neutral_ec.loc)));
                         communicated_friend_ecs.removeIf(ec_loc -> (ec_loc.equals(neutral_ec.loc)));
@@ -202,6 +201,8 @@ public class UnitComms {
             }
             else if(priority == NEW_ENEMY_EC){
                 for(Enemy_EC_Info enemy_ec: RobotPlayer.enemy_ecs){
+                    if(!rc.canSenseLocation(enemy_ec.loc) || enemy_ec.influence == -1) continue; //make sure you are communicating seen, correct info
+
                     if(!communicated_enemy_ecs.contains(enemy_ec.loc)){
                         communicated_neutral_ecs.removeIf(ec_loc -> (ec_loc.equals(enemy_ec.loc)));
                         communicated_friend_ecs.removeIf(ec_loc -> (ec_loc.equals(enemy_ec.loc)));
@@ -212,6 +213,8 @@ public class UnitComms {
             }
             else if(priority == NEW_FRIEND_EC){
                 for(Friend_EC_Info friend_ec: RobotPlayer.friend_ecs){
+                    if(!rc.canSenseLocation(friend_ec.loc) || friend_ec.influence == -1) continue; //make sure you are communicating seen, correct info
+
                     if(!communicated_friend_ecs.contains(friend_ec.loc)){
                         communicated_neutral_ecs.removeIf(ec_loc -> (ec_loc.equals(friend_ec.loc)));
                         communicated_enemy_ecs.removeIf(ec_loc -> (ec_loc.equals(friend_ec.loc)));
@@ -221,18 +224,21 @@ public class UnitComms {
                 }
             }
             else if(priority == OLD_NEUTRAL_EC){
-                if(RobotPlayer.neutral_ecs.size() > 0){
-                    return RobotPlayer.neutral_ecs.get((int)(RobotPlayer.neutral_ecs.size()*(Math.random()))).toFlagValue();
+                for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
+                    if(!rc.canSenseLocation(neutral_ec.loc) || neutral_ec.influence == -1) continue; //make sure you are communicating seen, correct info
+                    return neutral_ec.toFlagValue();
                 }
             }
             else if(priority == OLD_ENEMY_EC){
-                if(RobotPlayer.enemy_ecs.size() > 0){
-                    return RobotPlayer.enemy_ecs.get((int)(RobotPlayer.enemy_ecs.size()*(Math.random()))).toFlagValue();
+                for(Enemy_EC_Info enemy_ec: RobotPlayer.enemy_ecs){
+                    if(!rc.canSenseLocation(enemy_ec.loc) || enemy_ec.influence == -1) continue; //make sure you are communicating seen, correct info
+                    return enemy_ec.toFlagValue();
                 }
             }
             else if(priority == OLD_FRIEND_EC){
-                if(RobotPlayer.friend_ecs.size() > 0){
-                    return RobotPlayer.friend_ecs.get((int)(RobotPlayer.friend_ecs.size()*(Math.random()))).toFlagValue();
+                for(Friend_EC_Info friend_ec: RobotPlayer.friend_ecs){
+                    if(!rc.canSenseLocation(friend_ec.loc) || friend_ec.influence == -1) continue; //make sure you are communicating seen, correct info
+                    return friend_ec.toFlagValue();
                 }
             }
             else if(priority == CLOSEST_ENEMY_ATTACKER){
