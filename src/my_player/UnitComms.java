@@ -16,6 +16,7 @@ public class UnitComms {
     static List<MapLocation> communicated_friend_ecs = new ArrayList<>();
 
     static RobotInfo[] all_nearby_robots;
+    static MapLocation my_loc;
     static Point my_rel_loc = new Point();
 
     static int BYTECODE_LIMIT = 1000;
@@ -30,44 +31,71 @@ public class UnitComms {
         if(rc.getType() != RobotType.ENLIGHTENMENT_CENTER && !RobotPlayer.has_parent_EC) return;
         all_nearby_robots = rc.senseNearbyRobots();
 
+        my_loc = rc.getLocation();
         my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
         int bytecode_before = Clock.getBytecodeNum();
+
+
+        boolean enemy_nearby = false;
+        MapLocation closest_enemy = my_loc;
+        int closest_enemy_type = 0;
+
+        /*
+        Scan for the nearest enemy attacker (non-slanderer)
+         */
+        for(RobotInfo nearby_robot: all_nearby_robots){
+            RobotType nearby_robot_type = nearby_robot.getType();
+            if(nearby_robot.getTeam() == rc.getTeam().opponent() && nearby_robot_type != RobotType.ENLIGHTENMENT_CENTER){
+                //TODO: ENEMY UNIT (NON EC)
+                if(nearby_robot_type == RobotType.MUCKRAKER){
+                    if(enemy_nearby){
+                        if(my_loc.distanceSquaredTo(nearby_robot.getLocation()) < my_loc.distanceSquaredTo(closest_enemy)){
+                            closest_enemy = nearby_robot.getLocation();
+                            closest_enemy_type = 1;
+                        }
+                    }
+                    else{
+                        enemy_nearby = true;
+                        closest_enemy = nearby_robot.getLocation();
+                        closest_enemy_type = 1;
+                    }
+                }
+                else if(nearby_robot_type == RobotType.POLITICIAN){
+                    if(enemy_nearby){
+                        if(my_loc.distanceSquaredTo(nearby_robot.getLocation()) < my_loc.distanceSquaredTo(closest_enemy)){
+                            closest_enemy = nearby_robot.getLocation();
+                            closest_enemy_type = 2;
+                        }
+                    }
+                    else{
+                        enemy_nearby = true;
+                        closest_enemy = nearby_robot.getLocation();
+                        closest_enemy_type = 2;
+                    }
+                }
+                //System.out.println("Found enemy unit at: " + nearby_robot.getLocation());
+            }
+        }
+
+        if(enemy_nearby){
+            ClosestEnemyAttacker.foundAttacker(closest_enemy, closest_enemy_type, rc.getRoundNum());
+        }
+
         int enemy_propagated = 0;
         for(RobotInfo nearby_robot: all_nearby_robots){
             RobotType nearby_robot_type = nearby_robot.getType();
             if(nearby_robot.getTeam() == rc.getTeam() && nearby_robot_type != RobotType.ENLIGHTENMENT_CENTER){
-                if(enemy_propagated >= 4) continue;
                 int robot_flag = rc.getFlag(nearby_robot.getID());
-
-
                 if(ClosestEnemyAttacker.updateUsingSeenFlagValue(robot_flag)){
                     //System.out.println("Received new information about close enemy from: " + nearby_robot.getLocation());
                     enemy_propagated++;
                 }
-
             }
-            else if(nearby_robot.getTeam() == rc.getTeam().opponent() && nearby_robot_type != RobotType.ENLIGHTENMENT_CENTER){
-                //TODO: ENEMY UNIT (NON EC)
-                int robot_type = 0;
-                if(nearby_robot_type == RobotType.MUCKRAKER){
-                    robot_type = 1;
-                }
-                else if(nearby_robot_type == RobotType.POLITICIAN){
-                    robot_type = 2;
-                }
-                else if(nearby_robot_type == RobotType.SLANDERER){
-                    robot_type = 3;
-                }
-                if(robot_type == 1 || robot_type == 2){
-                    //found enemy attacker
-                    ClosestEnemyAttacker.foundAttacker(nearby_robot.getLocation(), robot_type, rc.getRoundNum());
-                    //System.out.println("Found Attacker at: " + nearby_robot.getLocation());
-                }
-                //System.out.println("Found enemy unit at: " + nearby_robot.getLocation());
+            if(Clock.getBytecodeNum()-bytecode_before > BYTECODE_LIMIT){
+                System.out.println("Only propagated: " + enemy_propagated);
+                break;
             }
-
-            if(Clock.getBytecodeNum()-bytecode_before > BYTECODE_LIMIT) break;
         }
         //System.out.println("Bytecode used in UnitComms.lookAroundBeforeMovement(): " + (Clock.getBytecodeNum()-bytecode_before));
     }
@@ -75,30 +103,61 @@ public class UnitComms {
     static void lookAroundAfterMovement() throws GameActionException {
         if(rc.getType() != RobotType.ENLIGHTENMENT_CENTER && !RobotPlayer.has_parent_EC) return;
         all_nearby_robots = rc.senseNearbyRobots();
+
+        my_loc = rc.getLocation();
         my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
         int bytecode_before = Clock.getBytecodeNum();
+
+
+        boolean enemy_nearby = false;
+        MapLocation closest_enemy = my_loc;
+        int closest_enemy_type = 0;
+
+        /*
+        Scan for the nearest enemy attacker (non-slanderer)
+         */
         for(RobotInfo nearby_robot: all_nearby_robots){
             RobotType nearby_robot_type = nearby_robot.getType();
             if(nearby_robot.getTeam() == rc.getTeam().opponent() && nearby_robot_type != RobotType.ENLIGHTENMENT_CENTER){
                 //TODO: ENEMY UNIT (NON EC)
-                int robot_type = 0;
                 if(nearby_robot_type == RobotType.MUCKRAKER){
-                    robot_type = 1;
+                    if(enemy_nearby){
+                        if(my_loc.distanceSquaredTo(nearby_robot.getLocation()) < my_loc.distanceSquaredTo(closest_enemy)){
+                            closest_enemy = nearby_robot.getLocation();
+                            closest_enemy_type = 1;
+                        }
+                    }
+                    else{
+                        enemy_nearby = true;
+                        closest_enemy = nearby_robot.getLocation();
+                        closest_enemy_type = 1;
+                    }
                 }
                 else if(nearby_robot_type == RobotType.POLITICIAN){
-                    robot_type = 2;
-                }
-                else if(nearby_robot_type == RobotType.SLANDERER){
-                    robot_type = 3;
-                }
-                if(robot_type == 1 || robot_type == 2){
-                    //found enemy attacker
-                    ClosestEnemyAttacker.foundAttacker(nearby_robot.getLocation(), robot_type, rc.getRoundNum());
+                    if(enemy_nearby){
+                        if(my_loc.distanceSquaredTo(nearby_robot.getLocation()) < my_loc.distanceSquaredTo(closest_enemy)){
+                            closest_enemy = nearby_robot.getLocation();
+                            closest_enemy_type = 2;
+                        }
+                    }
+                    else{
+                        enemy_nearby = true;
+                        closest_enemy = nearby_robot.getLocation();
+                        closest_enemy_type = 2;
+                    }
                 }
                 //System.out.println("Found enemy unit at: " + nearby_robot.getLocation());
             }
-            else if(nearby_robot.getTeam() == Team.NEUTRAL){
+        }
+
+        if(enemy_nearby){
+            ClosestEnemyAttacker.foundAttacker(closest_enemy, closest_enemy_type, rc.getRoundNum());
+        }
+
+        for(RobotInfo nearby_robot: all_nearby_robots){
+            RobotType nearby_robot_type = nearby_robot.getType();
+            if(nearby_robot.getTeam() == Team.NEUTRAL){
                 //Neutral Enlightenment Center found
                 Neutral_EC_Info neutral_ec = new Neutral_EC_Info();
                 neutral_ec.setPosition(nearby_robot.getLocation());
