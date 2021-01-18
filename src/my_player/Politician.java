@@ -322,7 +322,8 @@ public class Politician {
 		Movement.rc = RobotPlayer.rc;
 		//TODO: Consider Slanderer-converted Politicians
 		if(RobotPlayer.just_made){
-			politician_type = RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
+			int additional_info = RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
+			politician_type = additional_info % 4;
 						// ASSERT politician_type != -1
 						if(politician_type == -1) politician_type = Politician.LOST_POLITICIAN; // if no parent EC make it LOST_POLITICIAN
 
