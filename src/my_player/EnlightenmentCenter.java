@@ -1,4 +1,4 @@
-package my_player;
+package money_player;
 
 import battlecode.common.*;
 import java.util.*;
@@ -104,7 +104,7 @@ public class EnlightenmentCenter {
 		current_bid_value = Math.min(current_bid_value, BID_PERCENTAGE_UPPER_BOUND * rc.getInfluence());
 		current_bid_value = Math.max(current_bid_value, 0.1);
 		previous_scores.add(rc.getTeamVotes());
-		
+				
 		return (int) current_bid_value;
 	}
 	
@@ -173,10 +173,12 @@ public class EnlightenmentCenter {
 			if(flag_signal == 1){
 				//Neutral_EC_Info
 				Neutral_EC_Info neutral_ec = Neutral_EC_Info.fromFlagValue(flag_value);
-				System.out.println("Received Scout Communication from " + scout_id + " about a neutral_ec with influence: " + neutral_ec.influence);
+
 				//in case we have this information already in an ec information list.
 				//prevents duplicates
-				RobotPlayer.addECInfo(neutral_ec);
+				RobotPlayer.removeECInfo(neutral_ec.rel_loc);
+
+				RobotPlayer.neutral_ecs.add(neutral_ec);
 				//System.out.println("Neutral EC Information Received:");
 				//System.out.println("Influence: " + neutral_ec.influence);
 				//System.out.println("Relative Position: " + neutral_ec.rel_loc);
@@ -187,7 +189,9 @@ public class EnlightenmentCenter {
 
 				//in case we have this information already in an ec information list.
 				//prevents duplicates
-				RobotPlayer.addECInfo(enemy_ec);
+				RobotPlayer.removeECInfo(enemy_ec.rel_loc);
+
+				RobotPlayer.enemy_ecs.add(enemy_ec);
 				System.out.println("Enemy EC Information Received:");
 				System.out.println("Relative Position: " + enemy_ec.rel_loc);
 			}
@@ -197,7 +201,9 @@ public class EnlightenmentCenter {
 
 				//in case we have this information already in an ec information list.
 				//prevents duplicates
-				RobotPlayer.addECInfo(friend_ec);
+				RobotPlayer.removeECInfo(friend_ec.rel_loc);
+
+				RobotPlayer.friend_ecs.add(friend_ec);
 				//System.out.println("Friend EC Information Received:");
 				//System.out.println("Relative Position: " + friend_ec.rel_loc);
 			}
@@ -301,6 +307,20 @@ public class EnlightenmentCenter {
 		}
 		return false;
 	}
+	
+	public static boolean trySpawnMoneyPolitician(int money_influence) throws GameActionException {
+		for (Direction dir : directions) {
+			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, money_influence)) {
+				rc.buildRobot(RobotType.POLITICIAN, dir, money_influence);
+				int bot_parameter = Politician.MONEY;
+				bot_made_this_turn = true;
+				bot_direction_this_turn = dir;
+				bot_parameter_this_turn = bot_parameter;
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 *
@@ -395,63 +415,41 @@ public class EnlightenmentCenter {
 				build_attacker_muckraker = 10.0;
 			}
 		}
-		/*
-		if(alive_scout_ids.size() < MAX_SCOUTS){
-			build_scout_muckraker = 1.0;
-		}
-
-		if(RobotPlayer.neutral_ecs.size() > 0){
-			//System.out.println(RobotPlayer.neutral_ecs.size());
-			Point ec_target = RobotPlayer.getClosestNeutralECLocation();
-			int ec_target_influence = 1;
-			for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
-				if(neutral_ec.rel_loc == ec_target){
-					ec_target_influence = neutral_ec.influence;
-					break;
-				}
-			}
-
-			attacker_politician_influence = ec_target_influence+20;
-
-			if(attacker_politician_influence >= rc.getInfluence()/3){
-				build_attacker_politician = 0;
-			}
-			else if(RobotPlayer.neutral_ecs.size() == 0){
-				build_attacker_politician = 0;
-			}
-			else{
-				build_attacker_politician = 0.5;
-				build_nothing = 0;
-			}
-		}
-		if(alive_scout_ids.size() >= 2*MAX_SCOUTS/3 && RobotPlayer.enemy_ecs.size() > 0){
-			build_attacker_muckraker = 0.5;
-			build_nothing = 0;
-		}
-		*/
 
 		double ran = Math.random();
+		boolean dontMoney = true;
 		if(ran < slanderer_probability) {
-		//	Attempt to build slanderer
-			int cost = getOptimalSlandererInfluence((int) (rc.getInfluence() * slanderer_probability));
-			if(cost > 0) {
-				toBuild = RobotType.SLANDERER;
-				influence = cost;
-				slanderer_probability = 0;
-			}
-		}
-		if(toBuild == RobotType.SLANDERER){
-			for (Direction dir : directions) {
-				if (rc.canBuildRobot(RobotType.SLANDERER, dir, influence)) {
-					rc.buildRobot(RobotType.SLANDERER, dir, influence);
-					bot_made_this_turn = true;
-					bot_direction_this_turn = dir;
-					//System.out.println("Made bot in Direction: " + dir);
-					break;
+			//As the game goes on, try using politicians instead of slanderers as a money-making technique
+			if(Math.random() < (rc.getRoundNum())/1500.0) {
+				int cost = rc.getInfluence()/10;
+				if(cost > 7) {
+					trySpawnMoneyPolitician(cost);
+					dontMoney = false;
+					slanderer_probability = 0;
+				}
+				
+			} else {
+//				Attempt to build slanderer
+				int cost = getOptimalSlandererInfluence((int) (rc.getInfluence() * slanderer_probability));
+				if(cost > 0) {
+					toBuild = RobotType.SLANDERER;
+					influence = cost;
+					slanderer_probability = 0;
+					dontMoney = false;
+				}
+				
+				for (Direction dir : directions) {
+					if (rc.canBuildRobot(RobotType.SLANDERER, dir, influence)) {
+						rc.buildRobot(RobotType.SLANDERER, dir, influence);
+						bot_made_this_turn = true;
+						bot_direction_this_turn = dir;
+						//System.out.println("Made bot in Direction: " + dir);
+						break;
+					}
 				}
 			}
-		}
-		else{
+		} 
+		if(dontMoney) {
 			double[] spawn_freq = new double[5];
 			spawn_freq[0] = build_scout_muckraker; //scale of 0 to 2 of spawning weights
 			spawn_freq[1] = build_attacker_politician;
@@ -573,7 +571,7 @@ public class EnlightenmentCenter {
 
 		////////////////////Sensing Begin
 		UnitComms.BYTECODE_LIMIT = 3000;
-		UnitComms.lookAroundBeforeMovement();
+		UnitComms.lookAround();
 		////////////////////Sensing End
 
 		////////////////////Receive Communication Begin
@@ -606,14 +604,12 @@ public class EnlightenmentCenter {
 
 
 		////////////////////Broadcast to Units Begin (or individual communication to newly spawned unit)
-		UnitComms.lookAroundAfterMovement();
-		ClosestEnemyAttacker.forgetOldInfo(); //forgets old info to make sure we don't communicate something ambiguous
+		RobotPlayer.updateEnemyUnitList(); //make sure we don't communicate something ambiguous
 		int flag_value = generateFlagValue();
 		if(rc.canSetFlag(flag_value)){
 			rc.setFlag(flag_value);
 		}
 
-		System.out.println("No errors");
 		//System.out.println("Set Flag Value to: " + flag_value);
 		////////////////////Broadcast to Units End
 	}
