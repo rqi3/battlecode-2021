@@ -376,7 +376,7 @@ public class Muckraker {
         }
 
         if(goal == null){
-            tryMove(randomDirection());
+            moveScout();
         }
         else {
             System.out.println("moveAttacker: " + goal);
@@ -412,7 +412,7 @@ public class Muckraker {
     public static void run() throws GameActionException{
         ////////////////////Creation Begin
         if(RobotPlayer.just_made){
-            scout_initial_direction = getInitialDirection();
+
 
             rc = RobotPlayer.rc;
             Movement.rc = RobotPlayer.rc;
@@ -428,6 +428,9 @@ public class Muckraker {
 
             if(muckraker_type == SCOUT){
                 scout_initial_direction = RobotPlayer.getBitsBetween(parent_ec_info, 2, 4)*0.25*Math.PI;
+            }
+            else{
+                scout_initial_direction = getInitialDirection();
             }
             System.out.println("parent EC direction: " + RobotPlayer.getBitsBetween(parent_ec_info, 2, 4));
             System.out.println("scout_initial_direction: " + scout_initial_direction);
