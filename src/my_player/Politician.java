@@ -311,10 +311,6 @@ public class Politician {
 		}
 	}
 
-	private static int generateFlagValue(){
-		return 0;
-	}
-
 	/**
 	 * Controls this Politician
 	 * @throws GameActionException
@@ -351,10 +347,12 @@ public class Politician {
 		RobotPlayer.receiveECBroadcast();
 		////////////////////Receive Broadcast End
 
+		UnitComms.lookAroundBeforeMovement();
 		////////////////////Action Begin
 		if(politician_type == Politician.EC_ATTACK)
 			assignECTarget();
 
+		int bytecode_before = Clock.getBytecodeNum();
 		//Do an action (attack or move)
 		switch(politician_type)
 		{
@@ -369,11 +367,13 @@ public class Politician {
 			default:
 				break;// or throw some exception
 		}
+		System.out.println("movement bytecode: " + (Clock.getBytecodeNum()-bytecode_before));
 
 		////////////////////Action End
 
-		RobotPlayer.updateEnemyUnitList(); //make sure we don't communicate something ambiguous
-		int flag_value = generateFlagValue();
+		UnitComms.lookAroundAfterMovement();
+		ClosestEnemyAttacker.forgetOldInfo(); //forgets old info to make sure we don't communicate something ambiguous
+		int flag_value = UnitComms.generateFlagValue();
 		if(rc.canSetFlag(flag_value)){
 			rc.setFlag(flag_value);
 		}

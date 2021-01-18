@@ -16,10 +16,18 @@ public class Neutral_EC_Info {
 
     Neutral_EC_Info(){
         rel_loc = new Point();
-        influence = 0;
+        influence = -1;
     }
 
     public void setPosition(Point _rel_loc){
+        MapLocation origin;
+        if(RobotPlayer.rc.getType() == RobotType.ENLIGHTENMENT_CENTER){
+            origin = RobotPlayer.rc.getLocation();
+        }
+        else{
+            origin = RobotPlayer.parent_EC.getLocation();
+        }
+        loc = new MapLocation(origin.x+_rel_loc.x, origin.y+_rel_loc.y);
         rel_loc = _rel_loc;
     }
 

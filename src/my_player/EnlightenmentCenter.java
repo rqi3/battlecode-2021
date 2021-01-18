@@ -173,12 +173,10 @@ public class EnlightenmentCenter {
 			if(flag_signal == 1){
 				//Neutral_EC_Info
 				Neutral_EC_Info neutral_ec = Neutral_EC_Info.fromFlagValue(flag_value);
-
+				System.out.println("Received Scout Communication from " + scout_id + " about a neutral_ec with influence: " + neutral_ec.influence);
 				//in case we have this information already in an ec information list.
 				//prevents duplicates
-				RobotPlayer.removeECInfo(neutral_ec.rel_loc);
-
-				RobotPlayer.neutral_ecs.add(neutral_ec);
+				RobotPlayer.addECInfo(neutral_ec);
 				//System.out.println("Neutral EC Information Received:");
 				//System.out.println("Influence: " + neutral_ec.influence);
 				//System.out.println("Relative Position: " + neutral_ec.rel_loc);
@@ -189,9 +187,7 @@ public class EnlightenmentCenter {
 
 				//in case we have this information already in an ec information list.
 				//prevents duplicates
-				RobotPlayer.removeECInfo(enemy_ec.rel_loc);
-
-				RobotPlayer.enemy_ecs.add(enemy_ec);
+				RobotPlayer.addECInfo(enemy_ec);
 				System.out.println("Enemy EC Information Received:");
 				System.out.println("Relative Position: " + enemy_ec.rel_loc);
 			}
@@ -201,9 +197,7 @@ public class EnlightenmentCenter {
 
 				//in case we have this information already in an ec information list.
 				//prevents duplicates
-				RobotPlayer.removeECInfo(friend_ec.rel_loc);
-
-				RobotPlayer.friend_ecs.add(friend_ec);
+				RobotPlayer.addECInfo(friend_ec);
 				//System.out.println("Friend EC Information Received:");
 				//System.out.println("Relative Position: " + friend_ec.rel_loc);
 			}
@@ -579,7 +573,7 @@ public class EnlightenmentCenter {
 
 		////////////////////Sensing Begin
 		UnitComms.BYTECODE_LIMIT = 3000;
-		UnitComms.lookAround();
+		UnitComms.lookAroundBeforeMovement();
 		////////////////////Sensing End
 
 		////////////////////Receive Communication Begin
@@ -612,12 +606,14 @@ public class EnlightenmentCenter {
 
 
 		////////////////////Broadcast to Units Begin (or individual communication to newly spawned unit)
-		RobotPlayer.updateEnemyUnitList(); //make sure we don't communicate something ambiguous
+		UnitComms.lookAroundAfterMovement();
+		ClosestEnemyAttacker.forgetOldInfo(); //forgets old info to make sure we don't communicate something ambiguous
 		int flag_value = generateFlagValue();
 		if(rc.canSetFlag(flag_value)){
 			rc.setFlag(flag_value);
 		}
 
+		System.out.println("No errors");
 		//System.out.println("Set Flag Value to: " + flag_value);
 		////////////////////Broadcast to Units End
 	}

@@ -29,8 +29,6 @@ public strictfp class RobotPlayer {
 	static List<Enemy_EC_Info> enemy_ecs = new ArrayList<>(); //List of information about enemy ecs that it knows
 	static List<Friend_EC_Info> friend_ecs = new ArrayList<>();; //List of information about friend ecs that it knows
 
-	static final int MAX_ENEMY_UNITS_SIZE = 10;
-	static HashSet<EnemyUnitInfo> enemy_units = new HashSet<>(); //List of information about enemy units in order of increasing time
 	/**
 	 * Computes relative location of loc with respect to parent_EC, assuming that this Robot has a parent enlightenment center
 	 */
@@ -149,41 +147,28 @@ public strictfp class RobotPlayer {
     }
 
     public static void addECInfo(Neutral_EC_Info ec){
+		for(Neutral_EC_Info neutral_ec: neutral_ecs){
+			if(neutral_ec.loc.equals(ec.loc)) return;
+		}
+		System.out.println("New neutral ec information was obtained at location: " + ec.loc);
 		removeECInfo(ec.rel_loc);
 		neutral_ecs.add(ec);
 	}
 
 	public static void addECInfo(Enemy_EC_Info ec){
+		for(Enemy_EC_Info enemy_ec: enemy_ecs){
+			if(enemy_ec.loc.equals(ec.loc)) return;
+		}
 		removeECInfo(ec.rel_loc);
 		enemy_ecs.add(ec);
 	}
 
 	public static void addECInfo(Friend_EC_Info ec){
+		for(Friend_EC_Info friend_ec: friend_ecs){
+			if(friend_ec.loc.equals(ec.loc)) return;
+		}
 		removeECInfo(ec.rel_loc);
 		friend_ecs.add(ec);
-	}
-
-	/**
-	 * Adds an enemy unit information to enemy_units if it isn't already in.
-	 * @param eu the enemy unit information
-	 */
-	public static void addEnemyUnitInfo(EnemyUnitInfo eu){
-		if(enemy_units.size() < MAX_ENEMY_UNITS_SIZE) enemy_units.add(eu);
-	}
-
-	/**
-	 * Reduces the size of enemy_units according to turn number (short term memory)
-	 */
-	public static void updateEnemyUnitList(){
-		/**
-		 * Sort by decreasing turn number
-		 */
-		enemy_units.removeIf(element -> element.round_received <= rc.getRoundNum()+1-(1<<EnemyUnitInfo.ENEMY_MEMORY));
-
-		/*System.out.println("current enemy_units: ");
-		for(EnemyUnitInfo info: enemy_units){
-			System.out.println("Round & Location of enemy unit: " + info.round_received + " " + info.loc);
-		}*/
 	}
 
 	/**
@@ -252,9 +237,8 @@ public strictfp class RobotPlayer {
 		if(flag_signal == 1){
 			//neutral EC found
 			Neutral_EC_Info neutral_ec = Neutral_EC_Info.fromBroadcastFlagValue(ec_flag_value);
-			removeECInfo(neutral_ec);
-			neutral_ecs.add(neutral_ec);
-
+			addECInfo(neutral_ec);
+			UnitComms.receivedECBroadcast(neutral_ec);
 			/*
 			System.out.println("Neutral EC at location " + neutral_ec.rel_loc + " was broadcast to me.");
 			System.out.println("Current neutral_ecs: ");
@@ -266,9 +250,8 @@ public strictfp class RobotPlayer {
 		else if(flag_signal == 2){
 			//enemy EC found
 			Enemy_EC_Info enemy_ec = Enemy_EC_Info.fromBroadcastFlagValue(ec_flag_value);
-			removeECInfo(enemy_ec);
-			enemy_ecs.add(enemy_ec);
-
+			addECInfo(enemy_ec);
+			UnitComms.receivedECBroadcast(enemy_ec);
 			/*
 			System.out.println("Enemy EC at location " + enemy_ec.rel_loc + " was broadcast to me.");
 			System.out.println("Current enemy_ecs: ");
@@ -314,6 +297,11 @@ public strictfp class RobotPlayer {
 					case MUCKRAKER:			Muckraker.run();		   break;
 				}
 				just_made = false;
+
+				if(ClosestEnemyAttacker.enemy_exists){
+					System.out.println("CLOSEST ENEMY AT LOC " + ClosestEnemyAttacker.enemy_position + " seen at round " + ClosestEnemyAttacker.round_seen);
+				}
+
 				// Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
 				Clock.yield();
 

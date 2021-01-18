@@ -60,7 +60,7 @@ public class Slanderer {
 
 		////////////////////Initialization Begin
 		updateParentEC();
-		UnitComms.lookAround();
+		UnitComms.lookAroundBeforeMovement();
 		////////////////////Initialization End
 
 		////////////////////Receive Broadcast Begin
@@ -73,8 +73,11 @@ public class Slanderer {
 		System.out.println("Bytecode after movement: " + Clock.getBytecodeNum());
 		////////////////////Movement End
 
-		RobotPlayer.updateEnemyUnitList(); //make sure we don't communicate something ambiguous
-		int flag_value = generateFlagValue();
+		UnitComms.lookAroundAfterMovement();
+		ClosestEnemyAttacker.forgetOldInfo(); //forgets old info to make sure we don't communicate something ambiguous
+		int bytecode_before = Clock.getBytecodeNum();
+		int flag_value = UnitComms.generateFlagValue();
+		System.out.println("Bytecode used on generateFlagValue(): " + (Clock.getBytecodeNum()-bytecode_before));
 		if(rc.canSetFlag(flag_value)){
 			rc.setFlag(flag_value);
 		}
