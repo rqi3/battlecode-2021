@@ -83,4 +83,40 @@ public class ClosestEnemyAttacker {
         round_seen = round;
         return true;
     }
+
+    /**
+     * Should be used only by EnlightenmentCenter
+     * @return broadcast flag value of closest enemy attacker
+     */
+    static int toBroadcastFlagValue(){
+        if(!enemy_exists) return 0;
+        MapLocation my_ec_loc = RobotPlayer.rc.getLocation();
+        Point enemy_rel_loc = new Point(enemy_position.x-my_ec_loc.x, enemy_position.y-my_ec_loc.y);
+
+        int flag_signal = 3+enemy_type; //4 for muckraker, 5 for politician
+        int round_bits = round_seen % (1<<ENEMY_MEMORY);
+        int flag_loc = RobotPlayer.convertToFlagRelativeLocation(enemy_rel_loc);
+
+        return flag_signal*(1<<1) + round_bits*(1<<4) + flag_loc*(1<<10);
+    }
+
+    static void updateUsingBroadcastFlagValue(int flag_value){
+        if(!RobotPlayer.has_parent_EC) return; //should be receiving a broadcast from parent_EC
+
+        int flag_signal = (flag_value>>1) % (1<<3);
+        int round_bits = RobotPlayer.getBitsBetween(flag_value, 4, 4+ENEMY_MEMORY-1);
+        int location_bits = RobotPlayer.getBitsBetween(flag_value, 10, 23);
+
+        int round = RobotPlayer.rc.getRoundNum()/(1<<ENEMY_MEMORY)*(1<<ENEMY_MEMORY) + round_bits;
+        if(round > RobotPlayer.rc.getRoundNum()) round-=(1<<ENEMY_MEMORY);
+
+        Point rel_loc = RobotPlayer.convertFromFlagRelativeLocation(location_bits);
+        MapLocation loc = new MapLocation(RobotPlayer.parent_EC.getLocation().x+rel_loc.x, RobotPlayer.parent_EC.getLocation().y+rel_loc.y);
+
+        if(flag_signal == 4 || flag_signal == 5){
+            System.out.println("Broadcast info: Closest Enemy Attacker at location " + loc + " seen on round " + round);
+            foundAttacker(loc, flag_signal-3, round);
+        }
+    }
+
 }

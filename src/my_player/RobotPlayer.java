@@ -251,6 +251,9 @@ public strictfp class RobotPlayer {
 			}
 			*/
 		}
+		else if(flag_signal == 4 || flag_signal == 5){
+			ClosestEnemyAttacker.updateUsingBroadcastFlagValue(ec_flag_value);
+		}
 	}
 
 

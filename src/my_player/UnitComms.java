@@ -82,6 +82,8 @@ public class UnitComms {
             ClosestEnemyAttacker.foundAttacker(closest_enemy, closest_enemy_type, rc.getRoundNum());
         }
 
+        System.out.println("Bytecode used in enemy detection: " + (Clock.getBytecodeNum()-bytecode_before));
+
         int enemy_propagated = 0;
         for(RobotInfo nearby_robot: all_nearby_robots){
             RobotType nearby_robot_type = nearby_robot.getType();
@@ -331,9 +333,6 @@ public class UnitComms {
                 }
             }
         }
-
-
-
 
         return 0;
     }

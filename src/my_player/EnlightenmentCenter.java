@@ -538,6 +538,8 @@ public class EnlightenmentCenter {
 		slanderer_probability = (slanderer_probability + 0.3)/1.3;
 	}
 
+	static int last_round_broadcast_enemy_attacker = 1; // the last round in which we broadcast an enemy attacker
+
 	/**
 	 * Gives a local communication to a newly spawned unit
 	 * If no newly spawned unit, do a global broadcast
@@ -577,7 +579,8 @@ public class EnlightenmentCenter {
 			returned_flag_value |= (bot_parameter_last_turn << 4); // bits 4..?? are set to the bot's extra parameters. For example, whether politician is attack/defense
 		}
 		else{
-			//broadcast an enemy or neutral EC
+			//Global Broadcast. First bit is 0.
+
 			boolean broadcast_enemy = false;
 			boolean broadcast_neutral = false;
 			if(RobotPlayer.enemy_ecs.size() > 0 && RobotPlayer.neutral_ecs.size() == 0){
@@ -595,7 +598,12 @@ public class EnlightenmentCenter {
 				}
 			}
 
-			if(broadcast_enemy){
+			if(last_round_broadcast_enemy_attacker <= rc.getRoundNum()-(1<<ClosestEnemyAttacker.ENEMY_MEMORY) && ClosestEnemyAttacker.enemy_exists){
+				last_round_broadcast_enemy_attacker = rc.getRoundNum();
+				returned_flag_value = ClosestEnemyAttacker.toBroadcastFlagValue();
+				System.out.println("Broadcast closest enemy attacker");
+			}
+			else if(broadcast_enemy){
 				int enemy_ec_ind = (int)(Math.random()*RobotPlayer.enemy_ecs.size());
 				returned_flag_value = RobotPlayer.enemy_ecs.get(enemy_ec_ind).toBroadcastFlagValue();
 			}
