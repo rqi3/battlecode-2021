@@ -88,33 +88,32 @@ public class Movement {
      * @throws GameActionException
      */
     public static void moveToNaive(Point destination) throws GameActionException {
-        //System.out.println("moveToNaive: " + destination);
+        System.out.println("moveToNaive: " + destination);
         assert(RobotPlayer.has_parent_EC); //destination was not defined if this has no parent_EC
         Point current_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
-        boolean found_direction = false;
-        Direction best_direction = Direction.NORTH;
-        int lowest_radius_squared = 0;
+        Direction best_direction = Direction.CENTER;
+        int lowestMaxXYDistance = Point.getMaxXYDistance(current_loc, destination);
+        int radiusSquaredDistance=Point.getRadiusSquaredDistance(current_loc, destination);;
 
         for(Direction dir: directions){
             if(rc.canMove(dir)){
                 Point new_loc = current_loc.add(dir);
-                if(!found_direction){
-                    found_direction = true;
+
+                int MaxXYDistance = Point.getMaxXYDistance(new_loc, destination);
+                int newSquaredDistance = Point.getRadiusSquaredDistance(new_loc, destination);
+                if(MaxXYDistance < lowestMaxXYDistance||
+                        (MaxXYDistance == lowestMaxXYDistance&&newSquaredDistance<=radiusSquaredDistance)) {
                     best_direction = dir;
-                    lowest_radius_squared = Point.getRadiusSquaredDistance(new_loc, destination);
+                    lowestMaxXYDistance = MaxXYDistance;
+                    radiusSquaredDistance = newSquaredDistance;
                 }
-                else{
-                    int new_radius_squared = Point.getRadiusSquaredDistance(new_loc, destination);
-                    if(new_radius_squared <= lowest_radius_squared){
-                        best_direction = dir;
-                        lowest_radius_squared = new_radius_squared;
-                    }
-                }
+
             }
         }
 
-        if(found_direction){
+
+        if(best_direction!=Direction.CENTER){
             rc.move(best_direction);
         }
 
