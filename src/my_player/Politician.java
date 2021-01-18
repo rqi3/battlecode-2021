@@ -53,6 +53,7 @@ public class Politician {
 		public static final int LOST_POLITICIAN = 0;
 		public static final int EC_ATTACK = 1;
 		public static final int POLICE = 2;
+		public static final int MONEY = 3;
 		static int politician_type = POLICE; // read above. By default, police politician
 
 		// Type 1 politican parameters
@@ -364,6 +365,10 @@ public class Politician {
 				break;
 			case POLICE:
 				doPoliceAction();
+				break;
+			case MONEY:
+				doMoneyAction();
+				break;
 			default:
 				break;// or throw some exception
 		}
@@ -378,6 +383,11 @@ public class Politician {
 			rc.setFlag(flag_value);
 		}
 
+	}
+	
+	public static void doMoneyAction() throws GameActionException {
+		if(rc.canEmpower(2))
+			rc.empower(2);
 	}
 
 	/**
