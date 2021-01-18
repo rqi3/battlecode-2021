@@ -102,13 +102,17 @@ public class Slanderer {
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
 	public static final double CHASE_WEIGHTS[] = {0.0, -10000.0, -10.0};  // tendency to move towards enemy muckrakers
 	public static final double INF = 1e12;
+	public static double score[][] = new double[3][3];// each of the 9 squares it can move to. Higher score is better
 
 	public static void moveAction() throws GameActionException
 	{
-		double score[][] = new double[3][3];// each of the 9 squares it can move to. Higher score is better
+		for(int i=0;i<3;++i)
+			for(int j=0;j<3;++j)
+				score[i][j]=0;
 		MapLocation cur = rc.getLocation();
 		
 		//Modify score to naturally favor moving closer to home RC
+
 		if(RobotPlayer.parent_EC != null)
 		{
 			MapLocation home = RobotPlayer.parent_EC.getLocation();
@@ -125,7 +129,8 @@ public class Slanderer {
 				}
 		}
 
-		//Modify score based on nearby robots
+
+		//Retrieve nearest robot
 		RobotInfo closest_friendly = null;
 		int closest_friendly_dist = 1000000;
 		for(RobotInfo info : rc.senseNearbyRobots(20, rc.getTeam()))
@@ -137,6 +142,7 @@ public class Slanderer {
 				closest_friendly = info;
 			}
 		}
+
 
 		//Handle nearest friendly
 		if(closest_friendly != null)
@@ -200,9 +206,10 @@ public class Slanderer {
 			if(rc.canMove(to_go))
 			{
 				rc.move(to_go);
-				score[bi][bj] -= INF;
 				return;
 			}
+			else
+				score[bi][bj] -= INF;
 		}
 	}
 

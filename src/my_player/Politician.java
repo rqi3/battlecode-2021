@@ -185,7 +185,8 @@ public class Politician {
 	public static final double REPEL_EC = 100.0; 
 	public static final double REPEL_PT = 60.0; 
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
-	public static final double CHASE_WEIGHTS = [0.0, 10000.0, 500.0]; 
+	public static final double CHASE_WEIGHTS[] = {0.0, 10000.0, 500.0};
+	public static final double INF = 1e12;
 	public static final int KILL_DISTANCE = 5; 
 
 	public static void doPoliceAction() throws GameActionException
@@ -272,29 +273,40 @@ public class Politician {
 		//AFTER SCORES ARE COMPUTED: DETERMINE ACTION
 
 		//Kill muckraker
-		if(closest_muckraker_dist < KILL_DISTANCE) // action radius is 9
-			if(rc.canEmpower(KILL_DISTANCE))
-			{
-				rc.empower(KILL_DISTANCE);
-				return;
-			}
-
-		//Move
-		double best = score[1][1]-1;
-		Direction to_go = null;
-		for(int i=-1;i<=1;++i)
-			for(int j=-1;j<=1;++j)
-				if(best < score[i+1][j+1])
+		if(ClosestEnemyAttacker.enemy_exists)
+		{
+			if(rc.getLocation().distanceSquaredTo(ClosestEnemyAttacker.enemy_position) < KILL_DISTANCE) // action radius is 9
+				if(rc.canEmpower(KILL_DISTANCE))
 				{
-					best = score[i+1][j+1];
-					to_go = dir[i+1][j+1];
+					rc.empower(KILL_DISTANCE);
+					return;
 				}
-		if(to_go != null)
+		}
+
+		//Move (should take at most (9 * (4 + 9*5 + 2)) = 459 bytecodes
+		while(true)
+		{
+			double best = score[1][1]-1;
+			int bi=-1, bj=-1;
+			Direction to_go = null;
+			for(int i=-1;i<=1;++i)
+				for(int j=-1;j<=1;++j)
+					if(best < score[i+1][j+1])
+					{
+						best = score[i+1][j+1];
+						bi=i+1; bj=j+1;
+						to_go = dir[i+1][j+1];
+					}
+			if(to_go == null) // no movement
+				return;
 			if(rc.canMove(to_go))
 			{
 				rc.move(to_go);
 				return;
 			}
+			else
+				score[bi][bj] -= INF;
+		}
 	}
 
 // General Politician Functions
