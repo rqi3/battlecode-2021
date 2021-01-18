@@ -395,63 +395,41 @@ public class EnlightenmentCenter {
 				build_attacker_muckraker = 10.0;
 			}
 		}
-		/*
-		if(alive_scout_ids.size() < MAX_SCOUTS){
-			build_scout_muckraker = 1.0;
-		}
-
-		if(RobotPlayer.neutral_ecs.size() > 0){
-			//System.out.println(RobotPlayer.neutral_ecs.size());
-			Point ec_target = RobotPlayer.getClosestNeutralECLocation();
-			int ec_target_influence = 1;
-			for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
-				if(neutral_ec.rel_loc == ec_target){
-					ec_target_influence = neutral_ec.influence;
-					break;
-				}
-			}
-
-			attacker_politician_influence = ec_target_influence+20;
-
-			if(attacker_politician_influence >= rc.getInfluence()/3){
-				build_attacker_politician = 0;
-			}
-			else if(RobotPlayer.neutral_ecs.size() == 0){
-				build_attacker_politician = 0;
-			}
-			else{
-				build_attacker_politician = 0.5;
-				build_nothing = 0;
-			}
-		}
-		if(alive_scout_ids.size() >= 2*MAX_SCOUTS/3 && RobotPlayer.enemy_ecs.size() > 0){
-			build_attacker_muckraker = 0.5;
-			build_nothing = 0;
-		}
-		*/
 
 		double ran = Math.random();
+		boolean dontMoney = true;
 		if(ran < slanderer_probability) {
-		//	Attempt to build slanderer
-			int cost = getOptimalSlandererInfluence((int) (rc.getInfluence() * slanderer_probability));
-			if(cost > 0) {
-				toBuild = RobotType.SLANDERER;
-				influence = cost;
-				slanderer_probability = 0;
-			}
-		}
-		if(toBuild == RobotType.SLANDERER){
-			for (Direction dir : directions) {
-				if (rc.canBuildRobot(RobotType.SLANDERER, dir, influence)) {
-					rc.buildRobot(RobotType.SLANDERER, dir, influence);
-					bot_made_this_turn = true;
-					bot_direction_this_turn = dir;
-					//System.out.println("Made bot in Direction: " + dir);
-					break;
+			//As the game goes on, try using politicians instead of slanderers as a money-making technique
+			if(Math.random() < (rc.getRoundNum())/1500.0) {
+				int cost = rc.getInfluence()/10;
+				if(cost > 7) {
+					trySpawnMoneyPolitician(cost);
+					dontMoney = false;
+					slanderer_probability = 0;
+				}
+				
+			} else {
+//				Attempt to build slanderer
+				int cost = getOptimalSlandererInfluence((int) (rc.getInfluence() * slanderer_probability));
+				if(cost > 0) {
+					toBuild = RobotType.SLANDERER;
+					influence = cost;
+					slanderer_probability = 0;
+					dontMoney = false;
+				}
+				
+				for (Direction dir : directions) {
+					if (rc.canBuildRobot(RobotType.SLANDERER, dir, influence)) {
+						rc.buildRobot(RobotType.SLANDERER, dir, influence);
+						bot_made_this_turn = true;
+						bot_direction_this_turn = dir;
+						//System.out.println("Made bot in Direction: " + dir);
+						break;
+					}
 				}
 			}
-		}
-		else{
+		} 
+		if(dontMoney) {
 			double[] spawn_freq = new double[5];
 			spawn_freq[0] = build_scout_muckraker; //scale of 0 to 2 of spawning weights
 			spawn_freq[1] = build_attacker_politician;
