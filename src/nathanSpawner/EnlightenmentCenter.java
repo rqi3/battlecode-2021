@@ -516,6 +516,11 @@ public class EnlightenmentCenter {
 			} else {
 				build_attacker_muckraker = 4.0;
 			}
+			
+			if(rc.getInfluence() > 5*1e7) {
+				build_attacker_politician = 1500.0;
+				attacker_politician_influence = 500000;
+			}
 		}
 	
 		if(rc.getRoundNum() > 200 && alive_police_politician_ids.size() < 2.0*alive_slanderer_ids.size()) {
