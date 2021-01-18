@@ -628,7 +628,7 @@ public class EnlightenmentCenter {
 
 
 		////////////////////Sensing Begin
-		UnitComms.BYTECODE_LIMIT = 3000;
+		UnitComms.BYTECODE_LIMIT = 2000;
 		UnitComms.lookAroundBeforeMovement();
 		////////////////////Sensing End
 

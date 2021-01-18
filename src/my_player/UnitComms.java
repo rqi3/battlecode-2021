@@ -69,7 +69,7 @@ public class UnitComms {
 
             if(Clock.getBytecodeNum()-bytecode_before > BYTECODE_LIMIT) break;
         }
-        System.out.println("Bytecode used in UnitComms.lookAroundBeforeMovement(): " + (Clock.getBytecodeNum()-bytecode_before));
+        //System.out.println("Bytecode used in UnitComms.lookAroundBeforeMovement(): " + (Clock.getBytecodeNum()-bytecode_before));
     }
 
     static void lookAroundAfterMovement() throws GameActionException {
@@ -127,7 +127,7 @@ public class UnitComms {
             }
             if(Clock.getBytecodeNum()-bytecode_before > BYTECODE_LIMIT) break;
         }
-        System.out.println("Bytecode used in UnitComms.lookAroundAfterMovement(): " + (Clock.getBytecodeNum()-bytecode_before));
+        //System.out.println("Bytecode used in UnitComms.lookAroundAfterMovement(): " + (Clock.getBytecodeNum()-bytecode_before));
     }
 
     public static void receivedECBroadcast(Neutral_EC_Info neutral_ec){
@@ -180,14 +180,27 @@ public class UnitComms {
             OLD_FRIEND_EC = 8;
         }
         else{
-            NEW_NEUTRAL_EC = 1;
-            NEW_ENEMY_EC = 2;
-            NEW_FRIEND_EC = 3;
-            CLOSEST_ENEMY_ATTACKER = 4;
-            NEW_BORDER = 5;
-            OLD_NEUTRAL_EC = 6+(int)(Math.random()*10);
-            OLD_ENEMY_EC = 6+(int)(Math.random()*10);
-            OLD_FRIEND_EC = 11+(int)(Math.random()*5);
+            if(Math.random() < 0.25){
+                NEW_NEUTRAL_EC = 1;
+                NEW_ENEMY_EC = 2;
+                NEW_FRIEND_EC = 3;
+                OLD_NEUTRAL_EC = 4;
+                OLD_ENEMY_EC = 5;
+                OLD_FRIEND_EC = 6;
+                CLOSEST_ENEMY_ATTACKER = 7;
+                NEW_BORDER = 8;
+            }
+            else{
+                NEW_NEUTRAL_EC = 1;
+                NEW_ENEMY_EC = 2;
+                NEW_FRIEND_EC = 3;
+                CLOSEST_ENEMY_ATTACKER = 4;
+                NEW_BORDER = 5;
+                OLD_NEUTRAL_EC = 6;
+                OLD_ENEMY_EC = 7;
+                OLD_FRIEND_EC = 8;
+            }
+
         }
 
 
@@ -200,6 +213,7 @@ public class UnitComms {
                         communicated_enemy_ecs.removeIf(ec_loc -> (ec_loc.equals(neutral_ec.loc)));
                         communicated_friend_ecs.removeIf(ec_loc -> (ec_loc.equals(neutral_ec.loc)));
                         communicated_neutral_ecs.add(neutral_ec.loc);
+                        System.out.println("Communicated a neutral EC");
                         return neutral_ec.toFlagValue();
                     }
                 }
@@ -212,6 +226,7 @@ public class UnitComms {
                         communicated_neutral_ecs.removeIf(ec_loc -> (ec_loc.equals(enemy_ec.loc)));
                         communicated_friend_ecs.removeIf(ec_loc -> (ec_loc.equals(enemy_ec.loc)));
                         communicated_enemy_ecs.add(enemy_ec.loc);
+                        System.out.println("Communicated a enemy EC");
                         return enemy_ec.toFlagValue();
                     }
                 }
@@ -224,6 +239,7 @@ public class UnitComms {
                         communicated_neutral_ecs.removeIf(ec_loc -> (ec_loc.equals(friend_ec.loc)));
                         communicated_enemy_ecs.removeIf(ec_loc -> (ec_loc.equals(friend_ec.loc)));
                         communicated_friend_ecs.add(friend_ec.loc);
+                        System.out.println("Communicated a friend EC");
                         return friend_ec.toFlagValue();
                     }
                 }
@@ -231,23 +247,27 @@ public class UnitComms {
             else if(priority == OLD_NEUTRAL_EC){
                 for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
                     if(!rc.canSenseLocation(neutral_ec.loc) || neutral_ec.influence == -1) continue; //make sure you are communicating seen, correct info
+                    System.out.println("Communicated a neutral EC");
                     return neutral_ec.toFlagValue();
                 }
             }
             else if(priority == OLD_ENEMY_EC){
                 for(Enemy_EC_Info enemy_ec: RobotPlayer.enemy_ecs){
                     if(!rc.canSenseLocation(enemy_ec.loc) || enemy_ec.influence == -1) continue; //make sure you are communicating seen, correct info
+                    System.out.println("Communicated a enemy EC");
                     return enemy_ec.toFlagValue();
                 }
             }
             else if(priority == OLD_FRIEND_EC){
                 for(Friend_EC_Info friend_ec: RobotPlayer.friend_ecs){
                     if(!rc.canSenseLocation(friend_ec.loc) || friend_ec.influence == -1) continue; //make sure you are communicating seen, correct info
+                    System.out.println("Communicated a friend EC");
                     return friend_ec.toFlagValue();
                 }
             }
             else if(priority == CLOSEST_ENEMY_ATTACKER){
                 if(ClosestEnemyAttacker.enemy_exists){
+                    System.out.println("Communicated closest enemy attacker");
                     return ClosestEnemyAttacker.toFlagValue();
                 }
             }

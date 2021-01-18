@@ -60,6 +60,7 @@ public class Slanderer {
 
 		////////////////////Initialization Begin
 		updateParentEC();
+		UnitComms.BYTECODE_LIMIT = 700;
 		UnitComms.lookAroundBeforeMovement();
 		////////////////////Initialization End
 

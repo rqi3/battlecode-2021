@@ -447,15 +447,12 @@ public class Muckraker {
         UnitComms.lookAroundBeforeMovement();
         //////////////////// End Sense
 
-        System.out.println("Bytecode 1: " + Clock.getBytecodeNum());
         //////////////////// Begin Receive Broadcast
         RobotPlayer.receiveECBroadcast();
         //////////////////// End Receive Broadcast
-        System.out.println("Bytecode 2: " + Clock.getBytecodeNum());
         //////////////////// Attack Begin
         attackSlanderer(); //assume that we always want to attack if we can
         //////////////////// Attack End
-        System.out.println("Bytecode 3: " + Clock.getBytecodeNum());
         //////////////////// Movement Begin
         if(muckraker_type == SCOUT){ //movement for scout
             moveScout();
@@ -463,8 +460,6 @@ public class Muckraker {
         else if(muckraker_type == EC_ATTACKER){
             moveAttacker();
         }
-
-        System.out.println("Bytecode 4: " + Clock.getBytecodeNum());
         //////////////////// Movement End
 
         ////////////////////Send Communication Begin
