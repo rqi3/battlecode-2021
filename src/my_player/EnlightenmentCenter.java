@@ -332,10 +332,15 @@ public class EnlightenmentCenter {
 	 */
 	public static boolean trySpawnAttackerPolitician(int attacker_influence) throws GameActionException
 	{
+		if(RobotPlayer.neutral_ecs.size() == 0) return false;
+		Point ec_target = RobotPlayer.getClosestNeutralECLocation();
 		for (Direction dir : directions) {
 			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, attacker_influence)) {
 				rc.buildRobot(RobotType.POLITICIAN, dir, attacker_influence);
 				int bot_parameter = Politician.EC_ATTACK;
+				bot_parameter+=1*(1<<3);
+				bot_parameter+=RobotPlayer.convertToFlagRelativeLocation(ec_target)*(1<<6);
+
 				bot_made_this_turn = true;
 				bot_direction_this_turn = dir;
 				bot_parameter_this_turn = bot_parameter;
@@ -441,9 +446,12 @@ public class EnlightenmentCenter {
 		if(alive_scout_ids.size() < MAX_SCOUTS){
 			build_scout_muckraker = 1.0;
 		}
+
+		Point ec_target = new Point(-9999, -9999);
 		if(RobotPlayer.neutral_ecs.size() > 0){
 			build_attacker_politician = 10.0;
-			Point ec_target = RobotPlayer.getClosestNeutralECLocation();
+
+			ec_target = RobotPlayer.getClosestNeutralECLocation();
 			int ec_target_influence = 1;
 			for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
 				if(neutral_ec.rel_loc == ec_target){

@@ -324,6 +324,14 @@ public class Politician {
 		if(RobotPlayer.just_made){
 			int additional_info = RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
 			politician_type = additional_info % 4;
+			if(politician_type == Politician.EC_ATTACK){
+				if(RobotPlayer.getBitsBetween(additional_info, 0, 0) == 1){
+					//ec assigned a target
+					ec_target = RobotPlayer.convertFromFlagRelativeLocation(RobotPlayer.getBitsBetween(additional_info, 6, 19));
+					ec_target_type = 1;
+					System.out.println("ec_target: " + ec_target);
+				}
+			}
 						// ASSERT politician_type != -1
 						if(politician_type == -1) politician_type = Politician.LOST_POLITICIAN; // if no parent EC make it LOST_POLITICIAN
 
