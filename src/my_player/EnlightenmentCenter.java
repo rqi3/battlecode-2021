@@ -51,16 +51,6 @@ public class EnlightenmentCenter {
 		Direction.NORTHWEST,
 	};
 
-	/**
-	Called when the EC receives communication that Enemy Muckraker is at relative position (x, y)
-	location relative to EC
-	 @param x The x coordinate of a found muckraker
-	 @param y The y coordinate of a found muckraker
-	*/
-	static void foundEnemyMuckraker(int x, int y) {
-
-	}
-
 	////////////////////////////// Nathan Chen Bidder Code //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	static ArrayList<Integer> previous_scores = new ArrayList<Integer>();
 	

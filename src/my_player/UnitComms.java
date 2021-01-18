@@ -29,6 +29,7 @@ public class UnitComms {
     static void lookAroundBeforeMovement() throws GameActionException {
         if(rc.getType() != RobotType.ENLIGHTENMENT_CENTER && !RobotPlayer.has_parent_EC) return;
         all_nearby_robots = rc.senseNearbyRobots();
+
         my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
         int bytecode_before = Clock.getBytecodeNum();
@@ -38,9 +39,13 @@ public class UnitComms {
             if(nearby_robot.getTeam() == rc.getTeam() && nearby_robot_type != RobotType.ENLIGHTENMENT_CENTER){
                 if(enemy_propagated >= 4) continue;
                 int robot_flag = rc.getFlag(nearby_robot.getID());
+
+
                 if(ClosestEnemyAttacker.updateUsingSeenFlagValue(robot_flag)){
+                    //System.out.println("Received new information about close enemy from: " + nearby_robot.getLocation());
                     enemy_propagated++;
                 }
+
             }
             else if(nearby_robot.getTeam() == rc.getTeam().opponent() && nearby_robot_type != RobotType.ENLIGHTENMENT_CENTER){
                 //TODO: ENEMY UNIT (NON EC)
@@ -57,6 +62,7 @@ public class UnitComms {
                 if(robot_type == 1 || robot_type == 2){
                     //found enemy attacker
                     ClosestEnemyAttacker.foundAttacker(nearby_robot.getLocation(), robot_type, rc.getRoundNum());
+                    //System.out.println("Found Attacker at: " + nearby_robot.getLocation());
                 }
                 //System.out.println("Found enemy unit at: " + nearby_robot.getLocation());
             }
@@ -68,7 +74,6 @@ public class UnitComms {
 
     static void lookAroundAfterMovement() throws GameActionException {
         if(rc.getType() != RobotType.ENLIGHTENMENT_CENTER && !RobotPlayer.has_parent_EC) return;
-        System.out.println("Bytecode 1.1: " + Clock.getBytecodeNum());
         all_nearby_robots = rc.senseNearbyRobots();
         my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
@@ -123,7 +128,6 @@ public class UnitComms {
             if(Clock.getBytecodeNum()-bytecode_before > BYTECODE_LIMIT) break;
         }
         System.out.println("Bytecode used in UnitComms.lookAroundAfterMovement(): " + (Clock.getBytecodeNum()-bytecode_before));
-        System.out.println("Bytecode 1.2: " + Clock.getBytecodeNum());
     }
 
     public static void receivedECBroadcast(Neutral_EC_Info neutral_ec){

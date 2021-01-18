@@ -51,6 +51,8 @@ public class ClosestEnemyAttacker {
         int round = RobotPlayer.rc.getRoundNum()/(1<<ENEMY_MEMORY)*(1<<ENEMY_MEMORY) + (flag_value>>3) % (1<<ENEMY_MEMORY);
         if(round > RobotPlayer.rc.getRoundNum()) round-=(1<<ENEMY_MEMORY);
 
+        if(enemy_exists && round < round_seen) return true;
+
         int loc_x = (RobotPlayer.rc.getLocation().x+63)/128*128 + (flag_value>>10) % (1<<7);
         int loc_y = (RobotPlayer.rc.getLocation().y+63)/128*128 + (flag_value>>17) % (1<<7);
         if(loc_x > RobotPlayer.rc.getLocation().x+63){
@@ -60,7 +62,7 @@ public class ClosestEnemyAttacker {
             loc_y-=128;
         }
 
-
+        //System.out.println("Received information about enemy unit at " + new MapLocation(loc_x, loc_y) + "on round " + round);
 
         if(!enemy_exists || round > round_seen){
             enemy_exists = true;
@@ -69,7 +71,7 @@ public class ClosestEnemyAttacker {
             round_seen = round;
             return true;
         }
-        if(round < round_seen) return true;
+
 
         MapLocation new_loc = new MapLocation(loc_x, loc_y);
         if(RobotPlayer.rc.getLocation().distanceSquaredTo(enemy_position) <= RobotPlayer.rc.getLocation().distanceSquaredTo(new_loc)){
