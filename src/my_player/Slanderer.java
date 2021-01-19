@@ -100,7 +100,7 @@ public class Slanderer {
 	public static final double REPEL_EC = 20.0; 
 	public static final double REPEL_PT = 200.0; 
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
-	public static final double CHASE_WEIGHTS[] = {0.0, 2000.0, 200.0};  // tendency to move towards enemy muckrakers
+	public static final double CHASE_WEIGHTS[] = {0.0, 2000.0, 200.0};  // tendency to move away from enemy muckrakers
 	public static final double INF = 1e12;
 	public static double score[][] = new double[3][3];// each of the 9 squares it can move to. Higher score is better
 
