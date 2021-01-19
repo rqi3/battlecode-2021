@@ -388,7 +388,7 @@ public class Muckraker {
 			}
 			assert(RobotPlayer.has_parent_EC); //destination was not defined if this has no parent_EC
 
-
+			Movement.moveToNaive(goal);
 			Direction best_direction = Direction.CENTER;
 			int lowest_maxXY_distance = Point.getMaxXYDistance(my_rel_loc, goal);;
 
