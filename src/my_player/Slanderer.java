@@ -106,10 +106,8 @@ public class Slanderer {
 
 	public static void moveAction() throws GameActionException
 	{
-		int cnt = Clock.getBytecodeNum(), ncnt=-1;
-		for(int i=0;i<3;++i)
-			for(int j=0;j<3;++j)
-				score[i][j]=0;
+		//int cnt = Clock.getBytecodeNum(), ncnt=-1;
+		score[0][0]=score[0][1]=score[0][2]=score[1][0]=score[1][1]=score[1][2]=score[2][0]=score[2][1]=score[2][2]=0;
 		MapLocation cur = rc.getLocation();
 		
 		//Modify score to naturally favor moving closer to home RC
@@ -117,20 +115,19 @@ public class Slanderer {
 		if(RobotPlayer.parent_EC != null)
 		{
 			MapLocation home = RobotPlayer.parent_EC.getLocation();
-			for(int i=-1;i<=1;++i)
-				for(int j=-1;j<=1;++j)
-				{
-					int x=cur.x+i;
-					int y=cur.y+j;
-					int dist = home.distanceSquaredTo(new MapLocation(x, y));
-					if(dist <= 2)
-						score[i+1][j+1] += SPAWN_BLOCK_WEIGHT;
-					else
-						score[i+1][j+1] += HOME_WEIGHT/Math.sqrt(dist+1);
-				}
+			int dist;
+			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y-1));if(dist <= 2)score[0][0] += SPAWN_BLOCK_WEIGHT;else score[0][0] += HOME_WEIGHT/Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y));if(dist <= 2)score[0][1] += SPAWN_BLOCK_WEIGHT;else score[0][1] += HOME_WEIGHT/Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y+1));if(dist <= 2)score[0][2] += SPAWN_BLOCK_WEIGHT;else score[0][2] += HOME_WEIGHT/Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y-1));if(dist <= 2)score[1][0] += SPAWN_BLOCK_WEIGHT;else score[1][0] += HOME_WEIGHT/Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y));if(dist <= 2)score[1][1] += SPAWN_BLOCK_WEIGHT;else score[1][1] += HOME_WEIGHT/Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y+1));if(dist <= 2)score[1][2] += SPAWN_BLOCK_WEIGHT;else score[1][2] += HOME_WEIGHT/Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y-1));if(dist <= 2)score[2][0] += SPAWN_BLOCK_WEIGHT;else score[2][0] += HOME_WEIGHT/Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y));if(dist <= 2)score[2][1] += SPAWN_BLOCK_WEIGHT;else score[2][1] += HOME_WEIGHT/Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y+1));if(dist <= 2)score[2][2] += SPAWN_BLOCK_WEIGHT;else score[2][2] += HOME_WEIGHT/Math.sqrt(dist+1);
 		}
 
-		ncnt = Clock.getBytecodeNum(); System.out.println("Process home EC: " + (ncnt - cnt)); cnt = ncnt;
+		//ncnt = Clock.getBytecodeNum(); System.out.println("Process home EC: " + (ncnt - cnt)); cnt = ncnt;
 
 		//Retrieve nearest robot
 		RobotInfo closest_friendly = null;
@@ -145,7 +142,7 @@ public class Slanderer {
 			}
 		}
 
-		ncnt = Clock.getBytecodeNum(); System.out.println("Retrieve nearest friendly: " + (ncnt - cnt)); cnt = ncnt;
+		//ncnt = Clock.getBytecodeNum(); System.out.println("Retrieve nearest friendly: " + (ncnt - cnt)); cnt = ncnt;
 
 		//Handle nearest friendly
 		if(closest_friendly != null)
@@ -166,47 +163,50 @@ public class Slanderer {
 					break;
 			}
 			MapLocation loc = closest_friendly.getLocation();
-			for(int i=-1;i<=1;++i)
-				for(int j=-1;j<=1;++j)
-				{
-					int x=cur.x+i;
-					int y=cur.y+j;
-					//treat like magnets
-					score[i+1][j+1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(x, y))); // sub because we want to move away from other politicians
-				}
+			score[0][0] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y-1)));
+			score[0][1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y)));
+			score[0][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y+1)));
+			score[1][0] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x, cur.y-1)));
+			score[1][1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x, cur.y)));
+			score[1][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x, cur.y+1)));
+			score[2][0] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y-1)));
+			score[2][1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y)));
+			score[2][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y+1)));
 		}
 
-		ncnt = Clock.getBytecodeNum(); System.out.println("Handle nearest friendly: " + (ncnt - cnt)); cnt = ncnt;
+		//ncnt = Clock.getBytecodeNum(); System.out.println("Handle nearest friendly: " + (ncnt - cnt)); cnt = ncnt;
 
 		//Handle nearest enemy
 		if(ClosestEnemyAttacker.enemy_exists)
 		{
 			double wt = CHASE_WEIGHTS[ClosestEnemyAttacker.enemy_type];
 			MapLocation loc = ClosestEnemyAttacker.enemy_position;
-			for(int i=-1;i<=1;++i)
-				for(int j=-1;j<=1;++j)
-				{
-					int x=cur.x+i;
-					int y=cur.y+j;
-					score[i+1][j+1] -= wt/Math.sqrt(loc.distanceSquaredTo(new MapLocation(x, y)));
-				}
+			score[0][0] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y-1)));
+			score[0][1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y)));
+			score[0][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y+1)));
+			score[1][0] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x, cur.y-1)));
+			score[1][1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x, cur.y)));
+			score[1][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x, cur.y+1)));
+			score[2][0] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y-1)));
+			score[2][1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y)));
+			score[2][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y+1)));
 		}
 
-		ncnt = Clock.getBytecodeNum(); System.out.println("Handle nearest enemy: " + (ncnt - cnt)); cnt = ncnt;
+		//ncnt = Clock.getBytecodeNum(); System.out.println("Handle nearest enemy: " + (ncnt - cnt)); cnt = ncnt;
 		
 		for(int z=0;z<3;++z) // try 3 best locations
 		{
-			double best = score[1][1]-1;
-			int bi=-1, bj=-1;
-			Direction to_go = null;
-			for(int i=-1;i<=1;++i)
-				for(int j=-1;j<=1;++j)
-					if(best < score[i+1][j+1])
-					{
-						best = score[i+1][j+1];
-						bi=i+1; bj=j+1;
-						to_go = dir[i+1][j+1];
-					}
+			int bi=0, bj=0;
+			if(score[0][1]>score[bi][bj]) {bi=0; bj=1;}
+			if(score[0][2]>score[bi][bj]) {bi=0; bj=2;}
+			if(score[1][0]>score[bi][bj]) {bi=1; bj=0;}
+			if(score[1][1]>score[bi][bj]) {bi=1; bj=1;}
+			if(score[1][2]>score[bi][bj]) {bi=1; bj=2;}
+			if(score[2][0]>score[bi][bj]) {bi=2; bj=0;}
+			if(score[2][1]>score[bi][bj]) {bi=2; bj=1;}
+			if(score[2][2]>score[bi][bj]) {bi=2; bj=2;}
+
+			Direction to_go = dir[bi][bj];
 			if(to_go == null) // no movement
 				return;
 			if(rc.canMove(to_go))
@@ -216,7 +216,7 @@ public class Slanderer {
 			}
 			else
 				score[bi][bj] -= INF;
-			ncnt = Clock.getBytecodeNum(); System.out.println("Try move & failed: " + (ncnt - cnt)); cnt = ncnt;
+			//ncnt = Clock.getBytecodeNum(); System.out.println("Try move & failed: " + (ncnt - cnt)); cnt = ncnt;
 		}
 	}
 
