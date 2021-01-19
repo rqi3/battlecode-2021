@@ -98,14 +98,15 @@ public class Slanderer {
 	public static final double HOME_WEIGHT = 1.0; 
 	public static final double REPEL_SL = 20.0; 
 	public static final double REPEL_EC = 20.0; 
-	public static final double REPEL_PT = 20.0; 
+	public static final double REPEL_PT = 200.0; 
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
-	public static final double CHASE_WEIGHTS[] = {0.0, -10000.0, -10.0};  // tendency to move towards enemy muckrakers
+	public static final double CHASE_WEIGHTS[] = {0.0, 2000.0, 200.0};  // tendency to move towards enemy muckrakers
 	public static final double INF = 1e12;
 	public static double score[][] = new double[3][3];// each of the 9 squares it can move to. Higher score is better
 
 	public static void moveAction() throws GameActionException
 	{
+		int cnt = Clock.getBytecodeNum(), ncnt=-1;
 		for(int i=0;i<3;++i)
 			for(int j=0;j<3;++j)
 				score[i][j]=0;
@@ -129,6 +130,8 @@ public class Slanderer {
 				}
 		}
 
+		ncnt = Clock.getBytecodeNum(); System.out.println("Process home EC: " + (ncnt - cnt)); cnt = ncnt;
+
 		//Retrieve nearest robot
 		RobotInfo closest_friendly = null;
 		int closest_friendly_dist = 1000000;
@@ -142,6 +145,7 @@ public class Slanderer {
 			}
 		}
 
+		ncnt = Clock.getBytecodeNum(); System.out.println("Retrieve nearest friendly: " + (ncnt - cnt)); cnt = ncnt;
 
 		//Handle nearest friendly
 		if(closest_friendly != null)
@@ -172,6 +176,8 @@ public class Slanderer {
 				}
 		}
 
+		ncnt = Clock.getBytecodeNum(); System.out.println("Handle nearest friendly: " + (ncnt - cnt)); cnt = ncnt;
+
 		//Handle nearest enemy
 		if(ClosestEnemyAttacker.enemy_exists)
 		{
@@ -182,12 +188,13 @@ public class Slanderer {
 				{
 					int x=cur.x+i;
 					int y=cur.y+j;
-					score[i+1][j+1] -= loc.distanceSquaredTo(new MapLocation(x, y))*wt; // subtract because we want to move to smaller distance
+					score[i+1][j+1] -= wt/Math.sqrt(loc.distanceSquaredTo(new MapLocation(x, y)));
 				}
 		}
+
+		ncnt = Clock.getBytecodeNum(); System.out.println("Handle nearest enemy: " + (ncnt - cnt)); cnt = ncnt;
 		
-		//Move (should take at most (9 * (4 + 9*5 + 2)) = 459 bytecodes
-		while(true)
+		for(int z=0;z<3;++z) // try 3 best locations
 		{
 			double best = score[1][1]-1;
 			int bi=-1, bj=-1;
@@ -209,6 +216,7 @@ public class Slanderer {
 			}
 			else
 				score[bi][bj] -= INF;
+			ncnt = Clock.getBytecodeNum(); System.out.println("Try move & failed: " + (ncnt - cnt)); cnt = ncnt;
 		}
 	}
 

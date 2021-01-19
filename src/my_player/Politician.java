@@ -185,7 +185,7 @@ public class Politician {
 	public static final double REPEL_EC = 100.0; 
 	public static final double REPEL_PT = 60.0; 
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
-	public static final double CHASE_WEIGHTS[] = {0.0, 10000.0, 500.0};
+	public static final double CHASE_WEIGHTS[] = {0.0, -10000.0, -500.0};
 	public static final double INF = 1e12;
 	public static final int KILL_DISTANCE = 5; 
 
@@ -265,7 +265,7 @@ public class Politician {
 				{
 					int x=cur.x+i;
 					int y=cur.y+j;
-					score[i+1][j+1] -= loc.distanceSquaredTo(new MapLocation(x, y))*wt; // subtract because we want to move to smaller distance
+					score[i+1][j+1] -= wt/Math.sqrt(loc.distanceSquaredTo(new MapLocation(x, y))); // subtract because we want to move to smaller distance
 				}
 		}
 
