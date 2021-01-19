@@ -198,63 +198,62 @@ public class Politician {
 		//TODO Modify score based on passability
 		
 		//Modify score to naturally favor moving closer to home RC
-		if(RobotPlayer.parent_EC != null)
-		{
+		if(rc.canGetFlag(RobotPlayer.parent_EC.getID())) { // parent EC alive
 			MapLocation home = RobotPlayer.parent_EC.getLocation();
 			for(int i=-1;i<=1;++i)
 				for(int j=-1;j<=1;++j)
 				{
 					int x=cur.x+i;
 					int y=cur.y+j;
-					int dist = home.distanceSquaredTo(new MapLocation(x, y));
-					if(dist <= 2)
-						score[i+1][j+1] += SPAWN_BLOCK_WEIGHT;
-					else
-						score[i+1][j+1] += HOME_WEIGHT/Math.sqrt(dist+1);
+					score[i+1][j+1] -= home.distanceSquaredTo(new MapLocation(x, y))*HOME_WEIGHT; // subtract because we favor shorter locations
 				}
 		}
 
 		//Modify score based on nearby robots
-		RobotInfo closest_friendly = null;
-		int closest_friendly_dist = 1000000;
-		for(RobotInfo info : rc.senseNearbyRobots(20, rc.getTeam()))
-		{
-			int dist = cur.distanceSquaredTo(info.getLocation());
-			if(dist < closest_friendly_dist)
+		RobotInfo closest_muckraker = null;
+		int closest_muckraker_dist = 1000000;
+		for(RobotInfo info : rc.senseNearbyRobots(20))
+			if(info.getTeam() == rc.getTeam()) // same team
 			{
-				closest_friendly_dist = dist;
-				closest_friendly = info;
-			}
-		}
-
-		//Handle nearest friendly
-		if(closest_friendly != null)
-		{
-			double wt = 0.0;
-			switch(closest_friendly.getType()) // MORE PARAMETERS
-			{
-				case SLANDERER:
-					wt = REPEL_SL;
-					break;
-				case ENLIGHTENMENT_CENTER:
-					wt = REPEL_EC;
-					break;
-				case POLITICIAN:
-					wt = REPEL_PT;
-					break;
-				default:
-					break;
-			}
-			MapLocation loc = closest_friendly.getLocation();
-			for(int i=-1;i<=1;++i)
-				for(int j=-1;j<=1;++j)
+				double wt = 0.0;
+				switch(info.getType()) // MORE PARAMETERS
 				{
-					int x=cur.x+i;
-					int y=cur.y+j;
-					//treat like magnets
-					score[i+1][j+1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(x, y))); // sub because we want to move away from other politicians
+					case SLANDERER:
+						wt = REPEL_SL;
+						break;
+					case ENLIGHTENMENT_CENTER:
+						wt = REPEL_EC;
+						break;
+					case POLITICIAN:
+						wt = REPEL_PT;
+						break;
+					default:
+						break;
 				}
-		}
+				MapLocation loc = info.getLocation();
+				for(int i=-1;i<=1;++i)
+					for(int j=-1;j<=1;++j)
+					{
+						int x=cur.x+i;
+						int y=cur.y+j;
+						//treat like magnets
+						score[i+1][j+1] -= wt/Math.sqrt((double)loc.distanceSquaredTo(new MapLocation(x, y))); // sub because we want to move away from other politicians
+					}
+			}
+			else // enemy team
+				switch(info.getType())
+				{
+					case MUCKRAKER:
+						int new_dist = info.getLocation().distanceSquaredTo(cur);
+						if(closest_muckraker == null || new_dist < closest_muckraker_dist)
+						{
+							closest_muckraker = info;
+							closest_muckraker_dist = new_dist;
+						}
+						break;
+					default:
+						break;
+			}
 
 		//Handle nearest enemy
 		if(ClosestEnemyAttacker.enemy_exists)

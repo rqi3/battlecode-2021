@@ -129,7 +129,6 @@ public class Slanderer {
 				}
 		}
 
-
 		//Retrieve nearest robot
 		RobotInfo closest_friendly = null;
 		int closest_friendly_dist = 1000000;
@@ -186,7 +185,7 @@ public class Slanderer {
 					score[i+1][j+1] -= loc.distanceSquaredTo(new MapLocation(x, y))*wt; // subtract because we want to move to smaller distance
 				}
 		}
-
+		
 		//Move (should take at most (9 * (4 + 9*5 + 2)) = 459 bytecodes
 		while(true)
 		{
