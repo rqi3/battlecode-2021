@@ -189,8 +189,8 @@ public class Politician {
 	 * IMPLEMENTATION OF POLICE POLITICIAN
 	*/
 
-	public static final double HOME_WEIGHT = 5.0;
-	public static final double REPEL_SL = 40.0;
+	public static final double HOME_WEIGHT = 0.5;
+	public static final double REPEL_SL = 1.0;
 	public static final double REPEL_EC = 100.0; 
 	public static final double REPEL_PT = 60.0; 
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
@@ -214,7 +214,7 @@ public class Politician {
 				{
 					int x=cur.x+i;
 					int y=cur.y+j;
-					score[i+1][j+1] -= home.distanceSquaredTo(new MapLocation(x, y))*HOME_WEIGHT; // subtract because we favor shorter locations
+					score[i+1][j+1] -= HOME_WEIGHT*Math.sqrt(home.distanceSquaredTo(new MapLocation(x, y))); // subtract because we favor shorter locations
 				}
 		}
 
@@ -246,7 +246,7 @@ public class Politician {
 						int x=cur.x+i;
 						int y=cur.y+j;
 						//treat like magnets
-						score[i+1][j+1] -= wt/Math.sqrt((double)loc.distanceSquaredTo(new MapLocation(x, y))); // sub because we want to move away from other politicians
+						score[i+1][j+1] -= wt/Math.sqrt((double)loc.distanceSquaredTo(new MapLocation(x, y))+1); // sub because we want to move away from other politicians
 					}
 			}
 			else // enemy team
@@ -274,7 +274,7 @@ public class Politician {
 				{
 					int x=cur.x+i;
 					int y=cur.y+j;
-					score[i+1][j+1] -= wt/Math.sqrt(loc.distanceSquaredTo(new MapLocation(x, y))); // subtract because we want to move to smaller distance
+					score[i+1][j+1] -= wt/Math.sqrt(loc.distanceSquaredTo(new MapLocation(x, y))+1); // subtract because we want to move to smaller distance
 				}
 		}
 

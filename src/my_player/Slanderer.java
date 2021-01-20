@@ -95,12 +95,12 @@ public class Slanderer {
 
 	// FROM POLICE POLITICIAN MOVEMENT
 
-	public static final double HOME_WEIGHT = 40.0;
-	public static final double REPEL_SL = 10.0;
-	public static final double REPEL_EC = 10.0; 
-	public static final double REPEL_PT = 50.0; 
+	public static final double HOME_WEIGHT = 1.0; // proportional to dist
+	public static final double REPEL_SL = 0.0; // inverse to dist
+	public static final double REPEL_EC = 0.0; // inverse to dist
+	public static final double REPEL_PT = 25.0; // inverse to dist
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
-	public static final double CHASE_WEIGHTS[] = {0.0, 200.0, 100.0};  // tendency to move away from enemy muckrakers
+	public static final double CHASE_WEIGHTS[] = {0.0, 200.0, 100.0};  // tendency to move away from enemy muckrakers (inversely proportional)
 	public static final double INF = 1e12;
 	public static double score[][] = new double[3][3];// each of the 9 squares it can move to. Higher score is better
 
@@ -116,15 +116,15 @@ public class Slanderer {
 		{
 			MapLocation home = RobotPlayer.parent_EC.getLocation();
 			int dist;
-			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y-1));if(dist <= 2)score[0][0] += SPAWN_BLOCK_WEIGHT;else score[0][0] += HOME_WEIGHT/Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y));if(dist <= 2)score[0][1] += SPAWN_BLOCK_WEIGHT;else score[0][1] += HOME_WEIGHT/Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y+1));if(dist <= 2)score[0][2] += SPAWN_BLOCK_WEIGHT;else score[0][2] += HOME_WEIGHT/Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y-1));if(dist <= 2)score[1][0] += SPAWN_BLOCK_WEIGHT;else score[1][0] += HOME_WEIGHT/Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y));if(dist <= 2)score[1][1] += SPAWN_BLOCK_WEIGHT;else score[1][1] += HOME_WEIGHT/Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y+1));if(dist <= 2)score[1][2] += SPAWN_BLOCK_WEIGHT;else score[1][2] += HOME_WEIGHT/Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y-1));if(dist <= 2)score[2][0] += SPAWN_BLOCK_WEIGHT;else score[2][0] += HOME_WEIGHT/Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y));if(dist <= 2)score[2][1] += SPAWN_BLOCK_WEIGHT;else score[2][1] += HOME_WEIGHT/Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y+1));if(dist <= 2)score[2][2] += SPAWN_BLOCK_WEIGHT;else score[2][2] += HOME_WEIGHT/Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y-1));if(dist <= 2)score[0][0] += SPAWN_BLOCK_WEIGHT;else score[0][0] -= HOME_WEIGHT*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y));if(dist <= 2)score[0][1] += SPAWN_BLOCK_WEIGHT;else score[0][1] -= HOME_WEIGHT*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y+1));if(dist <= 2)score[0][2] += SPAWN_BLOCK_WEIGHT;else score[0][2] -= HOME_WEIGHT*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y-1));if(dist <= 2)score[1][0] += SPAWN_BLOCK_WEIGHT;else score[1][0] -= HOME_WEIGHT*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y));if(dist <= 2)score[1][1] += SPAWN_BLOCK_WEIGHT;else score[1][1] -= HOME_WEIGHT*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y+1));if(dist <= 2)score[1][2] += SPAWN_BLOCK_WEIGHT;else score[1][2] -= HOME_WEIGHT*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y-1));if(dist <= 2)score[2][0] += SPAWN_BLOCK_WEIGHT;else score[2][0] -= HOME_WEIGHT*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y));if(dist <= 2)score[2][1] += SPAWN_BLOCK_WEIGHT;else score[2][1] -= HOME_WEIGHT*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y+1));if(dist <= 2)score[2][2] += SPAWN_BLOCK_WEIGHT;else score[2][2] -= HOME_WEIGHT*Math.sqrt(dist+1);
 		}
 
 		//ncnt = Clock.getBytecodeNum(); System.out.println("Process home EC: " + (ncnt - cnt)); cnt = ncnt;
