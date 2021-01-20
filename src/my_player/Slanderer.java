@@ -95,8 +95,8 @@ public class Slanderer {
 
 	// FROM POLICE POLITICIAN MOVEMENT
 
-	public static final double HOME_WEIGHT = 1.0; 
-	public static final double REPEL_SL = 20.0; 
+	public static final double HOME_WEIGHT = 200.0;
+	public static final double REPEL_SL = 5.0;
 	public static final double REPEL_EC = 20.0; 
 	public static final double REPEL_PT = 200.0; 
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;

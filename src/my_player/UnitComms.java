@@ -153,6 +153,9 @@ public class UnitComms {
             }
         }
 
+        if(ClosestEnemyAttacker.enemy_exists && rc.canSenseLocation(ClosestEnemyAttacker.enemy_position)){
+            ClosestEnemyAttacker.enemy_exists = false;
+        }
         if(enemy_nearby){
             ClosestEnemyAttacker.foundAttacker(closest_enemy, closest_enemy_type, rc.getRoundNum());
         }

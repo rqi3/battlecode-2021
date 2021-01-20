@@ -150,6 +150,15 @@ public class Politician {
 			return;
 		}
 
+		for(Friend_EC_Info friend_ec: RobotPlayer.friend_ecs){
+			if(friend_ec.rel_loc.equals(ec_target)){
+				System.out.println("Found friend_ec at " + friend_ec.loc + ", reassigning target");
+				hasECTarget = false;
+				assignECTarget(); //assign a new target
+				break;
+			}
+		}
+
 		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 		int distance_to_target = Point.getRadiusSquaredDistance(ec_target, my_rel_loc);
 
@@ -180,8 +189,8 @@ public class Politician {
 	 * IMPLEMENTATION OF POLICE POLITICIAN
 	*/
 
-	public static final double HOME_WEIGHT = 1.0; 
-	public static final double REPEL_SL = 20.0; 
+	public static final double HOME_WEIGHT = 5.0;
+	public static final double REPEL_SL = 40.0;
 	public static final double REPEL_EC = 100.0; 
 	public static final double REPEL_PT = 60.0; 
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;

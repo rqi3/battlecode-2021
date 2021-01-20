@@ -74,7 +74,8 @@ public class EnlightenmentCenter {
 		bid_multiplier = 1; //reset
 		
 		if(us > 750) return 0; //we have majority vote, just invest in full defense
-		
+
+		BID_PERCENTAGE_UPPER_BOUND = 0.15;
 		if(rc.getRoundNum() >= 1300) {
 			BID_PERCENTAGE_UPPER_BOUND = 0.50;
 			if(rc.getRoundNum() >= 1480) {
@@ -163,7 +164,7 @@ public class EnlightenmentCenter {
 		if(flag_signal == 1){
 			//Neutral_EC_Info
 			Neutral_EC_Info neutral_ec = Neutral_EC_Info.fromFlagValue(flag_value);
-			System.out.println("Received Scout Communication about a neutral_ec with influence: " + neutral_ec.influence);
+			System.out.println("Received Communication about a neutral_ec with influence: " + neutral_ec.influence);
 			//in case we have this information already in an ec information list.
 			//prevents duplicates
 			RobotPlayer.addECInfo(neutral_ec);
@@ -304,8 +305,7 @@ public class EnlightenmentCenter {
 	 * Tries to spawn an Attack Muckraker
 	 * @throws GameActionException
 	 */
-	private static boolean trySpawnAttackerMuckraker() throws GameActionException {
-		int attacker_influence = 1;
+	private static boolean trySpawnAttackerMuckraker(int attacker_influence) throws GameActionException {
 		for (Direction dir : directions) {
 			if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, attacker_influence)) {
 				rc.buildRobot(RobotType.MUCKRAKER, dir, attacker_influence);
@@ -330,10 +330,9 @@ public class EnlightenmentCenter {
 	 * @param attacker_influence The influence that we will put into the attacker politican.
 	 * @return Whether a politician was spawned
 	 */
-	public static boolean trySpawnAttackerPolitician(int attacker_influence) throws GameActionException
+	public static boolean trySpawnAttackerPolitician(int attacker_influence, Point ec_target) throws GameActionException
 	{
 		if(RobotPlayer.neutral_ecs.size() == 0) return false;
-		Point ec_target = RobotPlayer.getClosestNeutralECLocation();
 		for (Direction dir : directions) {
 			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, attacker_influence)) {
 				rc.buildRobot(RobotType.POLITICIAN, dir, attacker_influence);
@@ -394,6 +393,39 @@ public class EnlightenmentCenter {
 	}
 
 	/**
+	 *I AM NOT ADDING THESE TO A LIST (since they should commit suicide in a couple rounds anyway)
+	 * @param influence The influence that we will put into the MONEY politican.
+	 * @return Whether a politician was spawned
+	 */
+	public static boolean trySpawnMoneyPolitician(int influence) throws GameActionException
+	{
+		for (Direction dir : directions) {
+			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, influence)) {
+				rc.buildRobot(RobotType.POLITICIAN, dir, influence);
+				int bot_parameter = Politician.MONEY;
+				bot_made_this_turn = true;
+				bot_direction_this_turn = dir;
+				bot_parameter_this_turn = bot_parameter;
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Tries to spawn a unit of influence 1
+	 * @throws GameActionException
+	 */
+	public static void trySpawnCheap() throws GameActionException{
+		if(alive_scout_ids.size() < MAX_SCOUTS){
+			trySpawnScout();
+		}
+		else{
+			trySpawnAttackerMuckraker(1);
+		}
+	}
+
+	/**
 	 * Randomly chooses an index based on the frequencies of freq
 	 * @param freq The weights for each index (does not have to sum to 1)
 	 * @return A chosen index
@@ -431,118 +463,81 @@ public class EnlightenmentCenter {
 	 */
 	public static void spawnRobot() throws GameActionException {
 		//System.out.println("Spawning a robot...");
-		RobotType toBuild = RobotType.MUCKRAKER;
-		int influence = 1;
-
-		int attacker_politician_influence = 1;
-		int police_politician_influence = 20;
-
-		double build_scout_muckraker = 0; //scale of 0 to 2 of spawning weights
-		double build_attacker_politician = 0;
-		double build_attacker_muckraker = 0.3;
-		double build_police_politician = 1.0;
-		double build_nothing = 40.0/rc.getInfluence();
-
-		if(alive_scout_ids.size() < MAX_SCOUTS){
-			build_scout_muckraker = 1.0;
-		}
-
-		Point ec_target = new Point(-9999, -9999);
-		if(RobotPlayer.neutral_ecs.size() > 0){
-			build_attacker_politician = 10.0;
-
-			ec_target = RobotPlayer.getClosestNeutralECLocation();
-			int ec_target_influence = 1;
-			for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
-				if(neutral_ec.rel_loc == ec_target){
-					ec_target_influence = neutral_ec.influence;
-					break;
-				}
-			}
-
-			attacker_politician_influence = ec_target_influence+20;
-
-			if(attacker_politician_influence >= rc.getInfluence()/2){
-				build_attacker_politician = 0;
-				build_attacker_muckraker = 10.0;
-			}
-		}
-		/*
-		if(alive_scout_ids.size() < MAX_SCOUTS){
-			build_scout_muckraker = 1.0;
+		if(rc.getEmpowerFactor(rc.getTeam(), 12) > 10.0) {
+			trySpawnMoneyPolitician(Math.max(20, rc.getInfluence()/2)); //Money politicians are always good!
 		}
 
 		if(RobotPlayer.neutral_ecs.size() > 0){
-			//System.out.println(RobotPlayer.neutral_ecs.size());
 			Point ec_target = RobotPlayer.getClosestNeutralECLocation();
 			int ec_target_influence = 1;
 			for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
-				if(neutral_ec.rel_loc == ec_target){
+				if(neutral_ec.rel_loc.equals(ec_target)){
 					ec_target_influence = neutral_ec.influence;
 					break;
 				}
 			}
 
-			attacker_politician_influence = ec_target_influence+20;
+			if(Math.random() < 0.5){ //also go to other neutral ecs
+				int random_neutral_ec_ind = (int)(Math.random()*(RobotPlayer.neutral_ecs.size()));
+				ec_target = RobotPlayer.neutral_ecs.get(random_neutral_ec_ind).rel_loc;
+				ec_target_influence = RobotPlayer.neutral_ecs.get(random_neutral_ec_ind).influence;
+				if(ec_target_influence == -1) ec_target_influence = 150;
+			}
 
-			if(attacker_politician_influence >= rc.getInfluence()/3){
-				build_attacker_politician = 0;
-			}
-			else if(RobotPlayer.neutral_ecs.size() == 0){
-				build_attacker_politician = 0;
-			}
-			else{
-				build_attacker_politician = 0.5;
-				build_nothing = 0;
-			}
-		}
-		if(alive_scout_ids.size() >= 2*MAX_SCOUTS/3 && RobotPlayer.enemy_ecs.size() > 0){
-			build_attacker_muckraker = 0.5;
-			build_nothing = 0;
-		}
-		*/
+			int attacker_politician_influence = ec_target_influence+20;
 
-		double ran = Math.random();
-		if(ran < slanderer_probability) {
-		//	Attempt to build slanderer
-			int cost = getOptimalSlandererInfluence((int) (rc.getInfluence() * slanderer_probability));
-			if(cost > 0) {
-				toBuild = RobotType.SLANDERER;
-				influence = cost;
-				slanderer_probability = 0;
+			if(alive_attack_politician_ids.size() <= 4){
+				if(attacker_politician_influence <= rc.getInfluence()/2*3){
+					trySpawnAttackerPolitician(attacker_politician_influence, ec_target);
+				}
+				else{
+					trySpawnCheap(); //send a cheap unit in order to save up for a neutral politician later
+				}
 			}
 		}
-		if(toBuild == RobotType.SLANDERER){
-			trySpawnSlanderer(influence);
+
+		boolean very_close_muckraker = false;
+		int very_close_muckraker_max_conviction = -1;
+		for(RobotInfo close_enemy_unit: rc.senseNearbyRobots(40, rc.getTeam().opponent())){
+			if(close_enemy_unit.getType() == RobotType.MUCKRAKER){
+				very_close_muckraker = true;
+				very_close_muckraker_max_conviction = Math.max(very_close_muckraker_max_conviction, close_enemy_unit.getConviction());
+			}
+		}
+
+		if(very_close_muckraker && alive_police_politician_ids.size() < alive_slanderer_ids.size()*2+5){
+			//urgent need for police politician
+			trySpawnPolicePolitician(2*very_close_muckraker_max_conviction+12);
+		}
+
+		if(Math.random() < 0.5){
+			int attacker_muckraker_influence = 1;
+			trySpawnAttackerMuckraker(attacker_muckraker_influence);
 		}
 		else{
-			double[] spawn_freq = new double[5];
-			spawn_freq[0] = build_scout_muckraker; //scale of 0 to 2 of spawning weights
-			spawn_freq[1] = build_attacker_politician;
-			spawn_freq[2] = build_attacker_muckraker;
-			spawn_freq[3] = build_police_politician;
-			spawn_freq[4] = build_nothing; // build nothing
+			double police_to_slanderer = 0.8;
 
-			//System.out.println("spawn_freq: " + spawn_freq[0] + ", " + spawn_freq[1] + ", " + spawn_freq[2] + ", " + spawn_freq[3] + ", "+ spawn_freq[4]);
+			if(ClosestEnemyAttacker.enemy_exists && ClosestEnemyAttacker.enemy_position.distanceSquaredTo(rc.getLocation()) < 256){
+				police_to_slanderer = 2.0;
+			}
+			if(police_to_slanderer*alive_slanderer_ids.size() < alive_police_politician_ids.size()){
+				if(!very_close_muckraker) {
+					//	Attempt to build slanderer
+					int cost = getOptimalSlandererInfluence((int) (rc.getInfluence() * slanderer_probability));
+					if (cost > 0) {
+						trySpawnSlanderer(cost);
+						slanderer_probability = 0;
+					}
+				}
+			}
+			else{
+				trySpawnPolicePolitician(14);
+			}
 
-			int spawn_type = chooseRandomFreq(spawn_freq);
-			if(spawn_type == 0){
-				trySpawnScout();
-			}
-			else if(spawn_type == 1){
-				trySpawnAttackerPolitician(attacker_politician_influence);
-			}
-			else if(spawn_type == 2){
-				trySpawnAttackerMuckraker();
-			}
-			else if(spawn_type == 3){
-				// Spawn politician with bot parameter = Politician.SLANDERER_DEFENSE or Politician.EC_DEFENSE
-				trySpawnPolicePolitician(police_politician_influence);
-			}
 		}
-		//slanderer_probability += .20;
-    //slanderer_probability = Math.sqrt(0.01 + slanderer_probability * slanderer_probability);
-    //if(slanderer_probability > 1.0) slanderer_probability = 1.0;
+
+		trySpawnCheap();
+
 		slanderer_probability = (slanderer_probability + 0.3)/1.3;
 	}
 
