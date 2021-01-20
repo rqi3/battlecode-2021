@@ -41,6 +41,8 @@ public class UnitComms {
         MapLocation closest_enemy = my_loc;
         int closest_enemy_type = 0;
 
+        int enemy_propagated = 0;
+
         /*
         Scan for the nearest enemy attacker (non-slanderer)
          */
@@ -78,13 +80,9 @@ public class UnitComms {
             }
         }
 
-        if(enemy_nearby){
-            ClosestEnemyAttacker.foundAttacker(closest_enemy, closest_enemy_type, rc.getRoundNum());
-        }
-
-        System.out.println("Bytecode used in enemy detection: " + (Clock.getBytecodeNum()-bytecode_before));
-
-        int enemy_propagated = 0;
+        /*
+        Receive Info from friendly units
+         */
         for(RobotInfo nearby_robot: all_nearby_robots){
             RobotType nearby_robot_type = nearby_robot.getType();
             if(nearby_robot.getTeam() == rc.getTeam() && nearby_robot_type != RobotType.ENLIGHTENMENT_CENTER){
@@ -99,6 +97,17 @@ public class UnitComms {
                 break;
             }
         }
+
+
+
+        if(ClosestEnemyAttacker.enemy_exists && rc.canSenseLocation(ClosestEnemyAttacker.enemy_position)){
+            ClosestEnemyAttacker.enemy_exists = false;
+        }
+        if(enemy_nearby){
+            ClosestEnemyAttacker.foundAttacker(closest_enemy, closest_enemy_type, rc.getRoundNum());
+        }
+
+
         //System.out.println("Bytecode used in UnitComms.lookAroundBeforeMovement(): " + (Clock.getBytecodeNum()-bytecode_before));
     }
 

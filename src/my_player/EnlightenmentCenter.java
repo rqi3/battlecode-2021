@@ -167,6 +167,7 @@ public class EnlightenmentCenter {
 			System.out.println("Received Communication about a neutral_ec with influence: " + neutral_ec.influence);
 			//in case we have this information already in an ec information list.
 			//prevents duplicates
+			if(neutral_ec.influence == -1) return;
 			RobotPlayer.addECInfo(neutral_ec);
 			//System.out.println("Neutral EC Information Received:");
 			//System.out.println("Influence: " + neutral_ec.influence);
@@ -178,6 +179,7 @@ public class EnlightenmentCenter {
 
 			//in case we have this information already in an ec information list.
 			//prevents duplicates
+			if(enemy_ec.influence == -1) return;
 			RobotPlayer.addECInfo(enemy_ec);
 			System.out.println("Enemy EC Information Received:");
 			System.out.println("Relative Position: " + enemy_ec.rel_loc);
@@ -188,6 +190,7 @@ public class EnlightenmentCenter {
 
 			//in case we have this information already in an ec information list.
 			//prevents duplicates
+			if(friend_ec.influence == -1) return;
 			RobotPlayer.addECInfo(friend_ec);
 			//System.out.println("Friend EC Information Received:");
 			//System.out.println("Relative Position: " + friend_ec.rel_loc);
@@ -320,8 +323,9 @@ public class EnlightenmentCenter {
 				alive_attack_muckraker_ids.add(spawn_id);
 				return true;
 			}
+			//System.out.println("Cannot build unit: " + dir + " " + attacker_influence);
 		}
-
+		System.out.println("Could not build attack muckraker");
 		return false;
 	}
 
@@ -417,12 +421,9 @@ public class EnlightenmentCenter {
 	 * @throws GameActionException
 	 */
 	public static void trySpawnCheap() throws GameActionException{
-		if(alive_scout_ids.size() < MAX_SCOUTS){
-			trySpawnScout();
-		}
-		else{
-			trySpawnAttackerMuckraker(1);
-		}
+		trySpawnScout();
+		trySpawnAttackerMuckraker(1);
+		System.out.println("Spawned cheap");
 	}
 
 	/**
@@ -464,6 +465,7 @@ public class EnlightenmentCenter {
 	public static void spawnRobot() throws GameActionException {
 		//System.out.println("Spawning a robot...");
 		if(rc.getEmpowerFactor(rc.getTeam(), 12) > 10.0) {
+			System.out.println("Spawning Money Politician...");
 			trySpawnMoneyPolitician(Math.max(20, rc.getInfluence()/2)); //Money politicians are always good!
 		}
 
@@ -486,14 +488,27 @@ public class EnlightenmentCenter {
 
 			int attacker_politician_influence = ec_target_influence+20;
 
-			if(alive_attack_politician_ids.size() <= 4){
-				if(attacker_politician_influence <= rc.getInfluence()/2*3){
-					trySpawnAttackerPolitician(attacker_politician_influence, ec_target);
-				}
-				else{
-					trySpawnCheap(); //send a cheap unit in order to save up for a neutral politician later
-				}
+			if(attacker_politician_influence <= rc.getInfluence()/2*3){
+				System.out.println("Spawning attacker politician to get a neutral ec...");
+				trySpawnAttackerPolitician(attacker_politician_influence, ec_target);
 			}
+			else{
+				System.out.println("Spawning cheap unit...");
+				trySpawnCheap(); //send a cheap unit in order to save up for a neutral politician later
+			}
+		}
+
+
+		boolean surround_unit = false;
+		int surround_unit_max_conviction = -1;
+		for(RobotInfo close_enemy_unit: rc.senseNearbyRobots(2, rc.getTeam().opponent())){
+			surround_unit = true;
+			surround_unit_max_conviction = Math.max(surround_unit_max_conviction, close_enemy_unit.getConviction());
+		}
+
+		if(surround_unit){
+			//very urgent need for police politician'
+			trySpawnPolicePolitician(3*surround_unit_max_conviction+12);
 		}
 
 		boolean very_close_muckraker = false;
@@ -505,20 +520,58 @@ public class EnlightenmentCenter {
 			}
 		}
 
+
 		if(very_close_muckraker && alive_police_politician_ids.size() < alive_slanderer_ids.size()*2+5){
 			//urgent need for police politician
 			trySpawnPolicePolitician(2*very_close_muckraker_max_conviction+12);
 		}
 
+		if(alive_scout_ids.size() < MAX_SCOUTS/3) trySpawnScout();
+
+		if(!ClosestEnemyAttacker.enemy_exists){
+			double police_to_slanderer = 0.5;
+			if(police_to_slanderer*alive_slanderer_ids.size() < alive_police_politician_ids.size()){
+				if(!very_close_muckraker) {
+					//	Attempt to build slanderer
+					int cost = getOptimalSlandererInfluence((int) (rc.getInfluence() * slanderer_probability));
+					if (cost > 0) {
+						trySpawnSlanderer(cost);
+						slanderer_probability = 0;
+					}
+				}
+			}
+			else{
+				trySpawnPolicePolitician(20);
+			}
+		}
+
 		if(Math.random() < 0.5){
+			//ATTACK
+			if(alive_scout_ids.size() < MAX_SCOUTS) trySpawnScout();
+
+			int attacker_politician_influence = -1;
+			if(RobotPlayer.enemy_ecs.size() > 0 && rc.getInfluence() > 1000){
+				Point enemy_ec_rel_loc = RobotPlayer.getClosestEnemyECLocation();
+				attacker_politician_influence = Math.max(101, (int)(rc.getInfluence()*0.01));
+				trySpawnAttackerPolitician(attacker_politician_influence, enemy_ec_rel_loc); //Attack enemy ECs
+			}
+
 			int attacker_muckraker_influence = 1;
+			if(Math.random() < 0.2){
+				if(rc.getInfluence() > 1000){
+					attacker_muckraker_influence = Math.max(101, (int)(rc.getInfluence()*0.01));
+				}
+			}
+
 			trySpawnAttackerMuckraker(attacker_muckraker_influence);
+
+
 		}
 		else{
-			double police_to_slanderer = 0.8;
+			double police_to_slanderer = 1.5;
 
 			if(ClosestEnemyAttacker.enemy_exists && ClosestEnemyAttacker.enemy_position.distanceSquaredTo(rc.getLocation()) < 256){
-				police_to_slanderer = 2.0;
+				police_to_slanderer = 3.0;
 			}
 			if(police_to_slanderer*alive_slanderer_ids.size() < alive_police_politician_ids.size()){
 				if(!very_close_muckraker) {
@@ -531,7 +584,7 @@ public class EnlightenmentCenter {
 				}
 			}
 			else{
-				trySpawnPolicePolitician(14);
+				trySpawnPolicePolitician(20);
 			}
 
 		}
