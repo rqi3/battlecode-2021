@@ -54,7 +54,7 @@ public class Politician {
 		public static final int EC_ATTACK = 1;
 		public static final int POLICE = 2;
 		public static final int MONEY = 3;
-		static int politician_type = POLICE; // read above. By default, police politician
+		static int politician_type = EC_ATTACK; // read above. By default, EC attack
 
 		// Type 1 politican parameters
 	/**
@@ -345,8 +345,15 @@ public class Politician {
 		Movement.rc = RobotPlayer.rc;
 		//TODO: Consider Slanderer-converted Politicians
 		if(RobotPlayer.just_made){
+
 			int additional_info = RobotPlayer.assignParentEC(); //after it spawns, record which EC spawned it (if any)
-			politician_type = additional_info % 4;
+			if(RobotPlayer.has_parent_EC){
+				politician_type = additional_info % 4;
+			}
+			else{
+				politician_type = LOST_POLITICIAN;
+			}
+
 			if(politician_type == Politician.EC_ATTACK){
 				if(RobotPlayer.getBitsBetween(additional_info, 0, 0) == 1){
 					//ec assigned a target
