@@ -63,7 +63,7 @@ public class EnlightenmentCenter {
 	static double current_bid_value = 5; //calibrate this based on what other bots are doing
 	static double BID_PERCENTAGE_UPPER_BOUND = 0.15; //don't spend too much... in theory if the opponent is going above our upper bound then they will be too poor to win remaining rounds
 	//though maybe we want to raise this upper bound in the the last 200 rounds?
-	static double volatility = 0.5; 
+	static double volatility = 1.5; 
 	static double bid_multiplier = 1;
 	static final int LAST_FEW_BIDS = 4;
 	
@@ -89,7 +89,7 @@ public class EnlightenmentCenter {
 		if(check > 0) {
 			int bids_lost = check - (us - previous_scores.get(previous_scores.size() - check));
 			
-			bid_multiplier *= (.95 + .1 * bids_lost);
+			bid_multiplier *= (.95 + .075 * bids_lost);
 		}
 
 		/*System.out.println("current_bid_value: " + current_bid_value);
@@ -534,7 +534,7 @@ public class EnlightenmentCenter {
 		 else if slanderers > 25 && money > 500:
 		 	make attacker 400 politician
 		 else
-		 	make police / slanderer such that ratio is 1:1
+		 	make police / slanderer such that ratio is 2?:1
 		 */
 		
 		//Make slanderer, assuming DEFENSE code didn't have to do anything
@@ -546,7 +546,7 @@ public class EnlightenmentCenter {
 			if(cost > 0) {
 				trySpawnSlanderer(cost);
 			} else {
-				if(alive_police_politician_ids.size()*10 <= alive_slanderer_ids.size()) {
+				if(alive_police_politician_ids.size()*5 <= alive_slanderer_ids.size()) {
 					trySpawnPolicePolitician(20);
 				} else {
 					trySpawnCheap();
@@ -579,7 +579,7 @@ public class EnlightenmentCenter {
 			}
 			else{
 				save_money = true;
-				if(alive_police_politician_ids.size()*10 <= alive_slanderer_ids.size()) {
+				if(alive_police_politician_ids.size()*5 <= alive_slanderer_ids.size()) {
 					trySpawnPolicePolitician(20);
 				} else {
 					trySpawnCheap();
@@ -609,12 +609,12 @@ public class EnlightenmentCenter {
 			trySpawnAttackerMuckraker(attacker_muckraker_influence);
 		}
 		
-		//Build economy (with a 1/1 ratio police : slanderer)
+		//Build economy (with a 1.8?/1 ratio police : slanderer)
 		
 		if(alive_scout_ids.size() < MAX_SCOUTS/3) trySpawnScout(); //Didn't have this line in my original plan, but probably a good one
 
 		if(!ClosestEnemyAttacker.enemy_exists){
-			double police_to_slanderer = 1.2;
+			double police_to_slanderer = 2;
 			
 			if(police_to_slanderer*alive_slanderer_ids.size() < alive_police_politician_ids.size()){
 				if(!very_close_muckraker) {
@@ -632,9 +632,9 @@ public class EnlightenmentCenter {
 			}
 		}
 		
-		double police_to_slanderer = 1.8; //ratio up a little bit if enemy_exists?
+		double police_to_slanderer = 3; //ratio up a little bit if enemy_exists?
 		if(ClosestEnemyAttacker.enemy_exists && ClosestEnemyAttacker.enemy_position.distanceSquaredTo(rc.getLocation()) < 256){
-			police_to_slanderer = 3.0;
+			police_to_slanderer = 5;
 		}
 		if(police_to_slanderer*alive_slanderer_ids.size() < alive_police_politician_ids.size()){
 			if(!very_close_muckraker) {
