@@ -175,9 +175,17 @@ public class Politician {
 		}
 
 		if(!moveAction){
+			int num_nearby_enemies = 0;
+			for(RobotInfo r : rc.senseNearbyRobots(2)) {
+				if(r.getTeam() == rc.getTeam().opponent()) num_nearby_enemies++;
+			}
+			
 			int radius = Math.min(distance_to_target, 9);
-			if(rc.canEmpower(radius)){
-				rc.empower(radius);
+			
+			if(distance_to_target <= 9 || num_nearby_enemies > 3) {
+				if(rc.canEmpower(radius)){
+					rc.empower(radius);
+				}
 			}
 			return;
 		}
