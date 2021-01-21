@@ -95,6 +95,7 @@ public class Slanderer {
 
 	// FROM POLICE POLITICIAN MOVEMENT
 
+	public static final double LATTICE_PREF = 2.0;
 	public static final double HOME_WEIGHT = 1.0; // proportional to dist
 	public static final double REPEL_SL = 0.0; // inverse to dist
 	public static final double REPEL_EC = 0.0; // inverse to dist
@@ -107,8 +108,17 @@ public class Slanderer {
 	public static void moveAction() throws GameActionException
 	{
 		//int cnt = Clock.getBytecodeNum(), ncnt=-1;
-		score[0][0]=score[0][1]=score[0][2]=score[1][0]=score[1][1]=score[1][2]=score[2][0]=score[2][1]=score[2][2]=0;
 		MapLocation cur = rc.getLocation();
+		if((cur.x+cur.y&1)==1) // preference to odd tiles
+		{
+			score[0][0]=score[0][2]=score[1][1]=score[2][0]=score[2][2]=LATTICE_PREF;
+			score[0][1]=score[1][0]=score[1][2]=score[2][1]=0;
+		}
+		else
+		{
+			score[0][0]=score[0][2]=score[1][1]=score[2][0]=score[2][2]=0;
+			score[0][1]=score[1][0]=score[1][2]=score[2][1]=LATTICE_PREF;
+		}
 		
 		//Modify score to naturally favor moving closer to home RC
 
