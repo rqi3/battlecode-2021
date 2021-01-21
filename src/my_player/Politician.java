@@ -175,8 +175,17 @@ public class Politician {
 		}
 
 		if(!moveAction){
-			if(rc.canEmpower(distance_to_target)){
-				rc.empower(distance_to_target);
+			int num_nearby_enemies = 0;
+			for(RobotInfo r : rc.senseNearbyRobots(2)) {
+				if(r.getTeam() == rc.getTeam().opponent()) num_nearby_enemies++;
+			}
+			
+			int radius = Math.min(distance_to_target, 9);
+			
+			if(distance_to_target <= 9 || num_nearby_enemies > 3) {
+				if(rc.canEmpower(radius)){
+					rc.empower(radius);
+				}
 			}
 			return;
 		}
@@ -280,7 +289,7 @@ public class Politician {
 
 		//AFTER SCORES ARE COMPUTED: DETERMINE ACTION
 
-		//Kill muckraker
+		//Kill muckraker --- nathan note : this also kills politcians now right?
 		if(ClosestEnemyAttacker.enemy_exists)
 		{
 			if(rc.getLocation().distanceSquaredTo(ClosestEnemyAttacker.enemy_position) < KILL_DISTANCE) // action radius is 9
