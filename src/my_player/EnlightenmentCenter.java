@@ -560,7 +560,7 @@ public class EnlightenmentCenter {
 		if(rc.getRoundNum() <= 100) {
 			if(alive_slanderer_ids.size() < 2) {
 				if(rc.getInfluence() >= 107) {
-					trySpawnSlanderer(rc.getInfluence());
+					trySpawnSlanderer(getOptimalSlandererInfluence(rc.getInfluence()));
 				} else {
 					trySpawnCheap();
 				}
