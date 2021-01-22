@@ -148,16 +148,37 @@ public strictfp class RobotPlayer {
 
     public static void addECInfo(Neutral_EC_Info ec){
 		System.out.println("New neutral ec information was obtained at location: " + ec.loc);
+
+		for(int i = 0; i < neutral_ecs.size(); i++){
+			if(neutral_ecs.get(i).rel_loc.equals(ec.rel_loc)){
+				neutral_ecs.set(i, ec);
+				return;
+			}
+		}
 		removeECInfo(ec.rel_loc);
 		neutral_ecs.add(ec);
 	}
 
 	public static void addECInfo(Enemy_EC_Info ec){
+		for(int i = 0; i < enemy_ecs.size(); i++){
+			if(enemy_ecs.get(i).rel_loc.equals(ec.rel_loc)){
+				enemy_ecs.set(i, ec);
+				return;
+			}
+		}
 		removeECInfo(ec.rel_loc);
 		enemy_ecs.add(ec);
 	}
 
 	public static void addECInfo(Friend_EC_Info ec){
+		int before_set = Clock.getBytecodeNum();
+		for(int i = 0; i < friend_ecs.size(); i++){
+			if(friend_ecs.get(i).rel_loc.equals(ec.rel_loc)){
+				friend_ecs.set(i, ec);
+				return;
+			}
+		}
+		System.out.println("After set: " + (Clock.getBytecodeNum()-before_set));
 		removeECInfo(ec.rel_loc);
 		friend_ecs.add(ec);
 	}

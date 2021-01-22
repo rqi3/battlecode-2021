@@ -178,24 +178,30 @@ public class EnlightenmentCenter {
 		else if(flag_signal == 2){
 			//Enemy_EC_Info
 			Enemy_EC_Info enemy_ec = Enemy_EC_Info.fromFlagValue(flag_value);
-
+			System.out.println("Enemy EC Information Received:");
 			//in case we have this information already in an ec information list.
 			//prevents duplicates
 			if(enemy_ec.influence == -1) return;
 			RobotPlayer.addECInfo(enemy_ec);
-			System.out.println("Enemy EC Information Received:");
+
 			System.out.println("Relative Position: " + enemy_ec.rel_loc);
 		}
 		else if(flag_signal == 3){
 			//Friend_EC_Info
+			int bytecode_before_process_1 = Clock.getBytecodeNum();
 			Friend_EC_Info friend_ec = Friend_EC_Info.fromFlagValue(flag_value);
-
+			System.out.println((Clock.getBytecodeNum()-bytecode_before_process_1) + " tot bytecode used 1");
+			System.out.println("Friend EC Information Received:");
 			//in case we have this information already in an ec information list.
 			//prevents duplicates
 			if(friend_ec.influence == -1) return;
 			RobotPlayer.addECInfo(friend_ec);
+			System.out.println((Clock.getBytecodeNum()-bytecode_before_process_1) + " tot bytecode used 2");
 			//System.out.println("Friend EC Information Received:");
 			//System.out.println("Relative Position: " + friend_ec.rel_loc);
+		}
+		else if(flag_signal == 4 || flag_signal == 5){
+			ClosestEnemyAttacker.updateUsingSeenFlagValue(flag_value);
 		}
 	}
 
@@ -204,15 +210,24 @@ public class EnlightenmentCenter {
 	 * Receives communication from scouts
 	 */
 	public static void receiveScoutCommunication() throws GameActionException{
+		int bytecode_before_process = Clock.getBytecodeNum();
 		for(Integer scout_id: alive_scout_ids){
 			if(!rc.canGetFlag(scout_id)) continue;
 			int flag_value = rc.getFlag(scout_id);
+
 			processUnitFlagValue(flag_value);
+			if(Clock.getBytecodeNum()-bytecode_before_process > 2000){
+				return;
+			}
 		}
+
+		System.out.println("Bytecode after Scout Receivers: " + Clock.getBytecodeNum());
 	}
 
-	public static void receiveNonScoutCommunication() throws GameActionException{
+	static final int FLAG_BYTECODE_LIMIT = 600;
 
+	public static void receiveNonScoutCommunication() throws GameActionException{
+		int bytecode_begin = Clock.getBytecodeNum();
 		int ALIVE_ATTACK_MUCKRAKER_RECEIVERS = Math.min(8, alive_attack_muckraker_ids.size());
 		int ALIVE_POLICE_POLITICIAN_RECEIVERS = Math.min(8, alive_police_politician_ids.size());
 		int ALIVE_ATTACK_POLITICIAN_RECEIVERS = Math.min(8, alive_attack_politician_ids.size());
@@ -223,34 +238,58 @@ public class EnlightenmentCenter {
 			if(!rc.canGetFlag(id)){
 				continue;
 			}
-			processUnitFlagValue(rc.getFlag(id));
+
+			if(Clock.getBytecodeNum()-bytecode_begin < FLAG_BYTECODE_LIMIT){
+				processUnitFlagValue(rc.getFlag(id));
+			}
 			alive_attack_muckraker_ids.add(id);
+			 break;
 		}
+
+		System.out.println("Bytecode after Attack Muckraker Receivers: " + Clock.getBytecodeNum());
+
+		bytecode_begin = Clock.getBytecodeNum();
 
 		for(int i = 0; i < ALIVE_POLICE_POLITICIAN_RECEIVERS; i++){
 			int id = alive_police_politician_ids.remove();
 			if(!rc.canGetFlag(id)){
 				continue;
 			}
-			processUnitFlagValue(rc.getFlag(id));
+
+			if(Clock.getBytecodeNum()-bytecode_begin < FLAG_BYTECODE_LIMIT){
+				processUnitFlagValue(rc.getFlag(id));
+			}
+
 			alive_police_politician_ids.add(id);
 		}
+
+		System.out.println("Bytecode after Police Receivers: " + Clock.getBytecodeNum());
+
+		bytecode_begin = Clock.getBytecodeNum();
 
 		for(int i = 0; i < ALIVE_ATTACK_POLITICIAN_RECEIVERS; i++){
 			int id = alive_attack_politician_ids.remove();
 			if(!rc.canGetFlag(id)){
 				continue;
 			}
-			processUnitFlagValue(rc.getFlag(id));
+			if(Clock.getBytecodeNum()-bytecode_begin < FLAG_BYTECODE_LIMIT){
+				processUnitFlagValue(rc.getFlag(id));
+			}
 			alive_attack_politician_ids.add(id);
 		}
+
+		System.out.println("Bytecode after Attack Politicians: " + Clock.getBytecodeNum());
+
+		bytecode_begin = Clock.getBytecodeNum();
 
 		for(int i = 0; i < ALIVE_SLANDERER_RECEIVERS; i++){
 			int id = alive_slanderer_ids.remove();
 			if(!rc.canGetFlag(id)){
 				continue;
 			}
-			processUnitFlagValue(rc.getFlag(id));
+			if(Clock.getBytecodeNum()-bytecode_begin < FLAG_BYTECODE_LIMIT){
+				processUnitFlagValue(rc.getFlag(id));
+			}
 			alive_slanderer_ids.add(id);
 		}
 	}
@@ -757,7 +796,7 @@ public class EnlightenmentCenter {
 				}
 			}
 
-			if(last_round_broadcast_enemy_attacker <= rc.getRoundNum()-(1<<ClosestEnemyAttacker.ENEMY_MEMORY) && ClosestEnemyAttacker.enemy_exists){
+			if(last_round_broadcast_enemy_attacker <= rc.getRoundNum()-(1<<ClosestEnemyAttacker.ENEMY_MEMORY)+2 && ClosestEnemyAttacker.enemy_exists){
 				last_round_broadcast_enemy_attacker = rc.getRoundNum();
 				returned_flag_value = ClosestEnemyAttacker.toBroadcastFlagValue();
 				System.out.println("Broadcast closest enemy attacker");
@@ -787,29 +826,34 @@ public class EnlightenmentCenter {
 		}
 		////////////////////Creation End
 
-
+		System.out.println("After Creation: " + Clock.getBytecodeNum());
 		////////////////////Initialization Begin
 		updateBotCreationInfo();
 		updateScoutList();
 		////////////////////Initialization End
 
+		System.out.println("After Initialization: " + Clock.getBytecodeNum());
 
 		////////////////////Sensing Begin
 		UnitComms.BYTECODE_LIMIT = 2000;
 		UnitComms.lookAroundBeforeMovement();
 		////////////////////Sensing End
+		System.out.println("After Sensing: " + Clock.getBytecodeNum());
 
 		////////////////////Receive Communication Begin
 		receiveScoutCommunication();
 		receiveNonScoutCommunication();
 		////////////////////Receive Communication End
-		
+
+		System.out.println("After Communication: " + Clock.getBytecodeNum());
+
+		System.out.println(Clock.getBytecodeNum());
 		//Due to the save_money boolean, it is crazy important that spawnRobot() is called before getBidValue()
 
 		////////////////////Spawn Robot Begin
 		spawnRobot();
 		////////////////////Spawn Robot End
-
+		System.out.println("After Spawn Robot: " + Clock.getBytecodeNum());
 		////////////////////Bid Begin
 		int bid_value = getBidValue();
 		//System.out.println("bid_value: " + bid_value);
@@ -818,7 +862,7 @@ public class EnlightenmentCenter {
 			rc.bid(bid_value);
 		}
 		////////////////////Bid End
-
+		System.out.println("After Bid: " + Clock.getBytecodeNum());
 
 		////////////////////Broadcast to Units Begin (or individual communication to newly spawned unit)
 		UnitComms.lookAroundAfterMovement();
@@ -827,7 +871,7 @@ public class EnlightenmentCenter {
 		if(rc.canSetFlag(flag_value)){
 			rc.setFlag(flag_value);
 		}
-
+		System.out.println("After Broadcast: " + Clock.getBytecodeNum());
 		System.out.println("No errors");
 		//System.out.println("Set Flag Value to: " + flag_value);
 		////////////////////Broadcast to Units End

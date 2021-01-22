@@ -153,7 +153,10 @@ public class Politician {
 			return;
 		}
 
+		System.out.println("My target: " + ec_target);
+
 		for(Friend_EC_Info friend_ec: RobotPlayer.friend_ecs){
+			System.out.println("Friend ec at: " + friend_ec.rel_loc);
 			if(friend_ec.rel_loc.equals(ec_target)){
 				System.out.println("Found friend_ec at " + friend_ec.loc + ", reassigning target");
 				hasECTarget = false;
@@ -179,8 +182,14 @@ public class Politician {
 
 		if(!moveAction){
 			int num_nearby_enemies = 0;
-			for(RobotInfo r : rc.senseNearbyRobots(2)) {
-				if(r.getTeam() == rc.getTeam().opponent()) num_nearby_enemies++;
+			for(RobotInfo r : rc.senseNearbyRobots(9)) {
+				if(r.getTeam() == rc.getTeam().opponent()){
+					num_nearby_enemies++;
+					if(r.getType() == RobotType.ENLIGHTENMENT_CENTER){
+						num_nearby_enemies = 100;
+					}
+				}
+
 			}
 			
 			int radius = Math.min(distance_to_target, 9);
@@ -416,6 +425,10 @@ public class Politician {
 		updateParentEC();
 		if(!RobotPlayer.has_parent_EC){
 			politician_type = Politician.LOST_POLITICIAN;
+		}
+
+		if(politician_type == Politician.LOST_POLITICIAN){
+			System.out.println("I am a lost politician");
 		}
 		////////////////////Initialization End
 
