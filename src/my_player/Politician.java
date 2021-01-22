@@ -405,7 +405,7 @@ public class Politician {
 			}
 
 			if(politician_type == Politician.EC_ATTACK){
-				if(RobotPlayer.getBitsBetween(additional_info, 0, 0) == 1){
+				if(RobotPlayer.getBitsBetween(additional_info, 2, 2) == 1){
 					//ec assigned a target
 					hasECTarget = true;
 					ec_target = RobotPlayer.convertFromFlagRelativeLocation(RobotPlayer.getBitsBetween(additional_info, 6, 19));
