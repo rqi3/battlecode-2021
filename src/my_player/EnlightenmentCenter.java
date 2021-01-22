@@ -90,6 +90,7 @@ public class EnlightenmentCenter {
 			int bids_lost = check - (us - previous_scores.get(previous_scores.size() - check));
 			
 			bid_multiplier *= (.95 + .075 * bids_lost);
+			if(rc.getInfluence() > 10000000) bid_multiplier += .049;
 		}
 
 		/*System.out.println("current_bid_value: " + current_bid_value);
@@ -103,7 +104,7 @@ public class EnlightenmentCenter {
 		current_bid_value = Math.max(current_bid_value, 0.1);
 		previous_scores.add(rc.getTeamVotes());
 		
-		return (int) current_bid_value;
+		return (int) Math.round(current_bid_value);
 	}
 	
 	/////////////////////////////// END Nathan Chen Bidder Code ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
