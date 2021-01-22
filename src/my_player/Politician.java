@@ -75,21 +75,24 @@ public class Politician {
 			* If you see enemy muckraker within range, use empower
 		*/
 		{
-			RobotInfo[] close_robots = rc.senseNearbyRobots(2); //If there are nearby enemy units, empower
+			RobotInfo[] close_robots = rc.senseNearbyRobots(4); //If there are nearby enemy units, empower
 			boolean do_empower = false;
 			for(RobotInfo x : close_robots)
 			{
 				//check whether robot x is an enemy muckraker
 				if(x.getTeam() != rc.getTeam() && x.getType() == RobotType.MUCKRAKER)
 					do_empower = true;
+				if(x.getType() == RobotType.ENLIGHTENMENT_CENTER)
+					do_empower = true;
 			}
-			if(do_empower)
-				if(rc.canEmpower(2)){ // TODO what should we do about empower parameter?
-					rc.empower(2);
+			if(do_empower) {
+				if (rc.canEmpower(4)) { // TODO what should we do about empower parameter?
+					rc.empower(4);
 					return; // successfully empowered
 				}
-
+			}
 			//otherwise: no move
+			tryMove(randomDirection());
 			return;
 		}
 
