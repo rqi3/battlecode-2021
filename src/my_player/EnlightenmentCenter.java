@@ -465,7 +465,7 @@ public class EnlightenmentCenter {
 		if(rc.getRoundNum() < 200) save_money = true; //LOL hard code, just making sure we definitely have the money to expand
 		//at the beginning, spawns 13 politcians
 		//towards the end game, it spawns 17-23 politcians
-		int default_police_influence = (int) Math.round(Math.pow(Math.pow(9.5, 1/200), Math.min(rc.getRoundNum(), 200)) + Math.random()*1.0*rc.getRoundNum()/200 + 12);
+		int default_police_influence = (int) Math.round(Math.pow(Math.pow(9.5, 1.0/100), Math.min(rc.getRoundNum(), 100)) + Math.random()*rc.getRoundNum()/100 + 12);
 		
 		//MAKE MONEY (should only happen against bad, undefended opponents) - necessary to capitalize
 		if(rc.getEmpowerFactor(rc.getTeam(), 12) > 10.0 && rc.getInfluence() < 80000000) {
@@ -632,7 +632,7 @@ public class EnlightenmentCenter {
 				int attacker_politician_influence = -1;
 				if(RobotPlayer.enemy_ecs.size() > 0 && rc.getInfluence() > 500){
 					Point enemy_ec_rel_loc = RobotPlayer.getClosestEnemyECLocation();
-					attacker_politician_influence = Math.max(250, (int)(rc.getInfluence()/3));
+					attacker_politician_influence = Math.min(200, (int)(rc.getInfluence()/2));
 					trySpawnAttackerPolitician(attacker_politician_influence, enemy_ec_rel_loc); //Attack enemy ECs
 				}
 
@@ -651,7 +651,7 @@ public class EnlightenmentCenter {
 			if(alive_scout_ids.size() < MAX_SCOUTS/3) trySpawnScout(); //Didn't have this line in my original plan, but probably a good one
 
 			if(!ClosestEnemyAttacker.enemy_exists){
-				double police_to_slanderer = 0.75;
+				double police_to_slanderer = 1.0;
 				
 				if(police_to_slanderer*alive_slanderer_ids.size() < alive_police_politician_ids.size()){
 					if(!very_close_muckraker) {
@@ -669,9 +669,9 @@ public class EnlightenmentCenter {
 				}
 			}
 			
-			double police_to_slanderer = 0.8;
+			double police_to_slanderer = 1.1;
 			if(ClosestEnemyAttacker.enemy_exists && ClosestEnemyAttacker.enemy_position.distanceSquaredTo(rc.getLocation()) < 256){
-				police_to_slanderer = 1.5;
+				police_to_slanderer = 2.0;
 				if(close_enemy) police_to_slanderer = 3.5;
 			}
 			if(police_to_slanderer*alive_slanderer_ids.size() < alive_police_politician_ids.size()){
