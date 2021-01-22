@@ -147,22 +147,20 @@ public class Politician {
 	Decide to Empower or Move to EC
 	 */
 	private static void doECAttackerAction() throws GameActionException {
-		if(!hasECTarget){
-			if (tryMove(randomDirection()))
-				//System.out.println("I moved!");
-			return;
-		}
-
-		System.out.println("My target: " + ec_target);
-
-		for(Friend_EC_Info friend_ec: RobotPlayer.friend_ecs){
-			System.out.println("Friend ec at: " + friend_ec.rel_loc);
-			if(friend_ec.rel_loc.equals(ec_target)){
-				System.out.println("Found friend_ec at " + friend_ec.loc + ", reassigning target");
-				hasECTarget = false;
-				assignECTarget(); //assign a new target
-				break;
+		if(hasECTarget){
+			//ec target might be friendly
+			for(Friend_EC_Info friend_ec: RobotPlayer.friend_ecs){
+				System.out.println("Friend ec at: " + friend_ec.rel_loc);
+				if(friend_ec.rel_loc.equals(ec_target)){
+					System.out.println("Found friend_ec at " + friend_ec.loc + ", reassigning target");
+					hasECTarget = false;
+					assignECTarget(); //assign a new target
+					break;
+				}
 			}
+		}
+		else{
+			assignECTarget();
 		}
 
 		if(!hasECTarget){
@@ -170,6 +168,8 @@ public class Politician {
 			//System.out.println("I moved!");
 			return;
 		}
+
+		System.out.println("My target: " + ec_target);
 
 		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 		int distance_to_target = Point.getRadiusSquaredDistance(ec_target, my_rel_loc);
@@ -446,8 +446,6 @@ public class Politician {
 		////////////////////Action Begin
 		doMoneyAction(); //does money action if possible
 
-		if(politician_type == Politician.EC_ATTACK)
-			assignECTarget();
 
 		int bytecode_before = Clock.getBytecodeNum();
 		//Do an action (attack or move)
