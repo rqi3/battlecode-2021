@@ -84,8 +84,12 @@ public class Muckraker {
 		}
 	}
 
+	static void lostMoveToMapLocation(MapLocation dest) throws GameActionException{
+		tryMove(randomDirection());
+	}
+
 	/**
-	 * Attacks an enemy slanderer if one is in range.
+	 * Attacks an enemy slanderer if one is in range. Also moves towards one in range
 	 */
 	static void attackSlanderer() throws GameActionException {
 		Team enemy = rc.getTeam().opponent();
@@ -96,9 +100,26 @@ public class Muckraker {
 				if (rc.canExpose(robot.location)) {
 					//System.out.println("exposed");
 					rc.expose(robot.location);
+					return;
 				}
 			}
 		}
+
+		for (RobotInfo robot : rc.senseNearbyRobots(30, rc.getTeam().opponent())) {
+			if (robot.type == RobotType.SLANDERER) {
+				// It's a slanderer... chase after them!
+				if(RobotPlayer.has_parent_EC){
+					System.out.println("Moving towards enemy slanderer");
+					Movement.moveToNaive(RobotPlayer.convertToRelativeCoordinates(robot.getLocation()));
+				}
+				else{
+					lostMoveToMapLocation(robot.getLocation());
+				}
+				return;
+			}
+		}
+
+
 	}
 
 	//////////////BEGIN SCOUT MOVEMENT CODE
@@ -477,9 +498,11 @@ public class Muckraker {
 		//////////////////// Begin Receive Broadcast
 		RobotPlayer.receiveECBroadcast();
 		//////////////////// End Receive Broadcast
+
 		//////////////////// Attack Begin
 		attackSlanderer(); //assume that we always want to attack if we can
 		//////////////////// Attack End
+
 		//////////////////// Movement Begin
 		if(muckraker_type == SCOUT){ //movement for scout
 			moveScout();

@@ -301,6 +301,7 @@ public class EnlightenmentCenter {
 					int first_id = future_converted_slanderer_ids.remove();
 					future_converted_slanderer_rounds.remove();
 					alive_police_politician_ids.add(first_id);
+					System.out.println(first_id + " id slanderer was converted into politician");
 					continue;
 				}
 			}
