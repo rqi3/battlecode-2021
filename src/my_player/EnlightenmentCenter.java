@@ -43,6 +43,9 @@ public class EnlightenmentCenter {
 
 	static Queue<Integer> alive_slanderer_ids = new LinkedList<>();
 
+	static Queue<Integer> future_converted_slanderer_ids = new LinkedList<>();
+	static Queue<Integer> future_converted_slanderer_rounds = new LinkedList<>();
+
 	/**
 	 * List of possible directions.
 	 */
@@ -290,6 +293,18 @@ public class EnlightenmentCenter {
 			if(Clock.getBytecodeNum()-bytecode_begin < FLAG_BYTECODE_LIMIT){
 				processUnitFlagValue(rc.getFlag(id));
 			}
+
+
+			if(future_converted_slanderer_rounds.size() > 0){
+				int first_round = future_converted_slanderer_rounds.peek();
+				if(first_round <= rc.getRoundNum()){
+					int first_id = future_converted_slanderer_ids.remove();
+					future_converted_slanderer_rounds.remove();
+					alive_police_politician_ids.add(first_id);
+					continue;
+				}
+			}
+
 			alive_slanderer_ids.add(id);
 		}
 	}
@@ -430,6 +445,9 @@ public class EnlightenmentCenter {
 				MapLocation spawn_loc = rc.getLocation().add(dir);
 				int spawn_id = rc.senseRobotAtLocation(spawn_loc).getID();
 				alive_slanderer_ids.add(spawn_id);
+
+				future_converted_slanderer_ids.add(spawn_id);
+				future_converted_slanderer_rounds.add(rc.getRoundNum()+300);
 				return true;
 			}
 		}
