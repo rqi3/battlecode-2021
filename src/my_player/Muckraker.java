@@ -369,13 +369,30 @@ public class Muckraker {
 	 * @throws GameActionException
 	 */
 	public static void moveAttacker() throws GameActionException {
+		//System.out.println("I am an attacker. My target is: " + goal);
 		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
+
+		if(goal != null){ //The target could have changed to friendly, set goal null if this happens
+			boolean goal_is_enemy = false;
+			for(Enemy_EC_Info enemy_ec: RobotPlayer.enemy_ecs){
+				if(enemy_ec.rel_loc.equals(goal)){
+					goal_is_enemy = true;
+					//System.out.println("target is still enemy_ec");
+				}
+			}
+			if(!goal_is_enemy){
+				goal = null;
+				//System.out.println("Target is friendly. Reassigning.");
+			}
+		}
 
 		if(goal == null){
 			if(RobotPlayer.enemy_ecs.size() > 0) {
 				goal = RobotPlayer.enemy_ecs.get((int)(Math.random()*RobotPlayer.enemy_ecs.size())).rel_loc;
 			}
 		}
+
+
 
 		if(goal == null){
 			moveScout();
@@ -409,6 +426,11 @@ public class Muckraker {
 				rc.move(best_direction);
 			}
 		}
+	}
+
+	static void moveLost() throws GameActionException
+	{
+		tryMove(randomDirection());
 	}
 
 	public static void run() throws GameActionException{
@@ -464,6 +486,9 @@ public class Muckraker {
 		}
 		else if(muckraker_type == EC_ATTACKER){
 			moveAttacker();
+		}
+		else if(muckraker_type == LOST_MUCKRAKER){
+			moveLost();
 		}
 		//////////////////// Movement End
 

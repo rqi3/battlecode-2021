@@ -171,36 +171,39 @@ public class UnitComms {
 
         for(RobotInfo nearby_robot: all_nearby_robots){
             RobotType nearby_robot_type = nearby_robot.getType();
-            if(nearby_robot.getTeam() == Team.NEUTRAL){
-                //Neutral Enlightenment Center found
-                Neutral_EC_Info neutral_ec = new Neutral_EC_Info();
-                neutral_ec.setPosition(nearby_robot.getLocation());
-                neutral_ec.setInfluence(nearby_robot.getInfluence());
+            if(nearby_robot_type == RobotType.ENLIGHTENMENT_CENTER){
+                if(nearby_robot.getTeam() == Team.NEUTRAL){
+                    //Neutral Enlightenment Center found
+                    Neutral_EC_Info neutral_ec = new Neutral_EC_Info();
+                    neutral_ec.setPosition(nearby_robot.getLocation());
+                    neutral_ec.setInfluence(nearby_robot.getInfluence());
 
-                RobotPlayer.addECInfo(neutral_ec);
-                //System.out.println("Neutral EC found");
-            }
-            else if(nearby_robot.getTeam() == rc.getTeam().opponent() && nearby_robot_type == RobotType.ENLIGHTENMENT_CENTER){
-                //Enemy Enlightenment Center found
-                Enemy_EC_Info enemy_ec = new Enemy_EC_Info();
-                enemy_ec.setPosition(nearby_robot.getLocation());
-                enemy_ec.setInfluence(nearby_robot.getInfluence());
+                    RobotPlayer.addECInfo(neutral_ec);
+                    //System.out.println("Neutral EC found");
+                }
+                else if(nearby_robot.getTeam() == rc.getTeam().opponent()){
+                    //Enemy Enlightenment Center found
+                    Enemy_EC_Info enemy_ec = new Enemy_EC_Info();
+                    enemy_ec.setPosition(nearby_robot.getLocation());
+                    enemy_ec.setInfluence(nearby_robot.getInfluence());
 
-                RobotPlayer.addECInfo(enemy_ec);
-                //System.out.println("Enemy EC found");
-            }
-            else if(nearby_robot.getTeam() == rc.getTeam() && nearby_robot_type == RobotType.ENLIGHTENMENT_CENTER){
-                if(rc.getType() != RobotType.ENLIGHTENMENT_CENTER && nearby_robot.getLocation().equals(RobotPlayer.parent_EC.getLocation())) continue; //don't need to communicate parent EC
-                //Friend Enlightenment Center found
-                Friend_EC_Info friend_ec = new Friend_EC_Info();
-                friend_ec.setPosition(nearby_robot.getLocation());
-                friend_ec.setInfluence(nearby_robot.getInfluence());
+                    RobotPlayer.addECInfo(enemy_ec);
+                    //System.out.println("Enemy EC found");
+                }
+                else if(nearby_robot.getTeam() == rc.getTeam()){
+                    if(rc.getType() != RobotType.ENLIGHTENMENT_CENTER && nearby_robot.getLocation().equals(RobotPlayer.parent_EC.getLocation())) continue; //don't need to communicate parent EC
+                    //Friend Enlightenment Center found
+                    //System.out.println("Friend EC found");
+                    Friend_EC_Info friend_ec = new Friend_EC_Info();
+                    friend_ec.setPosition(nearby_robot.getLocation());
+                    friend_ec.setInfluence(nearby_robot.getInfluence());
 
-                RobotPlayer.addECInfo(friend_ec);
+                    RobotPlayer.addECInfo(friend_ec);
+                }
             }
-            if(Clock.getBytecodeNum()-bytecode_before > BYTECODE_LIMIT) break;
+
         }
-        //System.out.println("Bytecode used in UnitComms.lookAroundAfterMovement(): " + (Clock.getBytecodeNum()-bytecode_before));
+        System.out.println("Bytecode used in UnitComms.lookAroundAfterMovement(): " + (Clock.getBytecodeNum()-bytecode_before));
     }
 
     public static void receivedECBroadcast(Neutral_EC_Info neutral_ec){
@@ -253,7 +256,7 @@ public class UnitComms {
             OLD_FRIEND_EC = 8;
         }
         else{
-            if(Math.random() < 0.25){
+            if(Math.random() < 0.5){
                 NEW_NEUTRAL_EC = 1;
                 NEW_ENEMY_EC = 2;
                 NEW_FRIEND_EC = 3;
