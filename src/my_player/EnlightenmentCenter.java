@@ -527,7 +527,7 @@ public class EnlightenmentCenter {
 			//very urgent need for police politician'
 			
 			surround_unit_max_conviction++; //SUPER SHADY LINE because I thought the conviction to die only had to go to 0, not negative
-			int cost = (int)((8*surround_unit_max_conviction+10)/rc.getEmpowerFactor(rc.getTeam(), 0));
+			int cost = (int)((8*surround_unit_max_conviction+10)/rc.getEmpowerFactor(rc.getTeam(), 13));
 			if(cost < rc.getInfluence()) {
 				trySpawnPolicePolitician(cost);
 			} else {

@@ -165,6 +165,12 @@ public class Politician {
 			}
 		}
 
+		if(!hasECTarget){
+			doPoliceAction();
+			//System.out.println("I moved!");
+			return;
+		}
+
 		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 		int distance_to_target = Point.getRadiusSquaredDistance(ec_target, my_rel_loc);
 
