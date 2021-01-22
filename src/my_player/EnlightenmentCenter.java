@@ -523,6 +523,8 @@ public class EnlightenmentCenter {
 			}
 		}
 		
+		boolean possible_threat = ((ClosestEnemyAttacker.enemy_exists && ClosestEnemyAttacker.enemy_position.distanceSquaredTo(rc.getLocation()) <= 121) || close_enemy);
+		
 		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//NO URGENT DANGER (outline of what to do when urgent defense code didn't run):
 		/*
@@ -574,7 +576,7 @@ public class EnlightenmentCenter {
 		} else { //AFTER round >= 100
 			//if our economy is huge, then it's probably a troll game where the buffs are huge - don't make vulnerable slanderers
 			int spam = 10; // = how many slanderers to make first before doing anything. After the early game, if an EC wants to do this it's probably in the middle of the map and vulnerable - so don't
-			if(alive_slanderer_ids.size() < spam && rc.getInfluence() < 1000000 && !close_enemy) {
+			if(alive_slanderer_ids.size() < spam && rc.getInfluence() < 1000000 && possible_threat) {
 				save_money = true;
 				if(alive_police_politician_ids.size() < 2) trySpawnPolicePolitician(default_police_influence);
 				if(alive_scout_ids.size() < 8) trySpawnCheap();
@@ -672,8 +674,10 @@ public class EnlightenmentCenter {
 			double police_to_slanderer = 1.1;
 			if(ClosestEnemyAttacker.enemy_exists && ClosestEnemyAttacker.enemy_position.distanceSquaredTo(rc.getLocation()) < 256){
 				police_to_slanderer = 2.0;
-				if(close_enemy) police_to_slanderer = 3.5;
+				if(possible_threat) police_to_slanderer = 3.0;
+				if(close_enemy) police_to_slanderer = 5.0;
 			}
+			if(rc.getInfluence() > 100000) police_to_slanderer *= 2.5;
 			if(police_to_slanderer*alive_slanderer_ids.size() < alive_police_politician_ids.size()){
 				if(!very_close_muckraker) {
 					//	Attempt to build slanderer
