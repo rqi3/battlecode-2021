@@ -85,7 +85,19 @@ public class Muckraker {
 	}
 
 	static void lostMoveToMapLocation(MapLocation dest) throws GameActionException{
-		tryMove(randomDirection());
+		int best_dist = 999999;
+		int best_dir = 0;
+		for(int i = 0; i < 8; i++){
+			if(!rc.canMove(directions[i])) continue;
+			MapLocation potential_location = rc.getLocation().add(directions[i]);
+			int potential_dist = potential_location.distanceSquaredTo(dest);
+			if(potential_dist < best_dist){
+				best_dist = potential_dist;
+				best_dir = i;
+			}
+		}
+
+		if(best_dist != 999999) tryMove(directions[best_dir]);
 	}
 
 	/**
