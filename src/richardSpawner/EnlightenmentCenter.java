@@ -584,6 +584,8 @@ public class EnlightenmentCenter {
 
 		int allowance = rc.getInfluence();
 
+		System.out.println("allowance: " + allowance);
+
 		for(RobotInfo close_enemy_unit: rc.senseNearbyRobots(40, rc.getTeam().opponent())){
 			if(close_enemy_unit.getType() == RobotType.POLITICIAN){
 				allowance = Math.min(allowance, rc.getInfluence()-close_enemy_unit.getConviction());
@@ -630,64 +632,66 @@ public class EnlightenmentCenter {
 		boolean possible_threat = ((ClosestEnemyAttacker.enemy_exists && ClosestEnemyAttacker.enemy_position.distanceSquaredTo(rc.getLocation()) <= 100)) || close_enemy;
 
 		if(rc.getRoundNum() <= 100){ //early game
-			if(rc.getRoundNum() == 1){
-				if(!close_muckraker){
-					int slanderer_cost = getOptimalSlandererInfluence(allowance);
-					if(slanderer_cost >= 85){
-						trySpawnSlanderer(slanderer_cost);
-					}
+			if(alive_slanderer_ids.size() < 2) { //start
+				System.out.println("allowance: " + allowance);
+				if(allowance >= 107) {
+
+					trySpawnSlanderer(getOptimalSlandererInfluence(allowance));
+				} else {
+					trySpawnCheap();
 				}
 			}
-			if(alive_scout_ids.size() < 8){
-				trySpawnScout();
-			}
+			else {
+				if(!possible_threat){
+					if(alive_police_politician_ids.size() < alive_slanderer_ids.size()){
+						//build a politician
+						int police_influence = -1;
+						if(close_muckraker){
+							police_influence = Math.max(20, 2*close_muckraker_max_conviction+14);
+						}
+						else{
+							police_influence = 20;
+						}
 
-			if(possible_threat){
-				if(alive_police_politician_ids.size() < alive_slanderer_ids.size()*2){
-					//build a politician
-					int police_influence = -1;
-					if(close_muckraker){
-						police_influence = Math.max(20, 2*close_muckraker_max_conviction+14);
+						if(police_influence >= allowance){
+							trySpawnPolicePolitician(police_influence);
+						}
 					}
 					else{
-						police_influence = 20;
-					}
-					police_influence = Math.min(police_influence, allowance);
-
-					if(police_influence >= 20){
-						trySpawnPolicePolitician(police_influence);
-					}
-				}
-				else{
-					if(!close_muckraker){
 						int slanderer_cost = getOptimalSlandererInfluence(allowance);
-						if(slanderer_cost >= 85){
+						if(slanderer_cost >= 107){
 							trySpawnSlanderer(slanderer_cost);
 						}
 					}
-
-				}
-				trySpawnCheap();
-			}
-			else{
-				if(alive_police_politician_ids.size() < alive_slanderer_ids.size()){
-					//build a politician
-					int police_influence = 20;
-					police_influence = Math.min(police_influence, allowance);
-
-					if(police_influence >= 20){
-						trySpawnPolicePolitician(police_influence);
-					}
+					trySpawnCheap();
 				}
 				else{
-					if(!close_muckraker){
-						int slanderer_cost = getOptimalSlandererInfluence(allowance);
-						if(slanderer_cost >= 85){
-							trySpawnSlanderer(slanderer_cost);
+					if(alive_police_politician_ids.size() < alive_slanderer_ids.size()*2){
+						//build a politician
+						int police_influence = -1;
+						if(close_muckraker){
+							police_influence = Math.max(20, 2*close_muckraker_max_conviction+14);
+						}
+						else{
+							police_influence = 20;
+						}
+
+						if(police_influence <= allowance){
+							trySpawnPolicePolitician(police_influence);
 						}
 					}
+					else{
+						if(!close_muckraker){
+							int slanderer_cost = getOptimalSlandererInfluence(allowance);
+							if(slanderer_cost >= 85){
+								trySpawnSlanderer(slanderer_cost);
+							}
+						}
+
+					}
+					trySpawnCheap();
 				}
-				trySpawnCheap();
+
 			}
 		}
 		else{ //mid game
@@ -717,9 +721,7 @@ public class EnlightenmentCenter {
 						else{
 							police_influence = 20;
 						}
-						police_influence = Math.min(police_influence, allowance);
-
-						if(police_influence >= 20){
+						if(police_influence <= allowance){
 							trySpawnPolicePolitician(police_influence);
 						}
 					}
@@ -737,23 +739,19 @@ public class EnlightenmentCenter {
 					if(alive_police_politician_ids.size() < alive_slanderer_ids.size()){
 						//build a politician
 						int police_influence = 20;
-						police_influence = Math.min(police_influence, allowance);
 
-						if(police_influence >= 20){
+						if(police_influence <= allowance){
 							trySpawnPolicePolitician(police_influence);
 						}
 					}
 					else{
-						if(!close_muckraker){
-							int slanderer_cost = getOptimalSlandererInfluence(allowance);
-							if(slanderer_cost >= 85){
-								trySpawnSlanderer(slanderer_cost);
-							}
+						int slanderer_cost = getOptimalSlandererInfluence(allowance);
+						if(slanderer_cost >= 85){
+							trySpawnSlanderer(slanderer_cost);
 						}
 					}
 					trySpawnCheap();
 				}
-
 			}
 			else if(CURRENT_SPAWN_PHASE == ATTACK_PHASE){
 				System.out.println("Currently in attack phase");
@@ -776,20 +774,25 @@ public class EnlightenmentCenter {
 				}
 				else if(spawn_cycle_index == 1){
 					int attacker_muckraker_cost = allowance/3;
-					trySpawnAttackerMuckraker(attacker_muckraker_cost, null);
+					if(attacker_muckraker_cost <= allowance){
+						trySpawnAttackerMuckraker(attacker_muckraker_cost, null);
+					}
 
 					spawn_cycle_index = (spawn_cycle_index+1) % 4;
 				}
 				else if(spawn_cycle_index == 2){
 					int police_cost = Math.max(20, allowance/20);
-					trySpawnPolicePolitician(police_cost);
+					if(police_cost <= allowance){
+						trySpawnPolicePolitician(police_cost);
+					}
 
 					spawn_cycle_index = (spawn_cycle_index+1) % 4;
 				}
 				else if(spawn_cycle_index == 3){
 					int attacker_politician_cost = allowance/3;
-					trySpawnAttackerPolitician(attacker_politician_cost, null);
-
+					if(attacker_politician_cost <= allowance){
+						trySpawnAttackerPolitician(attacker_politician_cost, null);
+					}
 					spawn_cycle_index = (spawn_cycle_index+1) % 4;
 				}
 
