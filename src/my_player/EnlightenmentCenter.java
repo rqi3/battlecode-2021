@@ -623,7 +623,7 @@ public class EnlightenmentCenter {
 			
 			int cost;
 			if(very_close_muckraker_max_conviction <= 6) cost = (int)(Math.ceil((8*very_close_muckraker_max_conviction)/rc.getEmpowerFactor(rc.getTeam(), 13)) + 10); //probably cheap unit flood, just prepare for 8-way surround
-			else cost = (int)(Math.ceil((2*very_close_muckraker_max_conviction+10)/rc.getEmpowerFactor(rc.getTeam(), 20)) + 1); //tanky muckraker, probably not going to be a flood of these
+			else cost = (int)(Math.ceil((2*very_close_muckraker_max_conviction)/rc.getEmpowerFactor(rc.getTeam(), 20)) + 11); //tanky muckraker, probably not going to be a flood of these
 			if(cost < rc.getInfluence()) {
 				trySpawnPolicePolitician(cost);
 			} else {
