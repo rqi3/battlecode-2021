@@ -330,7 +330,7 @@ public class Politician {
 			if(dist == 1) to_emp = 1; // if distance == 1, then you have to empower
 
 			for(int i=dist;i <= MAX_KILL_DIST;++i) // if can insta, increase radius
-				if((rc.getConviction()*rc.getEmpowerFactor(rc.getTeam(), 0)-10)/cnt[i] > (double)closest_enemy.getConviction())
+				if(((int)((rc.getConviction()-10)*rc.getEmpowerFactor(rc.getTeam(), 0)))/cnt[i] > closest_enemy.getConviction())
 					to_emp = i;
 
 			if(to_emp > 0)
