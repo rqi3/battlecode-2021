@@ -404,7 +404,7 @@ public class EnlightenmentCenter {
 			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, attacker_influence)) {
 				rc.buildRobot(RobotType.POLITICIAN, dir, attacker_influence);
 				int bot_parameter = Politician.EC_ATTACK;
-				bot_parameter+=1*(1<<3);
+				bot_parameter+=1*(1<<2);
 				bot_parameter+=RobotPlayer.convertToFlagRelativeLocation(ec_target)*(1<<6);
 
 				bot_made_this_turn = true;
@@ -685,6 +685,7 @@ public class EnlightenmentCenter {
 
 				if(attacker_politician_influence < rc.getInfluence()){
 					trySpawnAttackerPolitician(attacker_politician_influence, ec_target);
+					System.out.println("Spawned neutral EC politician attacker" + attacker_politician_influence + ec_target);
 				}
 				else{
 					save_money = true;
@@ -706,6 +707,7 @@ public class EnlightenmentCenter {
 					Point enemy_ec_rel_loc = RobotPlayer.getClosestEnemyECLocation();
 					attacker_politician_influence = Math.min(200, (int)(rc.getInfluence()/2));
 					trySpawnAttackerPolitician(attacker_politician_influence, enemy_ec_rel_loc); //Attack enemy ECs
+					System.out.println("Spawned enemy EC politician attacker");
 				}
 
 				int attacker_muckraker_influence = 1;
