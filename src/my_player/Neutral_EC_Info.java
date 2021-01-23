@@ -51,6 +51,7 @@ public class Neutral_EC_Info {
 
     public int toFlagValue(){ //Muckraker uses this to convert EC they see into flag
         int flag_influence = (int)((double)(influence)*127.0/500.0);
+
         int flag_loc = RobotPlayer.convertToFlagRelativeLocation(rel_loc);
 
         return flag_signal+flag_influence*(1<<3)+flag_loc*(1<<10);

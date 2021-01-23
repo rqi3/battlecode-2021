@@ -185,6 +185,9 @@ public class UnitComms {
                     //Enemy Enlightenment Center found
                     Enemy_EC_Info enemy_ec = new Enemy_EC_Info();
                     enemy_ec.setPosition(nearby_robot.getLocation());
+                    System.out.println("Found Enemy EC");
+                    System.out.println("loc: " + nearby_robot.getLocation());
+                    System.out.println("rel_loc: " + enemy_ec.rel_loc);
                     enemy_ec.setInfluence(nearby_robot.getInfluence());
 
                     RobotPlayer.addECInfo(enemy_ec);

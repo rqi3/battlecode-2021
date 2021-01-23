@@ -96,7 +96,10 @@ public strictfp class RobotPlayer {
 	 * @return flag value
 	 */
 	static int convertToFlagRelativeLocation(Point rel_loc) {
+		System.out.println("converting from: " + rel_loc);
 		int flag_loc = (rel_loc.x+63)+((rel_loc.y+63)<<7);
+
+		System.out.println("converting to: " + flag_loc);
 		return flag_loc;
 	}
 
@@ -104,9 +107,12 @@ public strictfp class RobotPlayer {
 	 * Inverts convertToFlagRelativeLocation
 	 */
 	static Point convertFromFlagRelativeLocation(int flag_loc) {
+		System.out.println("converting from: " + flag_loc);
 		Point rel_loc = new Point();
 		rel_loc.x = flag_loc % (1<<7) - 63;
 		rel_loc.y = flag_loc/(1<<7) - 63;
+
+		System.out.println("converting to: " + rel_loc);
 		return rel_loc;
 	}
 
@@ -151,7 +157,7 @@ public strictfp class RobotPlayer {
 
 		for(int i = 0; i < neutral_ecs.size(); i++){
 			if(neutral_ecs.get(i).rel_loc.equals(ec.rel_loc)){
-				neutral_ecs.set(i, ec);
+				if(ec.influence != -1) neutral_ecs.set(i, ec);
 				return;
 			}
 		}
@@ -160,9 +166,12 @@ public strictfp class RobotPlayer {
 	}
 
 	public static void addECInfo(Enemy_EC_Info ec){
+		System.out.println("adding enemy ECInfo...");
 		for(int i = 0; i < enemy_ecs.size(); i++){
+			System.out.println("enemy ec at rel_loc: " + enemy_ecs.get(i).rel_loc);
 			if(enemy_ecs.get(i).rel_loc.equals(ec.rel_loc)){
-				enemy_ecs.set(i, ec);
+				System.out.println("enemy ec reset");
+				if(ec.influence != -1) enemy_ecs.set(i, ec);
 				return;
 			}
 		}
@@ -174,7 +183,7 @@ public strictfp class RobotPlayer {
 		int before_set = Clock.getBytecodeNum();
 		for(int i = 0; i < friend_ecs.size(); i++){
 			if(friend_ecs.get(i).rel_loc.equals(ec.rel_loc)){
-				friend_ecs.set(i, ec);
+				if(ec.influence != -1) friend_ecs.set(i, ec);
 				return;
 			}
 		}
@@ -262,6 +271,8 @@ public strictfp class RobotPlayer {
 		else if(flag_signal == 2){
 			//enemy EC found
 			Enemy_EC_Info enemy_ec = Enemy_EC_Info.fromBroadcastFlagValue(ec_flag_value);
+			System.out.println("enemy ec broadcast: " + ec_flag_value);
+			System.out.println("enemy ec broadcast rel_loc: " + enemy_ec.rel_loc);
 			addECInfo(enemy_ec);
 			UnitComms.receivedECBroadcast(enemy_ec);
 			/*

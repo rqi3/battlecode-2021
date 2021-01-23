@@ -397,6 +397,7 @@ public class Muckraker {
 
 
 	static Point goal = null;
+	static int attacker_stuck_rounds = 0; //how many rounds have I been stuck?
 	/**
 	 * Moves an attacker to surround goal (a chosen enemy_ec)
 	 * @throws GameActionException
@@ -419,6 +420,12 @@ public class Muckraker {
 			}
 		}
 
+		if(attacker_stuck_rounds >= 10){
+			System.out.println("I am stuck, reassigning attack target.");
+			attacker_stuck_rounds = 0;
+			goal = null;
+		}
+
 		if(goal == null){
 			if(RobotPlayer.enemy_ecs.size() > 0) {
 				goal = RobotPlayer.enemy_ecs.get((int)(Math.random()*RobotPlayer.enemy_ecs.size())).rel_loc;
@@ -427,36 +434,86 @@ public class Muckraker {
 
 
 
+		System.out.println("moveAttacker");
+
 		if(goal == null){
+			System.out.println("attacker scout");
 			moveScout();
 		}
 		else {
 			//System.out.println("moveAttacker: " + goal);
 			if(Point.getMaxXYDistance(goal, my_rel_loc) <= 1){
 				//it has done its job and is next to the enemy base
+				System.out.println(goal);
+				System.out.println(my_rel_loc);
+				System.out.println(RobotPlayer.parent_EC.getLocation());
+				System.out.println("job done");
 				return;
 			}
+
+			System.out.println("parent EC?");
 			assert(RobotPlayer.has_parent_EC); //destination was not defined if this has no parent_EC
 
 			Movement.moveToNaive(goal);
 			Direction best_direction = Direction.CENTER;
 			int lowest_maxXY_distance = Point.getMaxXYDistance(my_rel_loc, goal);;
 
-			for(Direction dir: directions){
-				if(rc.canMove(dir)){
-					Point new_loc = my_rel_loc.add(dir);
+			boolean already_surround = true; //check if you are already surrounding enemy
 
-					int new_maxXY_distance = Point.getMaxXYDistance(new_loc, goal);
+			for(Direction dir: directions){
+				Point new_loc = my_rel_loc.add(dir);
+				int new_maxXY_distance = Point.getMaxXYDistance(new_loc, goal);
+
+
+
+				if(rc.canMove(dir)){
 					if(new_maxXY_distance <= lowest_maxXY_distance){
 						best_direction = dir;
 						lowest_maxXY_distance = new_maxXY_distance;
 					}
 				}
 
+
+				if(new_maxXY_distance <= lowest_maxXY_distance){
+					MapLocation new_map_location = rc.getLocation().add(dir);
+					if(rc.canSenseLocation(new_map_location)){
+						RobotInfo blocking_robot = rc.senseRobotAtLocation(new_map_location);
+						if(blocking_robot == null){
+							already_surround = false;
+						}
+						else{
+							if(blocking_robot.getTeam() == rc.getTeam().opponent()){
+								already_surround = false;
+							}
+						}
+					}
+					else{
+						already_surround = false;
+					}
+				}
+
+			}
+
+			if(Point.getRadiusSquaredDistance(goal, my_rel_loc) <= 25){
+				already_surround = false;
+			}
+
+			if(Point.getRadiusSquaredDistance(goal, my_rel_loc) >= 100){
+				already_surround = false;
 			}
 
 			if(best_direction!=Direction.CENTER){
+				System.out.println("best_direction: " + best_direction);
 				rc.move(best_direction);
+				attacker_stuck_rounds = 0;
+			}
+
+			if(already_surround){
+				attacker_stuck_rounds++;
+				System.out.println("I am stuck at " + rc.getLocation() + ". Attacker_stuck_rounds: " + attacker_stuck_rounds);
+			}
+			else{
+				attacker_stuck_rounds = 0;
 			}
 		}
 	}
