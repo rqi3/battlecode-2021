@@ -368,12 +368,20 @@ public class EnlightenmentCenter {
 	 * @throws GameActionException
 	 */
 	private static boolean trySpawnAttackerMuckraker(int attacker_influence, Point target) throws GameActionException {
+		if(target == null && RobotPlayer.enemy_ecs.size() > 0){
+			target = RobotPlayer.enemy_ecs.get((int)(Math.random()*RobotPlayer.enemy_ecs.size())).rel_loc;
+		}
+
 		int offs = (int) (Math.random() * 8);
 		for (int i = 0; i < 8; i++) {
 			Direction dir = directions[(offs + i)%8];
 			if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, attacker_influence)) {
 				rc.buildRobot(RobotType.MUCKRAKER, dir, attacker_influence);
 				int bot_parameter = Muckraker.EC_ATTACKER;
+				if(target != null){
+					bot_parameter+=(1<<2);
+					bot_parameter+=(1<<6)*RobotPlayer.convertToFlagRelativeLocation(target);
+				}
 
 				bot_made_this_turn = true;
 				bot_direction_this_turn = dir;
@@ -386,7 +394,7 @@ public class EnlightenmentCenter {
 			}
 			//System.out.println("Cannot build unit: " + dir + " " + attacker_influence);
 		}
-		System.out.println("Could not build attack muckraker");
+		System.out.println("Could not build attack muckraker with influence " + attacker_influence);
 		return false;
 	}
 

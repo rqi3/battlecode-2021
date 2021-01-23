@@ -546,6 +546,14 @@ public class Muckraker {
 			else{
 				scout_initial_direction = getInitialDirection();
 			}
+
+			if(muckraker_type == EC_ATTACKER){
+				if(((parent_ec_info>>2)&1) == 1){
+					//ec assigned a target
+					goal = RobotPlayer.convertFromFlagRelativeLocation(RobotPlayer.getBitsBetween(parent_ec_info, 6, 19));
+					System.out.println("I have been assigned goal: " + goal);
+				}
+			}
 			//System.out.println("parent EC direction: " + RobotPlayer.getBitsBetween(parent_ec_info, 2, 4));
 			//System.out.println("scout_initial_direction: " + scout_initial_direction);
 		}
@@ -558,7 +566,7 @@ public class Muckraker {
 		}
 
 		//////////////////// End Initialization
-		//System.out.println("I am a type " + muckraker_type + " muckraker.");
+		System.out.println("I am a type " + muckraker_type + " muckraker.");
 		//////////////////// Begin Sense
 		lookAround();
 		UnitComms.lookAroundBeforeMovement();
