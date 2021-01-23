@@ -339,7 +339,9 @@ public class EnlightenmentCenter {
 		int scout_influence = 1;
 
 		if(alive_scout_ids.size() < MAX_SCOUTS){
-			for (Direction dir : directions) {
+			int offs = (int) (Math.random() * 8);
+			for (int i = 0; i < 8; i++) {
+				Direction dir = directions[(offs + i)%8];
 				if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, scout_influence)) {
 					rc.buildRobot(RobotType.MUCKRAKER, dir, scout_influence);
 					int bot_parameter = Muckraker.SCOUT;
@@ -366,7 +368,9 @@ public class EnlightenmentCenter {
 	 * @throws GameActionException
 	 */
 	private static boolean trySpawnAttackerMuckraker(int attacker_influence) throws GameActionException {
-		for (Direction dir : directions) {
+		int offs = (int) (Math.random() * 8);
+		for (int i = 0; i < 8; i++) {
+			Direction dir = directions[(offs + i)%8];
 			if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, attacker_influence)) {
 				rc.buildRobot(RobotType.MUCKRAKER, dir, attacker_influence);
 				int bot_parameter = Muckraker.EC_ATTACKER;
@@ -394,11 +398,13 @@ public class EnlightenmentCenter {
 	public static boolean trySpawnAttackerPolitician(int attacker_influence, Point ec_target) throws GameActionException
 	{
 		if(RobotPlayer.neutral_ecs.size() == 0) return false;
-		for (Direction dir : directions) {
+		int offs = (int) (Math.random() * 8);
+		for (int i = 0; i < 8; i++) {
+			Direction dir = directions[(offs + i)%8];
 			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, attacker_influence)) {
 				rc.buildRobot(RobotType.POLITICIAN, dir, attacker_influence);
 				int bot_parameter = Politician.EC_ATTACK;
-				bot_parameter+=1*(1<<2);
+				bot_parameter+=1*(1<<3);
 				bot_parameter+=RobotPlayer.convertToFlagRelativeLocation(ec_target)*(1<<6);
 
 				bot_made_this_turn = true;
@@ -420,7 +426,9 @@ public class EnlightenmentCenter {
 	 * @return Whether a politician was spawned
 	 */
 	public static boolean trySpawnPolicePolitician(int influence) throws GameActionException {
-		for (Direction dir : directions) {
+		int offs = (int) (Math.random() * 8);
+		for (int i = 0; i < 8; i++) {
+			Direction dir = directions[(offs + i)%8];
 			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, influence)) {
 				rc.buildRobot(RobotType.POLITICIAN, dir, influence);
 				bot_made_this_turn = true;
@@ -437,7 +445,9 @@ public class EnlightenmentCenter {
 	}
 
 	public static boolean trySpawnSlanderer(int influence) throws GameActionException{
-		for (Direction dir : directions) {
+		int offs = (int) (Math.random() * 8);
+		for (int i = 0; i < 8; i++) {
+			Direction dir = directions[(offs + i)%8];
 			if (rc.canBuildRobot(RobotType.SLANDERER, dir, influence)) {
 				rc.buildRobot(RobotType.SLANDERER, dir, influence);
 				bot_made_this_turn = true;
@@ -463,7 +473,9 @@ public class EnlightenmentCenter {
 	 */
 	public static boolean trySpawnMoneyPolitician(int influence) throws GameActionException
 	{
-		for (Direction dir : directions) {
+		int offs = (int) (Math.random() * 8);
+		for (int i = 0; i < 8; i++) {
+			Direction dir = directions[(offs + i)%8];
 			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, influence)) {
 				rc.buildRobot(RobotType.POLITICIAN, dir, influence);
 				int bot_parameter = Politician.MONEY;
@@ -634,7 +646,7 @@ public class EnlightenmentCenter {
 		} else { //AFTER round >= 100
 			//if our economy is huge, then it's probably a troll game where the buffs are huge - don't make vulnerable slanderers
 			int spam = 10; // = how many slanderers to make first before doing anything. After the early game, if an EC wants to do this it's probably in the middle of the map and vulnerable - so don't
-			if(alive_slanderer_ids.size() < spam && rc.getInfluence() < 1000000 && possible_threat) {
+			if(alive_slanderer_ids.size() < spam && rc.getInfluence() < 1000000 && !possible_threat) {
 				save_money = true;
 				if(alive_police_politician_ids.size() < 2) trySpawnPolicePolitician(default_police_influence);
 				if(alive_scout_ids.size() < 8) trySpawnCheap();
