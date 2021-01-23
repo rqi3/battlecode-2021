@@ -479,7 +479,8 @@ public class EnlightenmentCenter {
 	 * @param influence The influence that we will put into the MONEY politican.
 	 * @return Whether a politician was spawned
 	 */
-	public static boolean trySpawnMoneyPolitician(int influence) throws GameActionException
+
+	/*public static boolean trySpawnMoneyPolitician(int influence) throws GameActionException
 	{
 		int offs = (int) (Math.random() * 8);
 		for (int i = 0; i < 8; i++) {
@@ -494,7 +495,7 @@ public class EnlightenmentCenter {
 			}
 		}
 		return false;
-	}
+	}*/
 	
 	/**
 	 * Tries to spawn a unit of influence 1
@@ -545,11 +546,12 @@ public class EnlightenmentCenter {
 		//towards the end game, it spawns 17-23 politcians
 		int default_police_influence = (int) Math.round(Math.pow(Math.pow(9.5, 1.0/100), Math.min(rc.getRoundNum(), 100)) + Math.random()*rc.getRoundNum()/100 + 12);
 		
-		//MAKE MONEY (should only happen against bad, undefended opponents) - necessary to capitalize
-		if(rc.getEmpowerFactor(rc.getTeam(), 12) > 10.0 && rc.getInfluence() < 80000000) {
+		//MAKE MONEY (no longer viable)
+
+		/*if(rc.getEmpowerFactor(rc.getTeam(), 12) > 10.0 && rc.getInfluence() < 80000000) {
 			System.out.println("Spawning Money Politician...");
 			trySpawnMoneyPolitician(rc.getInfluence()/2); //Money politicians are always good!
-		}
+		}*/
 		
 		////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//URGENT defense Code, takes highest priority if there is a big threat

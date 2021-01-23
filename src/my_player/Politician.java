@@ -444,7 +444,7 @@ public class Politician {
 
 		UnitComms.lookAroundBeforeMovement();
 		////////////////////Action Begin
-		doMoneyAction(); //does money action if possible
+		//doMoneyAction(); No longer applicable with specs change
 
 
 		int bytecode_before = Clock.getBytecodeNum();
@@ -459,9 +459,6 @@ public class Politician {
 				break;
 			case POLICE:
 				doPoliceAction();
-				break;
-			case MONEY:
-				doMoneyAction();
 				break;
 			default:
 				break;// or throw some exception
@@ -479,7 +476,7 @@ public class Politician {
 
 	}
 	
-	public static void doMoneyAction() throws GameActionException {
+	/*public static void doMoneyAction() throws GameActionException {
 		if(rc.getEmpowerFactor(rc.getTeam(), 0) >= 10.0){
 			for(Direction dir: directions){
 				RobotInfo possible_ec = rc.senseRobotAtLocation(rc.getLocation().add(dir));
@@ -491,7 +488,7 @@ public class Politician {
 			}
 		}
 
-	}
+	}*/
 
 	/**
 	 * Returns a random Direction.
