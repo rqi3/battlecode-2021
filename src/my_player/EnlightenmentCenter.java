@@ -434,15 +434,17 @@ public class EnlightenmentCenter {
 	 */
 	public static boolean trySpawnAttackerPolitician(int attacker_influence, Point ec_target) throws GameActionException
 	{
-		if(RobotPlayer.neutral_ecs.size() == 0) return false;
 		int offs = (int) (Math.random() * 8);
 		for (int i = 0; i < 8; i++) {
 			Direction dir = directions[(offs + i)%8];
 			if (rc.canBuildRobot(RobotType.POLITICIAN, dir, attacker_influence)) {
 				rc.buildRobot(RobotType.POLITICIAN, dir, attacker_influence);
 				int bot_parameter = Politician.EC_ATTACK;
-				bot_parameter+=1*(1<<2);
-				bot_parameter+=RobotPlayer.convertToFlagRelativeLocation(ec_target)*(1<<6);
+
+				if(ec_target != null){
+					bot_parameter+=(1<<2);
+					bot_parameter+=RobotPlayer.convertToFlagRelativeLocation(ec_target)*(1<<6);
+				}
 
 				bot_made_this_turn = true;
 				bot_direction_this_turn = dir;

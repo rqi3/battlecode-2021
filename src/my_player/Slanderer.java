@@ -61,7 +61,9 @@ public class Slanderer {
 		////////////////////Initialization Begin
 		updateParentEC();
 		UnitComms.BYTECODE_LIMIT = 700;
+		System.out.println("Bytecode before lookaround1: " + Clock.getBytecodeNum());
 		UnitComms.lookAroundBeforeMovement();
+		System.out.println("Bytecode after lookaround2: " + Clock.getBytecodeNum());
 		////////////////////Initialization End
 
 		////////////////////Receive Broadcast Begin

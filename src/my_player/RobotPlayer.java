@@ -96,10 +96,10 @@ public strictfp class RobotPlayer {
 	 * @return flag value
 	 */
 	static int convertToFlagRelativeLocation(Point rel_loc) {
-		System.out.println("converting from: " + rel_loc);
+		//System.out.println("converting from: " + rel_loc);
 		int flag_loc = (rel_loc.x+63)+((rel_loc.y+63)<<7);
 
-		System.out.println("converting to: " + flag_loc);
+		//System.out.println("converting to: " + flag_loc);
 		return flag_loc;
 	}
 
@@ -107,12 +107,12 @@ public strictfp class RobotPlayer {
 	 * Inverts convertToFlagRelativeLocation
 	 */
 	static Point convertFromFlagRelativeLocation(int flag_loc) {
-		System.out.println("converting from: " + flag_loc);
+		//System.out.println("converting from: " + flag_loc);
 		Point rel_loc = new Point();
 		rel_loc.x = flag_loc % (1<<7) - 63;
 		rel_loc.y = flag_loc/(1<<7) - 63;
 
-		System.out.println("converting to: " + rel_loc);
+		//System.out.println("converting to: " + rel_loc);
 		return rel_loc;
 	}
 

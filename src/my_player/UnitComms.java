@@ -41,7 +41,7 @@ public class UnitComms {
         MapLocation closest_enemy = my_loc;
         int closest_enemy_type = 0;
 
-        int enemy_propagated = 0;
+        //int enemy_propagated = 0;
 
         /*
         Scan for the nearest enemy attacker (non-slanderer)
@@ -89,11 +89,11 @@ public class UnitComms {
                 int robot_flag = rc.getFlag(nearby_robot.getID());
                 if(ClosestEnemyAttacker.updateUsingSeenFlagValue(robot_flag)){
                     //System.out.println("Received new information about close enemy from: " + nearby_robot.getLocation());
-                    enemy_propagated++;
+                    //enemy_propagated++;
                 }
             }
             if(Clock.getBytecodeNum()-bytecode_before > BYTECODE_LIMIT){
-                System.out.println("Only propagated: " + enemy_propagated);
+                //System.out.println("Only propagated: " + enemy_propagated);
                 break;
             }
         }
@@ -169,6 +169,8 @@ public class UnitComms {
             ClosestEnemyAttacker.foundAttacker(closest_enemy, closest_enemy_type, rc.getRoundNum());
         }
 
+        System.out.println("bytecode used in first part of lookaroundAfter: " + (Clock.getBytecodeNum()-bytecode_before));
+
         for(RobotInfo nearby_robot: all_nearby_robots){
             RobotType nearby_robot_type = nearby_robot.getType();
             if(nearby_robot_type == RobotType.ENLIGHTENMENT_CENTER){
@@ -185,9 +187,9 @@ public class UnitComms {
                     //Enemy Enlightenment Center found
                     Enemy_EC_Info enemy_ec = new Enemy_EC_Info();
                     enemy_ec.setPosition(nearby_robot.getLocation());
-                    System.out.println("Found Enemy EC");
-                    System.out.println("loc: " + nearby_robot.getLocation());
-                    System.out.println("rel_loc: " + enemy_ec.rel_loc);
+                    //System.out.println("Found Enemy EC");
+                    //System.out.println("loc: " + nearby_robot.getLocation());
+                    //System.out.println("rel_loc: " + enemy_ec.rel_loc);
                     enemy_ec.setInfluence(nearby_robot.getInfluence());
 
                     RobotPlayer.addECInfo(enemy_ec);
@@ -206,7 +208,7 @@ public class UnitComms {
             }
 
         }
-        System.out.println("Bytecode used in UnitComms.lookAroundAfterMovement(): " + (Clock.getBytecodeNum()-bytecode_before));
+        //System.out.println("Bytecode used in UnitComms.lookAroundAfterMovement(): " + (Clock.getBytecodeNum()-bytecode_before));
     }
 
     public static void receivedECBroadcast(Neutral_EC_Info neutral_ec){
@@ -292,7 +294,7 @@ public class UnitComms {
                         communicated_enemy_ecs.removeIf(ec_loc -> (ec_loc.equals(neutral_ec.loc)));
                         communicated_friend_ecs.removeIf(ec_loc -> (ec_loc.equals(neutral_ec.loc)));
                         communicated_neutral_ecs.add(neutral_ec.loc);
-                        System.out.println("Communicated a neutral EC");
+                        //System.out.println("Communicated a neutral EC");
                         return neutral_ec.toFlagValue();
                     }
                 }
@@ -305,7 +307,7 @@ public class UnitComms {
                         communicated_neutral_ecs.removeIf(ec_loc -> (ec_loc.equals(enemy_ec.loc)));
                         communicated_friend_ecs.removeIf(ec_loc -> (ec_loc.equals(enemy_ec.loc)));
                         communicated_enemy_ecs.add(enemy_ec.loc);
-                        System.out.println("Communicated a enemy EC");
+                        //System.out.println("Communicated a enemy EC");
                         return enemy_ec.toFlagValue();
                     }
                 }
@@ -318,7 +320,7 @@ public class UnitComms {
                         communicated_neutral_ecs.removeIf(ec_loc -> (ec_loc.equals(friend_ec.loc)));
                         communicated_enemy_ecs.removeIf(ec_loc -> (ec_loc.equals(friend_ec.loc)));
                         communicated_friend_ecs.add(friend_ec.loc);
-                        System.out.println("Communicated a friend EC");
+                        //System.out.println("Communicated a friend EC");
                         return friend_ec.toFlagValue();
                     }
                 }
@@ -326,27 +328,27 @@ public class UnitComms {
             else if(priority == OLD_NEUTRAL_EC){
                 for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
                     if(!rc.canSenseLocation(neutral_ec.loc) || neutral_ec.influence == -1) continue; //make sure you are communicating seen, correct info
-                    System.out.println("Communicated a neutral EC");
+                    //System.out.println("Communicated a neutral EC");
                     return neutral_ec.toFlagValue();
                 }
             }
             else if(priority == OLD_ENEMY_EC){
                 for(Enemy_EC_Info enemy_ec: RobotPlayer.enemy_ecs){
                     if(!rc.canSenseLocation(enemy_ec.loc) || enemy_ec.influence == -1) continue; //make sure you are communicating seen, correct info
-                    System.out.println("Communicated a enemy EC");
+                    //System.out.println("Communicated a enemy EC");
                     return enemy_ec.toFlagValue();
                 }
             }
             else if(priority == OLD_FRIEND_EC){
                 for(Friend_EC_Info friend_ec: RobotPlayer.friend_ecs){
                     if(!rc.canSenseLocation(friend_ec.loc) || friend_ec.influence == -1) continue; //make sure you are communicating seen, correct info
-                    System.out.println("Communicated a friend EC");
+                    //System.out.println("Communicated a friend EC");
                     return friend_ec.toFlagValue();
                 }
             }
             else if(priority == CLOSEST_ENEMY_ATTACKER){
                 if(ClosestEnemyAttacker.enemy_exists){
-                    System.out.println("Communicated closest enemy attacker");
+                    //System.out.println("Communicated closest enemy attacker");
                     return ClosestEnemyAttacker.toFlagValue();
                 }
             }
