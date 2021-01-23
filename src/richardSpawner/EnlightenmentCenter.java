@@ -81,6 +81,14 @@ public class EnlightenmentCenter {
 		if(us > 750) return 0; //we have majority vote, just invest in full defense
 
 		BID_PERCENTAGE_UPPER_BOUND = 0.15;
+
+		if(rc.getRoundNum() <= 50){
+			BID_PERCENTAGE_UPPER_BOUND = 0;
+		}
+		else if(rc.getRoundNum() <= 200){
+			BID_PERCENTAGE_UPPER_BOUND = 0.1;
+		}
+
 		if(rc.getRoundNum() >= 1300) {
 			BID_PERCENTAGE_UPPER_BOUND = 0.30;
 			if(rc.getRoundNum() >= 1480) {
@@ -632,8 +640,9 @@ public class EnlightenmentCenter {
 		boolean possible_threat = ((ClosestEnemyAttacker.enemy_exists && ClosestEnemyAttacker.enemy_position.distanceSquaredTo(rc.getLocation()) <= 100)) || close_enemy;
 
 		if(rc.getRoundNum() <= 100){ //early game
+			System.out.println("allowance: " + allowance);
 			if(alive_slanderer_ids.size() < 2) { //start
-				System.out.println("allowance: " + allowance);
+				System.out.println("start");
 				if(allowance >= 107) {
 
 					trySpawnSlanderer(getOptimalSlandererInfluence(allowance));
@@ -643,6 +652,7 @@ public class EnlightenmentCenter {
 			}
 			else {
 				if(!possible_threat){
+					System.out.println("safe");
 					if(alive_police_politician_ids.size() < alive_slanderer_ids.size()){
 						//build a politician
 						int police_influence = -1;
@@ -653,7 +663,7 @@ public class EnlightenmentCenter {
 							police_influence = 20;
 						}
 
-						if(police_influence >= allowance){
+						if(police_influence <= allowance){
 							trySpawnPolicePolitician(police_influence);
 						}
 					}
@@ -666,6 +676,7 @@ public class EnlightenmentCenter {
 					trySpawnCheap();
 				}
 				else{
+					System.out.println("threat");
 					if(alive_police_politician_ids.size() < alive_slanderer_ids.size()*2){
 						//build a politician
 						int police_influence = -1;

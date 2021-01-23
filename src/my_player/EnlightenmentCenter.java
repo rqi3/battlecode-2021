@@ -81,6 +81,7 @@ public class EnlightenmentCenter {
 		if(us > 750) return 0; //we have majority vote, just invest in full defense
 
 		BID_PERCENTAGE_UPPER_BOUND = 0.15;
+
 		if(rc.getRoundNum() >= 1300) {
 			BID_PERCENTAGE_UPPER_BOUND = 0.30;
 			if(rc.getRoundNum() >= 1480) {
