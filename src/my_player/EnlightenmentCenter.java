@@ -597,7 +597,7 @@ public class EnlightenmentCenter {
 			//very urgent need for police politician'
 			
 			surround_unit_max_conviction++; //SUPER SHADY LINE because I thought the conviction to die only had to go to 0, not negative
-			int cost = (int)((8*surround_unit_max_conviction+10)/rc.getEmpowerFactor(rc.getTeam(), 13));
+			int cost = (int)(Math.ceil((8*surround_unit_max_conviction)/rc.getEmpowerFactor(rc.getTeam(), 11)) + 10);
 			if(cost < rc.getInfluence()) {
 				trySpawnPolicePolitician(cost);
 			} else {
@@ -622,8 +622,8 @@ public class EnlightenmentCenter {
 			very_close_muckraker_max_conviction++; //ANOTHER SUPER SHADY LINE because I thought the conviction to die only had to go to 0, not negative
 			
 			int cost;
-			if(very_close_muckraker_max_conviction <= 6) cost = (int)((8*very_close_muckraker_max_conviction+10)/rc.getEmpowerFactor(rc.getTeam(), 0)); //probably cheap unit flood, just prepare for 8-way surround
-			else cost = (int)((2*very_close_muckraker_max_conviction+10)/rc.getEmpowerFactor(rc.getTeam(), 0) + 1); //tanky muckraker, probably not going to be a flood of these
+			if(very_close_muckraker_max_conviction <= 6) cost = (int)(Math.ceil((8*very_close_muckraker_max_conviction)/rc.getEmpowerFactor(rc.getTeam(), 13)) + 10); //probably cheap unit flood, just prepare for 8-way surround
+			else cost = (int)(Math.ceil((2*very_close_muckraker_max_conviction+10)/rc.getEmpowerFactor(rc.getTeam(), 20)) + 1); //tanky muckraker, probably not going to be a flood of these
 			if(cost < rc.getInfluence()) {
 				trySpawnPolicePolitician(cost);
 			} else {
