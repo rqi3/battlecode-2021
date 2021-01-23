@@ -367,7 +367,7 @@ public class EnlightenmentCenter {
 	 * Tries to spawn an Attack Muckraker
 	 * @throws GameActionException
 	 */
-	private static boolean trySpawnAttackerMuckraker(int attacker_influence) throws GameActionException {
+	private static boolean trySpawnAttackerMuckraker(int attacker_influence, Point target) throws GameActionException {
 		int offs = (int) (Math.random() * 8);
 		for (int i = 0; i < 8; i++) {
 			Direction dir = directions[(offs + i)%8];
@@ -494,7 +494,7 @@ public class EnlightenmentCenter {
 	 */
 	public static void trySpawnCheap() throws GameActionException{
 		trySpawnScout();
-		trySpawnAttackerMuckraker(1);
+		trySpawnAttackerMuckraker(1, null);
 		System.out.println("Spawned cheap");
 	}
 
@@ -717,7 +717,7 @@ public class EnlightenmentCenter {
 					}
 				}
 
-				trySpawnAttackerMuckraker(attacker_muckraker_influence);
+				trySpawnAttackerMuckraker(attacker_muckraker_influence, null);
 			}
 			
 			//Build economy (with a 1.8?/1 ratio police : slanderer)
