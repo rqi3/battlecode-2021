@@ -339,7 +339,7 @@ public class EnlightenmentCenter {
 		int scout_influence = 1;
 
 		if(alive_scout_ids.size() < MAX_SCOUTS){
-			int offs = (int) (Math.random() * 8);
+			int offs = (10-current_scout_direction);
 			for (int i = 0; i < 8; i++) {
 				Direction dir = directions[(offs + i)%8];
 				if (rc.canBuildRobot(RobotType.MUCKRAKER, dir, scout_influence)) {
