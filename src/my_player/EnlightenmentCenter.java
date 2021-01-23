@@ -35,7 +35,7 @@ public class EnlightenmentCenter {
 	/**
 	 * A list of the scout ids that this EC is keeping track of.
 	 */
-	static List<Integer> alive_scout_ids = new ArrayList<Integer>();
+	static Queue<Integer> alive_scout_ids = new LinkedList<Integer>();
 	static Queue<Integer> alive_attack_muckraker_ids = new LinkedList<>();
 
 	static Queue<Integer> alive_police_politician_ids = new LinkedList<>();
@@ -127,7 +127,8 @@ public class EnlightenmentCenter {
 	/**
 	 * Updates alive_scout_ids based on whether they are alive
 	 */
-	private static void updateScoutList()
+
+	/*private static void updateScoutList()
 
 	{
 		for(int i = alive_scout_ids.size()-1; i >= 0; i--){
@@ -136,7 +137,7 @@ public class EnlightenmentCenter {
 				alive_scout_ids.remove(robot_id); //Scout died, remove it from the list!
 			}
 		}
-	}
+	}*/
 
 
 	/**
@@ -208,62 +209,74 @@ public class EnlightenmentCenter {
 		}
 	}
 
-
+	static final int SCOUT_BYTECODE_LIMIT = 4000;
 	/**
 	 * Receives communication from scouts
 	 */
 	public static void receiveScoutCommunication() throws GameActionException{
 		int bytecode_before_process = Clock.getBytecodeNum();
-		for(Integer scout_id: alive_scout_ids){
-			if(!rc.canGetFlag(scout_id)) continue;
-			int flag_value = rc.getFlag(scout_id);
+		int ALIVE_SCOUT_RECEIVERS = alive_scout_ids.size();
+		int processed_scouts = 0;
+		for(int i = 0; i < ALIVE_SCOUT_RECEIVERS; i++){
+			processed_scouts++;
 
-			processUnitFlagValue(flag_value);
-			if(Clock.getBytecodeNum()-bytecode_before_process > 2000){
-				return;
+			int id = alive_scout_ids.remove();
+			if(!rc.canGetFlag(id)){
+				continue;
+			}
+
+			processUnitFlagValue(rc.getFlag(id));
+			alive_scout_ids.add(id);
+
+			if(Clock.getBytecodeNum()-bytecode_before_process > SCOUT_BYTECODE_LIMIT){
+				break;
 			}
 		}
 
-		System.out.println("Bytecode after Scout Receivers: " + Clock.getBytecodeNum());
+		System.out.println(processed_scouts + " out of " + ALIVE_SCOUT_RECEIVERS + " scouts processed.");
 	}
 
-	static final int FLAG_BYTECODE_LIMIT = 600;
+	static final int NON_SCOUT_BYTECODE_LIMIT = 1000;
 
 	public static void receiveNonScoutCommunication() throws GameActionException{
 		int bytecode_begin = Clock.getBytecodeNum();
-		int ALIVE_ATTACK_MUCKRAKER_RECEIVERS = Math.min(8, alive_attack_muckraker_ids.size());
-		int ALIVE_POLICE_POLITICIAN_RECEIVERS = Math.min(8, alive_police_politician_ids.size());
-		int ALIVE_ATTACK_POLITICIAN_RECEIVERS = Math.min(8, alive_attack_politician_ids.size());
-		int ALIVE_SLANDERER_RECEIVERS = Math.min(8, alive_slanderer_ids.size());
+		int ALIVE_ATTACK_MUCKRAKER_RECEIVERS = alive_attack_muckraker_ids.size();
+		int ALIVE_POLICE_POLITICIAN_RECEIVERS = alive_police_politician_ids.size();
+		int ALIVE_ATTACK_POLITICIAN_RECEIVERS = alive_attack_politician_ids.size();
+		int ALIVE_SLANDERER_RECEIVERS = alive_slanderer_ids.size();
+
+		int processed_non_scouts = 0;
 
 		for(int i = 0; i < ALIVE_ATTACK_MUCKRAKER_RECEIVERS; i++){
+			processed_non_scouts++;
 			int id = alive_attack_muckraker_ids.remove();
 			if(!rc.canGetFlag(id)){
 				continue;
 			}
 
-			if(Clock.getBytecodeNum()-bytecode_begin < FLAG_BYTECODE_LIMIT){
-				processUnitFlagValue(rc.getFlag(id));
-			}
+			processUnitFlagValue(rc.getFlag(id));
 			alive_attack_muckraker_ids.add(id);
-			 break;
-		}
 
-		System.out.println("Bytecode after Attack Muckraker Receivers: " + Clock.getBytecodeNum());
+			if(Clock.getBytecodeNum()-bytecode_begin > NON_SCOUT_BYTECODE_LIMIT){
+				break;
+			}
+		}
 
 		bytecode_begin = Clock.getBytecodeNum();
 
 		for(int i = 0; i < ALIVE_POLICE_POLITICIAN_RECEIVERS; i++){
+			processed_non_scouts++;
 			int id = alive_police_politician_ids.remove();
 			if(!rc.canGetFlag(id)){
 				continue;
 			}
 
-			if(Clock.getBytecodeNum()-bytecode_begin < FLAG_BYTECODE_LIMIT){
-				processUnitFlagValue(rc.getFlag(id));
-			}
-
+			processUnitFlagValue(rc.getFlag(id));
 			alive_police_politician_ids.add(id);
+
+			if(Clock.getBytecodeNum()-bytecode_begin > NON_SCOUT_BYTECODE_LIMIT){
+				break;
+			}
 		}
 
 		System.out.println("Bytecode after Police Receivers: " + Clock.getBytecodeNum());
@@ -271,14 +284,17 @@ public class EnlightenmentCenter {
 		bytecode_begin = Clock.getBytecodeNum();
 
 		for(int i = 0; i < ALIVE_ATTACK_POLITICIAN_RECEIVERS; i++){
+			processed_non_scouts++;
 			int id = alive_attack_politician_ids.remove();
 			if(!rc.canGetFlag(id)){
 				continue;
 			}
-			if(Clock.getBytecodeNum()-bytecode_begin < FLAG_BYTECODE_LIMIT){
-				processUnitFlagValue(rc.getFlag(id));
-			}
+
+			processUnitFlagValue(rc.getFlag(id));
 			alive_attack_politician_ids.add(id);
+			if(Clock.getBytecodeNum()-bytecode_begin > NON_SCOUT_BYTECODE_LIMIT){
+				break;
+			}
 		}
 
 		System.out.println("Bytecode after Attack Politicians: " + Clock.getBytecodeNum());
@@ -286,28 +302,41 @@ public class EnlightenmentCenter {
 		bytecode_begin = Clock.getBytecodeNum();
 
 		for(int i = 0; i < ALIVE_SLANDERER_RECEIVERS; i++){
+			processed_non_scouts++;
 			int id = alive_slanderer_ids.remove();
 			if(!rc.canGetFlag(id)){
 				continue;
 			}
-			if(Clock.getBytecodeNum()-bytecode_begin < FLAG_BYTECODE_LIMIT){
-				processUnitFlagValue(rc.getFlag(id));
-			}
+
+			processUnitFlagValue(rc.getFlag(id));
 
 
-			if(future_converted_slanderer_rounds.size() > 0){
+
+			boolean converted_slanderer = false;
+			if(future_converted_slanderer_rounds.size() > 0 && future_converted_slanderer_ids.size() > 0){
 				int first_round = future_converted_slanderer_rounds.peek();
+				int first_id = future_converted_slanderer_ids.peek();
 				if(first_round <= rc.getRoundNum()){
-					int first_id = future_converted_slanderer_ids.remove();
-					future_converted_slanderer_rounds.remove();
-					alive_police_politician_ids.add(first_id);
-					System.out.println(first_id + " id slanderer was converted into politician");
-					continue;
+					if(id == first_id){
+						converted_slanderer = true;
+						future_converted_slanderer_rounds.remove();
+						future_converted_slanderer_ids.remove();
+						alive_police_politician_ids.add(id);
+						System.out.println(id + " id slanderer was converted into politician");
+					}
 				}
 			}
+			if(!converted_slanderer){
+				alive_slanderer_ids.add(id);
+			}
 
-			alive_slanderer_ids.add(id);
+			if(Clock.getBytecodeNum()-bytecode_begin > NON_SCOUT_BYTECODE_LIMIT){
+				break;
+			}
+
 		}
+
+		System.out.println(processed_non_scouts + " non scouts processed out of " + (ALIVE_ATTACK_MUCKRAKER_RECEIVERS+ALIVE_POLICE_POLITICIAN_RECEIVERS+ALIVE_ATTACK_POLITICIAN_RECEIVERS+ALIVE_SLANDERER_RECEIVERS));
 	}
 
 	/**
@@ -872,7 +901,7 @@ public class EnlightenmentCenter {
 		System.out.println("After Creation: " + Clock.getBytecodeNum());
 		////////////////////Initialization Begin
 		updateBotCreationInfo();
-		updateScoutList();
+		//updateScoutList(); Changed from ArrayList to Queue
 		////////////////////Initialization End
 
 		System.out.println("After Initialization: " + Clock.getBytecodeNum());
