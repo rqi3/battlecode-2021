@@ -571,7 +571,7 @@ public class EnlightenmentCenter {
 		return 0;
 	}
 
-	static HashMap<Point, Integer> numSent;
+	static HashMap<Point, Integer> numSent = new HashMap<Point, Integer>();
 
 	public static int getBestNeutralECIndex(){
 		if(RobotPlayer.neutral_ecs.size() == 0) return -1;
