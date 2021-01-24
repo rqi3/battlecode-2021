@@ -142,6 +142,7 @@ public class Slanderer {
 		//ncnt = Clock.getBytecodeNum(); System.out.println("Process home EC: " + (ncnt - cnt)); cnt = ncnt;
 
 		//Retrieve nearest robot
+		/*
 		RobotInfo closest_friendly = null;
 		int closest_friendly_dist = 1000000;
 		for(RobotInfo info : rc.senseNearbyRobots(20, rc.getTeam()))
@@ -153,10 +154,12 @@ public class Slanderer {
 				closest_friendly = info;
 			}
 		}
+		*/
 
 		//ncnt = Clock.getBytecodeNum(); System.out.println("Retrieve nearest friendly: " + (ncnt - cnt)); cnt = ncnt;
 
 		//Handle nearest friendly
+		/*
 		if(closest_friendly != null)
 		{
 			double wt = 0.0;
@@ -185,6 +188,7 @@ public class Slanderer {
 			score[2][1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y)));
 			score[2][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y+1)));
 		}
+		*/
 
 		//ncnt = Clock.getBytecodeNum(); System.out.println("Handle nearest friendly: " + (ncnt - cnt)); cnt = ncnt;
 
