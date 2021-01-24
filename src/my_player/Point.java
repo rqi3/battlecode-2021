@@ -59,4 +59,8 @@ public class Point {
 	public String toString(){
 		return "(" + x + "," + y + ")";
 	}
+	
+	public int hashCode() {
+		return 150*x + y; 
+	}
 }
