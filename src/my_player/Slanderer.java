@@ -97,8 +97,7 @@ public class Slanderer {
 
 	// FROM POLICE POLITICIAN MOVEMENT
 
-	public static final double PASS_WT = 0.1;
-	public static final double LATTICE_PREF = 1.0;
+	public static final double LATTICE_PREF = 2.0;
 	public static final double HOME_WEIGHT = 1.0; // proportional to dist
 	public static final double REPEL_SL = 0.0; // inverse to dist
 	public static final double REPEL_EC = 0.0; // inverse to dist
@@ -122,21 +121,6 @@ public class Slanderer {
 			score[0][0]=score[0][2]=score[1][1]=score[2][0]=score[2][2]=0;
 			score[0][1]=score[1][0]=score[1][2]=score[2][1]=LATTICE_PREF;
 		}
-		
-		//Modify score based on passability
-		/*
-		{
-			try{score[0][0]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x-1, cur.y-1));} catch(GameActionException e) {score[0][0]-=INF;}
-			try{score[0][1]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x-1, cur.y));} catch(GameActionException e) {score[0][1]-=INF;}
-			try{score[0][2]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x-1, cur.y+1));} catch(GameActionException e) {score[0][2]-=INF;}
-			try{score[1][0]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x, cur.y-1));} catch(GameActionException e) {score[1][0]-=INF;}
-			try{score[1][1]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x, cur.y));} catch(GameActionException e) {score[1][1]-=INF;}
-			try{score[1][2]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x, cur.y+1));} catch(GameActionException e) {score[1][2]-=INF;}
-			try{score[2][0]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x+1, cur.y-1));} catch(GameActionException e) {score[2][0]-=INF;}
-			try{score[2][1]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x+1, cur.y));} catch(GameActionException e) {score[2][1]-=INF;}
-			try{score[2][2]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x+1, cur.y+1));} catch(GameActionException e) {score[2][2]-=INF;}
-		}
-		*/
 		
 		//Modify score to naturally favor moving closer to home RC
 
@@ -222,7 +206,7 @@ public class Slanderer {
 
 		//ncnt = Clock.getBytecodeNum(); System.out.println("Handle nearest enemy: " + (ncnt - cnt)); cnt = ncnt;
 		
-		for(int z=0;z<6;++z) // try 6 best locations
+		for(int z=0;z<3;++z) // try 3 best locations
 		{
 			int bi=0, bj=0;
 			if(score[0][1]>score[bi][bj]) {bi=0; bj=1;}

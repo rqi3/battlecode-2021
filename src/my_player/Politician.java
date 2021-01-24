@@ -263,17 +263,14 @@ public class Politician {
 	 * IMPLEMENTATION OF POLICE POLITICIAN
 	 */
 
-	public static final double PASS_WT = 0.2;
 	public static final double HOME_WEIGHT = 1.0;
 	public static final double REPEL_SL = 1.0;
 	public static final double REPEL_EC = 100.0;
 	public static final double REPEL_PT = 100.0;
-	public static final double SPAWN_BLOCK_WEIGHT = -10000.0;
+	public static final double SPAWN_BLOCK_WEIGHT = -100.0;
 	public static final double CHASE_WEIGHTS[] = {0.0, -1000.0, -500.0};
-	public static final double INF = 1e11;
-	public static final double INFB = 1e12;
-	public static final int MAX_KILL_DIST = 9;
-	public static final int ATK_DIST = 2; // if you can't insta, attack anyways
+	public static final double INF = 1e12;
+	public static final int MAX_KILL_DIST = 5;
 
 	public static void doPoliceAction() throws GameActionException
 	{
@@ -282,20 +279,7 @@ public class Politician {
 		MapLocation cur = rc.getLocation();
 
 
-		//Modify score based on passability
-		/*
-		{
-			try{score[0][0]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x-1, cur.y-1));} catch(GameActionException e) {score[0][0]-=INF;}
-			try{score[0][1]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x-1, cur.y));} catch(GameActionException e) {score[0][1]-=INF;}
-			try{score[0][2]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x-1, cur.y+1));} catch(GameActionException e) {score[0][2]-=INF;}
-			try{score[1][0]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x, cur.y-1));} catch(GameActionException e) {score[1][0]-=INF;}
-			try{score[1][1]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x, cur.y));} catch(GameActionException e) {score[1][1]-=INF;}
-			try{score[1][2]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x, cur.y+1));} catch(GameActionException e) {score[1][2]-=INF;}
-			try{score[2][0]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x+1, cur.y-1));} catch(GameActionException e) {score[2][0]-=INF;}
-			try{score[2][1]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x+1, cur.y));} catch(GameActionException e) {score[2][1]-=INF;}
-			try{score[2][2]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x+1, cur.y+1));} catch(GameActionException e) {score[2][2]-=INF;}
-		}
-		*/
+		//TODO Modify score based on passability
 
 		//Modify score to naturally favor moving closer to home RC
 		if(rc.canGetFlag(RobotPlayer.parent_EC.getID())) { // parent EC alive
@@ -315,7 +299,7 @@ public class Politician {
 		//Modify score based on nearby robots
 		RobotInfo closest_enemy = null;
 		int closest_enemy_dist = 1000000;
-		for(RobotInfo info : rc.senseNearbyRobots(25))
+		for(RobotInfo info : rc.senseNearbyRobots(20))
 			if(info.getTeam() == rc.getTeam()) // same team
 			{
 				double wt = 0.0;
@@ -335,7 +319,6 @@ public class Politician {
 				}
 				MapLocation loc = info.getLocation();
 				int dist = loc.distanceSquaredTo(cur);
-				//wt /= Math.log((double)dist+2.7183);
 				score[0][0] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y-1)));
 				score[0][1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y)));
 				score[0][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y+1)));
@@ -373,17 +356,13 @@ public class Politician {
 		{
 			double wt = CHASE_WEIGHTS[ClosestEnemyAttacker.enemy_type];
 			MapLocation loc = ClosestEnemyAttacker.enemy_position;
-			int dist = loc.distanceSquaredTo(cur);
-			//wt /= Math.log((double)dist+2.7183);
-			score[0][0] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y-1)));
-			score[0][1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y)));
-			score[0][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y+1)));
-			score[1][0] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x, cur.y-1)));
-			score[1][1] -= wt/Math.sqrt(1+(double)dist);
-			score[1][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x, cur.y+1)));
-			score[2][0] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y-1)));
-			score[2][1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y)));
-			score[2][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y+1)));
+			for(int i=-1;i<=1;++i)
+				for(int j=-1;j<=1;++j)
+				{
+					int x=cur.x+i;
+					int y=cur.y+j;
+					score[i+1][j+1] -= wt/Math.sqrt(loc.distanceSquaredTo(new MapLocation(x, y))+1); // subtract because we want to move to smaller distance
+				}
 		}
 
 		//AFTER SCORES ARE COMPUTED: DETERMINE ACTION
@@ -395,7 +374,7 @@ public class Politician {
 				cnt[i+1] += cnt[i];
 			int dist = rc.getLocation().distanceSquaredTo(closest_enemy.getLocation());
 			int to_emp = 0;
-			if(dist <= ATK_DIST) to_emp = dist; // if distance == 1, then you have to empower
+			if(dist == 1) to_emp = 1; // if distance == 1, then you have to empower
 
 			for(int i=dist;i <= MAX_KILL_DIST;++i) // if can insta, increase radius
 				if(((int)((rc.getConviction()-10)*rc.getEmpowerFactor(rc.getTeam(), 0)))/cnt[i] > closest_enemy.getConviction())
@@ -409,19 +388,20 @@ public class Politician {
 				}
 		}
 
-		for(int z=0;z<9;++z) // try all 9 locations
+		//Move (should take at most (9 * (4 + 9*5 + 2)) = 459 bytecodes
+		while(true)
 		{
-			int bi=0, bj=0;
-			if(score[0][1]>score[bi][bj]) {bi=0; bj=1;}
-			if(score[0][2]>score[bi][bj]) {bi=0; bj=2;}
-			if(score[1][0]>score[bi][bj]) {bi=1; bj=0;}
-			if(score[1][1]>score[bi][bj]) {bi=1; bj=1;}
-			if(score[1][2]>score[bi][bj]) {bi=1; bj=2;}
-			if(score[2][0]>score[bi][bj]) {bi=2; bj=0;}
-			if(score[2][1]>score[bi][bj]) {bi=2; bj=1;}
-			if(score[2][2]>score[bi][bj]) {bi=2; bj=2;}
-
-			Direction to_go = dir[bi][bj];
+			double best = score[1][1]-1;
+			int bi=-1, bj=-1;
+			Direction to_go = null;
+			for(int i=-1;i<=1;++i)
+				for(int j=-1;j<=1;++j)
+					if(best < score[i+1][j+1])
+					{
+						best = score[i+1][j+1];
+						bi=i+1; bj=j+1;
+						to_go = dir[i+1][j+1];
+					}
 			if(to_go == null) // no movement
 				return;
 			if(rc.canMove(to_go))
@@ -430,8 +410,7 @@ public class Politician {
 				return;
 			}
 			else
-				score[bi][bj] -= INFB;
-			//ncnt = Clock.getBytecodeNum(); System.out.println("Try move & failed: " + (ncnt - cnt)); cnt = ncnt;
+				score[bi][bj] -= INF;
 		}
 	}
 
