@@ -104,9 +104,9 @@ public class EnlightenmentCenter {
 			if(rc.getInfluence() > 10000000) bid_multiplier += .049;
 		}
 
-		/*System.out.println("current_bid_value: " + current_bid_value);
-		System.out.println("bid_multiplier: " + bid_multiplier);
-		System.out.println("BID_PERCENTAGE_UPPER_BOUND: " + BID_PERCENTAGE_UPPER_BOUND);*/
+		/*//System.out.println("current_bid_value: " + current_bid_value);
+		//System.out.println("bid_multiplier: " + bid_multiplier);
+		//System.out.println("BID_PERCENTAGE_UPPER_BOUND: " + BID_PERCENTAGE_UPPER_BOUND);*/
 
 		current_bid_value *= Math.pow(bid_multiplier, volatility);
 		
@@ -178,7 +178,7 @@ public class EnlightenmentCenter {
 		if(flag_signal == 1){
 			//Neutral_EC_Info
 			Neutral_EC_Info neutral_ec = Neutral_EC_Info.fromFlagValue(flag_value);
-			System.out.println("Received Communication about a neutral_ec with influence: " + neutral_ec.influence);
+			//System.out.println("Received Communication about a neutral_ec with influence: " + neutral_ec.influence);
 			//in case we have this information already in an ec information list.
 			//prevents duplicates
 			if(neutral_ec.influence == -1) return;
@@ -190,25 +190,25 @@ public class EnlightenmentCenter {
 		else if(flag_signal == 2){
 			//Enemy_EC_Info
 			Enemy_EC_Info enemy_ec = Enemy_EC_Info.fromFlagValue(flag_value);
-			System.out.println("Enemy EC Information Received:");
+			//System.out.println("Enemy EC Information Received:");
 			//in case we have this information already in an ec information list.
 			//prevents duplicates
 			if(enemy_ec.influence == -1) return;
 			RobotPlayer.addECInfo(enemy_ec);
 
-			System.out.println("Relative Position: " + enemy_ec.rel_loc);
+			//System.out.println("Relative Position: " + enemy_ec.rel_loc);
 		}
 		else if(flag_signal == 3){
 			//Friend_EC_Info
 			int bytecode_before_process_1 = Clock.getBytecodeNum();
 			Friend_EC_Info friend_ec = Friend_EC_Info.fromFlagValue(flag_value);
-			System.out.println((Clock.getBytecodeNum()-bytecode_before_process_1) + " tot bytecode used 1");
-			System.out.println("Friend EC Information Received:");
+			//System.out.println((Clock.getBytecodeNum()-bytecode_before_process_1) + " tot bytecode used 1");
+			//System.out.println("Friend EC Information Received:");
 			//in case we have this information already in an ec information list.
 			//prevents duplicates
 			if(friend_ec.influence == -1) return;
 			RobotPlayer.addECInfo(friend_ec);
-			System.out.println((Clock.getBytecodeNum()-bytecode_before_process_1) + " tot bytecode used 2");
+			//System.out.println((Clock.getBytecodeNum()-bytecode_before_process_1) + " tot bytecode used 2");
 			//System.out.println("Friend EC Information Received:");
 			//System.out.println("Relative Position: " + friend_ec.rel_loc);
 		}
@@ -241,7 +241,7 @@ public class EnlightenmentCenter {
 			}
 		}
 
-		System.out.println(processed_scouts + " out of " + ALIVE_SCOUT_RECEIVERS + " scouts processed.");
+		//System.out.println(processed_scouts + " out of " + ALIVE_SCOUT_RECEIVERS + " scouts processed.");
 	}
 
 	static final int NON_SCOUT_BYTECODE_LIMIT = 1000;
@@ -287,7 +287,7 @@ public class EnlightenmentCenter {
 			}
 		}
 
-		System.out.println("Bytecode after Police Receivers: " + Clock.getBytecodeNum());
+		//System.out.println("Bytecode after Police Receivers: " + Clock.getBytecodeNum());
 
 		bytecode_begin = Clock.getBytecodeNum();
 
@@ -305,7 +305,7 @@ public class EnlightenmentCenter {
 			}
 		}
 
-		System.out.println("Bytecode after Attack Politicians: " + Clock.getBytecodeNum());
+		//System.out.println("Bytecode after Attack Politicians: " + Clock.getBytecodeNum());
 
 		bytecode_begin = Clock.getBytecodeNum();
 
@@ -330,7 +330,7 @@ public class EnlightenmentCenter {
 						future_converted_slanderer_rounds.remove();
 						future_converted_slanderer_ids.remove();
 						alive_police_politician_ids.add(id);
-						System.out.println(id + " id slanderer was converted into politician");
+						//System.out.println(id + " id slanderer was converted into politician");
 					}
 				}
 			}
@@ -344,7 +344,7 @@ public class EnlightenmentCenter {
 
 		}
 
-		System.out.println(processed_non_scouts + " non scouts processed out of " + (ALIVE_ATTACK_MUCKRAKER_RECEIVERS+ALIVE_POLICE_POLITICIAN_RECEIVERS+ALIVE_ATTACK_POLITICIAN_RECEIVERS+ALIVE_SLANDERER_RECEIVERS));
+		//System.out.println(processed_non_scouts + " non scouts processed out of " + (ALIVE_ATTACK_MUCKRAKER_RECEIVERS+ALIVE_POLICE_POLITICIAN_RECEIVERS+ALIVE_ATTACK_POLITICIAN_RECEIVERS+ALIVE_SLANDERER_RECEIVERS));
 	}
 
 	/**
@@ -431,7 +431,7 @@ public class EnlightenmentCenter {
 			}
 			//System.out.println("Cannot build unit: " + dir + " " + attacker_influence);
 		}
-		System.out.println("Could not build attack muckraker with influence " + attacker_influence);
+		//System.out.println("Could not build attack muckraker with influence " + attacker_influence);
 		return false;
 	}
 
@@ -543,7 +543,7 @@ public class EnlightenmentCenter {
 	public static void trySpawnCheap() throws GameActionException{
 		trySpawnScout();
 		trySpawnAttackerMuckraker(1, null);
-		System.out.println("Spawned cheap");
+		//System.out.println("Spawned cheap");
 	}
 
 	/**
@@ -567,7 +567,7 @@ public class EnlightenmentCenter {
 				return i;
 			}
 		}
-		System.out.println("chooseRandomFreq error");
+		//System.out.println("chooseRandomFreq error");
 		return 0;
 	}
 
@@ -592,7 +592,7 @@ public class EnlightenmentCenter {
 
 		int allowance = rc.getInfluence();
 
-		System.out.println("allowance: " + allowance);
+		//System.out.println("allowance: " + allowance);
 
 		for(RobotInfo close_enemy_unit: rc.senseNearbyRobots(40, rc.getTeam().opponent())){
 			if(close_enemy_unit.getType() == RobotType.POLITICIAN){
@@ -616,7 +616,7 @@ public class EnlightenmentCenter {
 			//very urgent need for police politician
 			int cost = 4*surround_unit_max_conviction + 15;
 			if(cost <= allowance) {
-				System.out.println("Spawn for surround unit");
+				//System.out.println("Spawn for surround unit");
 				trySpawnPolicePolitician(cost);
 			}
 			else{
@@ -640,9 +640,9 @@ public class EnlightenmentCenter {
 		boolean possible_threat = ((ClosestEnemyAttacker.enemy_exists && ClosestEnemyAttacker.enemy_position.distanceSquaredTo(rc.getLocation()) <= 100)) || close_enemy;
 
 		if(rc.getRoundNum() <= 100){ //early game
-			System.out.println("allowance: " + allowance);
+			//System.out.println("allowance: " + allowance);
 			if(alive_slanderer_ids.size() < 2) { //start
-				System.out.println("start");
+				//System.out.println("start");
 				if(allowance >= 107) {
 
 					trySpawnSlanderer(getOptimalSlandererInfluence(allowance));
@@ -652,7 +652,7 @@ public class EnlightenmentCenter {
 			}
 			else {
 				if(!possible_threat){
-					System.out.println("safe");
+					//System.out.println("safe");
 					if(alive_police_politician_ids.size() < alive_slanderer_ids.size()){
 						//build a politician
 						int police_influence = -1;
@@ -676,7 +676,7 @@ public class EnlightenmentCenter {
 					trySpawnCheap();
 				}
 				else{
-					System.out.println("threat");
+					//System.out.println("threat");
 					if(alive_police_politician_ids.size() < alive_slanderer_ids.size()*2){
 						//build a politician
 						int police_influence = -1;
@@ -711,7 +711,7 @@ public class EnlightenmentCenter {
 			}
 
 			if(CURRENT_SPAWN_PHASE == ECONOMY_PHASE){
-				System.out.println("Currently in economy phase");
+				//System.out.println("Currently in economy phase");
 				if(RobotPlayer.neutral_ecs.size() > 0){
 					Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
 					if(allowance >= 250+neutral_ec.influence){
@@ -765,15 +765,15 @@ public class EnlightenmentCenter {
 				}
 			}
 			else if(CURRENT_SPAWN_PHASE == ATTACK_PHASE){
-				System.out.println("Currently in attack phase");
+				//System.out.println("Currently in attack phase");
 				if(RobotPlayer.neutral_ecs.size() > 0){
 					Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
 					if(allowance >= 250+neutral_ec.influence){
 						trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc);
-						System.out.println("Attack neutral ec");
+						//System.out.println("Attack neutral ec");
 					}
 				}
-				System.out.println("Spawn cycle: " + spawn_cycle_index);
+				//System.out.println("Spawn cycle: " + spawn_cycle_index);
 				if(spawn_cycle_index == 0){
 					if(!close_muckraker){
 						int slanderer_cost = getOptimalSlandererInfluence(allowance);
@@ -877,7 +877,7 @@ public class EnlightenmentCenter {
 			if(last_round_broadcast_enemy_attacker <= rc.getRoundNum()-(1<<ClosestEnemyAttacker.ENEMY_MEMORY)+2 && ClosestEnemyAttacker.enemy_exists){
 				last_round_broadcast_enemy_attacker = rc.getRoundNum();
 				returned_flag_value = ClosestEnemyAttacker.toBroadcastFlagValue();
-				System.out.println("Broadcast closest enemy attacker");
+				//System.out.println("Broadcast closest enemy attacker");
 			}
 			else if(broadcast_enemy){
 				int enemy_ec_ind = (int)(Math.random()*RobotPlayer.enemy_ecs.size());
@@ -904,43 +904,43 @@ public class EnlightenmentCenter {
 		}
 		////////////////////Creation End
 
-		System.out.println("After Creation: " + Clock.getBytecodeNum());
+		//System.out.println("After Creation: " + Clock.getBytecodeNum());
 		////////////////////Initialization Begin
 		updateBotCreationInfo();
 		//updateScoutList(); Changed from ArrayList to Queue
 		////////////////////Initialization End
 
-		System.out.println("After Initialization: " + Clock.getBytecodeNum());
+		//System.out.println("After Initialization: " + Clock.getBytecodeNum());
 
 		////////////////////Sensing Begin
 		UnitComms.BYTECODE_LIMIT = 2000;
 		UnitComms.lookAroundBeforeMovement();
 		////////////////////Sensing End
-		System.out.println("After Sensing: " + Clock.getBytecodeNum());
+		//System.out.println("After Sensing: " + Clock.getBytecodeNum());
 
 		////////////////////Receive Communication Begin
 		receiveScoutCommunication();
 		receiveNonScoutCommunication();
 		////////////////////Receive Communication End
 
-		System.out.println("After Communication: " + Clock.getBytecodeNum());
+		//System.out.println("After Communication: " + Clock.getBytecodeNum());
 
-		System.out.println(Clock.getBytecodeNum());
+		//System.out.println(Clock.getBytecodeNum());
 		//Due to the save_money boolean, it is crazy important that spawnRobot() is called before getBidValue()
 
 		////////////////////Spawn Robot Begin
 		spawnRobot();
 		////////////////////Spawn Robot End
-		System.out.println("After Spawn Robot: " + Clock.getBytecodeNum());
+		//System.out.println("After Spawn Robot: " + Clock.getBytecodeNum());
 		////////////////////Bid Begin
 		int bid_value = getBidValue();
 		//System.out.println("bid_value: " + bid_value);
 		if(rc.canBid(bid_value)){
-			System.out.println("I bid " + bid_value);
+			//System.out.println("I bid " + bid_value);
 			rc.bid(bid_value);
 		}
 		////////////////////Bid End
-		System.out.println("After Bid: " + Clock.getBytecodeNum());
+		//System.out.println("After Bid: " + Clock.getBytecodeNum());
 
 		////////////////////Broadcast to Units Begin (or individual communication to newly spawned unit)
 		UnitComms.lookAroundAfterMovement();
@@ -949,8 +949,8 @@ public class EnlightenmentCenter {
 		if(rc.canSetFlag(flag_value)){
 			rc.setFlag(flag_value);
 		}
-		System.out.println("After Broadcast: " + Clock.getBytecodeNum());
-		System.out.println("No errors");
+		//System.out.println("After Broadcast: " + Clock.getBytecodeNum());
+		//System.out.println("No errors");
 		//System.out.println("Set Flag Value to: " + flag_value);
 		////////////////////Broadcast to Units End
 	}

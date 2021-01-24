@@ -114,7 +114,7 @@ public class ClosestEnemyAttacker {
         MapLocation loc = new MapLocation(RobotPlayer.parent_EC.getLocation().x+rel_loc.x, RobotPlayer.parent_EC.getLocation().y+rel_loc.y);
 
         if(flag_signal == 4 || flag_signal == 5){
-            System.out.println("Broadcast info: Closest Enemy Attacker at location " + loc + " seen on round " + round);
+            //System.out.println("Broadcast info: Closest Enemy Attacker at location " + loc + " seen on round " + round);
             foundAttacker(loc, flag_signal-3, round);
         }
     }

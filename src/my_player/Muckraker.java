@@ -121,7 +121,7 @@ public class Muckraker {
 			if (robot.type == RobotType.SLANDERER) {
 				// It's a slanderer... chase after them!
 				if(RobotPlayer.has_parent_EC){
-					System.out.println("Moving towards enemy slanderer");
+					//System.out.println("Moving towards enemy slanderer");
 					Movement.moveToNaive(RobotPlayer.convertToRelativeCoordinates(robot.getLocation()));
 				}
 				else{
@@ -421,7 +421,7 @@ public class Muckraker {
 		}
 
 		if(attacker_stuck_rounds >= 10){
-			System.out.println("I am stuck, reassigning attack target.");
+			//System.out.println("I am stuck, reassigning attack target.");
 			attacker_stuck_rounds = 0;
 			goal = null;
 		}
@@ -434,24 +434,24 @@ public class Muckraker {
 
 
 
-		System.out.println("moveAttacker");
+		//System.out.println("moveAttacker");
 
 		if(goal == null){
-			System.out.println("attacker scout");
+			//System.out.println("attacker scout");
 			moveScout();
 		}
 		else {
 			//System.out.println("moveAttacker: " + goal);
 			if(Point.getMaxXYDistance(goal, my_rel_loc) <= 1){
 				//it has done its job and is next to the enemy base
-				System.out.println(goal);
+				/*System.out.println(goal);
 				System.out.println(my_rel_loc);
 				System.out.println(RobotPlayer.parent_EC.getLocation());
-				System.out.println("job done");
+				System.out.println("job done");*/
 				return;
 			}
 
-			System.out.println("parent EC?");
+			//System.out.println("parent EC?");
 			assert(RobotPlayer.has_parent_EC); //destination was not defined if this has no parent_EC
 
 			Movement.moveToNaive(goal);
@@ -503,14 +503,14 @@ public class Muckraker {
 			}
 
 			if(best_direction!=Direction.CENTER){
-				System.out.println("best_direction: " + best_direction);
+				//System.out.println("best_direction: " + best_direction);
 				rc.move(best_direction);
 				attacker_stuck_rounds = 0;
 			}
 
 			if(already_surround){
 				attacker_stuck_rounds++;
-				System.out.println("I am stuck at " + rc.getLocation() + ". Attacker_stuck_rounds: " + attacker_stuck_rounds);
+				//System.out.println("I am stuck at " + rc.getLocation() + ". Attacker_stuck_rounds: " + attacker_stuck_rounds);
 			}
 			else{
 				attacker_stuck_rounds = 0;
@@ -551,7 +551,7 @@ public class Muckraker {
 				if(((parent_ec_info>>2)&1) == 1){
 					//ec assigned a target
 					goal = RobotPlayer.convertFromFlagRelativeLocation(RobotPlayer.getBitsBetween(parent_ec_info, 6, 19));
-					System.out.println("I have been assigned goal: " + goal);
+					//System.out.println("I have been assigned goal: " + goal);
 				}
 			}
 			//System.out.println("parent EC direction: " + RobotPlayer.getBitsBetween(parent_ec_info, 2, 4));
@@ -566,7 +566,7 @@ public class Muckraker {
 		}
 
 		//////////////////// End Initialization
-		System.out.println("I am a type " + muckraker_type + " muckraker.");
+		//System.out.println("I am a type " + muckraker_type + " muckraker.");
 		//////////////////// Begin Sense
 		lookAround();
 		UnitComms.lookAroundBeforeMovement();

@@ -61,9 +61,9 @@ public class Slanderer {
 		////////////////////Initialization Begin
 		updateParentEC();
 		UnitComms.BYTECODE_LIMIT = 700;
-		System.out.println("Bytecode before lookaround1: " + Clock.getBytecodeNum());
+		//System.out.println("Bytecode before lookaround1: " + Clock.getBytecodeNum());
 		UnitComms.lookAroundBeforeMovement();
-		System.out.println("Bytecode after lookaround2: " + Clock.getBytecodeNum());
+		//System.out.println("Bytecode after lookaround2: " + Clock.getBytecodeNum());
 		////////////////////Initialization End
 
 		////////////////////Receive Broadcast Begin
@@ -71,16 +71,16 @@ public class Slanderer {
 		////////////////////Receive Broadcast End
 
 		////////////////////Movement Begin
-		System.out.println("Bytecode before movement: " + Clock.getBytecodeNum());
+		//System.out.println("Bytecode before movement: " + Clock.getBytecodeNum());
 		moveAction();
-		System.out.println("Bytecode after movement: " + Clock.getBytecodeNum());
+		//System.out.println("Bytecode after movement: " + Clock.getBytecodeNum());
 		////////////////////Movement End
 
 		UnitComms.lookAroundAfterMovement();
 		ClosestEnemyAttacker.forgetOldInfo(); //forgets old info to make sure we don't communicate something ambiguous
 		int bytecode_before = Clock.getBytecodeNum();
 		int flag_value = UnitComms.generateFlagValue();
-		System.out.println("Bytecode used on generateFlagValue(): " + (Clock.getBytecodeNum()-bytecode_before));
+		//System.out.println("Bytecode used on generateFlagValue(): " + (Clock.getBytecodeNum()-bytecode_before));
 		if(rc.canSetFlag(flag_value)){
 			rc.setFlag(flag_value);
 		}

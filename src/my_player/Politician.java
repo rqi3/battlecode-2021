@@ -150,9 +150,9 @@ public class Politician {
 		if(hasECTarget){
 			//ec target might be friendly
 			for(Friend_EC_Info friend_ec: RobotPlayer.friend_ecs){
-				System.out.println("Friend ec at: " + friend_ec.rel_loc);
+				//System.out.println("Friend ec at: " + friend_ec.rel_loc);
 				if(friend_ec.rel_loc.equals(ec_target)){
-					System.out.println("Found friend_ec at " + friend_ec.loc + ", reassigning target");
+					//System.out.println("Found friend_ec at " + friend_ec.loc + ", reassigning target");
 					hasECTarget = false;
 					assignECTarget(); //assign a new target
 					break;
@@ -169,7 +169,7 @@ public class Politician {
 			return;
 		}
 
-		System.out.println("My target: " + ec_target);
+		//System.out.println("My target: " + ec_target);
 
 		Point my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 		int distance_to_target = Point.getRadiusSquaredDistance(ec_target, my_rel_loc);
@@ -410,7 +410,7 @@ public class Politician {
 					hasECTarget = true;
 					ec_target = RobotPlayer.convertFromFlagRelativeLocation(RobotPlayer.getBitsBetween(additional_info, 6, 19));
 					ec_target_type = 1;
-					System.out.println("ec_target: " + ec_target);
+					//System.out.println("ec_target: " + ec_target);
 				}
 			}
 						// ASSERT politician_type != -1
@@ -433,12 +433,12 @@ public class Politician {
 			politician_type = Politician.LOST_POLITICIAN;
 		}
 
-		if(politician_type == Politician.LOST_POLITICIAN){
+		/*if(politician_type == Politician.LOST_POLITICIAN){
 			System.out.println("I am a lost politician");
-		}
+		}*/
 		////////////////////Initialization End
 
-		System.out.println("I am a politician of type: " + politician_type);
+		//System.out.println("I am a politician of type: " + politician_type);
 
 		////////////////////Receive Broadcast Begin
 		RobotPlayer.receiveECBroadcast();
@@ -465,7 +465,7 @@ public class Politician {
 			default:
 				break;// or throw some exception
 		}
-		System.out.println("movement bytecode: " + (Clock.getBytecodeNum()-bytecode_before));
+		//System.out.println("movement bytecode: " + (Clock.getBytecodeNum()-bytecode_before));
 
 		////////////////////Action End
 

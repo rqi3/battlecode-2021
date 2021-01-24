@@ -153,7 +153,7 @@ public strictfp class RobotPlayer {
     }
 
     public static void addECInfo(Neutral_EC_Info ec){
-		System.out.println("New neutral ec information was obtained at location: " + ec.loc);
+		//System.out.println("New neutral ec information was obtained at location: " + ec.loc);
 
 		for(int i = 0; i < neutral_ecs.size(); i++){
 			if(neutral_ecs.get(i).rel_loc.equals(ec.rel_loc)){
@@ -166,11 +166,11 @@ public strictfp class RobotPlayer {
 	}
 
 	public static void addECInfo(Enemy_EC_Info ec){
-		System.out.println("adding enemy ECInfo...");
+		//System.out.println("adding enemy ECInfo...");
 		for(int i = 0; i < enemy_ecs.size(); i++){
-			System.out.println("enemy ec at rel_loc: " + enemy_ecs.get(i).rel_loc);
+			//System.out.println("enemy ec at rel_loc: " + enemy_ecs.get(i).rel_loc);
 			if(enemy_ecs.get(i).rel_loc.equals(ec.rel_loc)){
-				System.out.println("enemy ec reset");
+				//System.out.println("enemy ec reset");
 				if(ec.influence != -1) enemy_ecs.set(i, ec);
 				return;
 			}
@@ -187,7 +187,7 @@ public strictfp class RobotPlayer {
 				return;
 			}
 		}
-		System.out.println("After set: " + (Clock.getBytecodeNum()-before_set));
+		//System.out.println("After set: " + (Clock.getBytecodeNum()-before_set));
 		removeECInfo(ec.rel_loc);
 		friend_ecs.add(ec);
 	}
@@ -271,8 +271,8 @@ public strictfp class RobotPlayer {
 		else if(flag_signal == 2){
 			//enemy EC found
 			Enemy_EC_Info enemy_ec = Enemy_EC_Info.fromBroadcastFlagValue(ec_flag_value);
-			System.out.println("enemy ec broadcast: " + ec_flag_value);
-			System.out.println("enemy ec broadcast rel_loc: " + enemy_ec.rel_loc);
+			//System.out.println("enemy ec broadcast: " + ec_flag_value);
+			//System.out.println("enemy ec broadcast rel_loc: " + enemy_ec.rel_loc);
 			addECInfo(enemy_ec);
 			UnitComms.receivedECBroadcast(enemy_ec);
 			/*

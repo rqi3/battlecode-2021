@@ -165,7 +165,7 @@ public class UnitComms {
             ClosestEnemyAttacker.foundAttacker(closest_enemy, closest_enemy_type, rc.getRoundNum());
         }
 
-        System.out.println("bytecode used in first part of lookaroundAfter: " + (Clock.getBytecodeNum()-bytecode_before));
+        //System.out.println("bytecode used in first part of lookaroundAfter: " + (Clock.getBytecodeNum()-bytecode_before));
 
         for(RobotInfo nearby_robot: all_nearby_robots){
             RobotType nearby_robot_type = nearby_robot.getType();
