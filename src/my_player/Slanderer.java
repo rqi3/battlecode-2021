@@ -101,7 +101,7 @@ public class Slanderer {
 	public static final double HOME_WEIGHT = 1.0; // proportional to dist
 	public static final double REPEL_SL = 0.0; // inverse to dist
 	public static final double REPEL_EC = 0.0; // inverse to dist
-	public static final double REPEL_PT = 25.0; // inverse to dist
+	public static final double REPEL_PT = 0.0; // inverse to dist
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
 	public static final double CHASE_WEIGHTS[] = {0.0, 200.0, 100.0};  // tendency to move away from enemy muckrakers (inversely proportional)
 	public static final double INF = 1e12;
