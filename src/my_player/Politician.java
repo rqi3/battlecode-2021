@@ -263,13 +263,15 @@ public class Politician {
 	 * IMPLEMENTATION OF POLICE POLITICIAN
 	 */
 
+	public static final double PASS_WT = 0.1;
 	public static final double HOME_WEIGHT = 1.0;
 	public static final double REPEL_SL = 1.0;
 	public static final double REPEL_EC = 100.0;
 	public static final double REPEL_PT = 100.0;
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
 	public static final double CHASE_WEIGHTS[] = {0.0, -1000.0, -500.0};
-	public static final double INF = 1e12;
+	public static final double INF = 1e11;
+	public static final double INFB = 1e12;
 	public static final int MAX_KILL_DIST = 5;
 
 	public static void doPoliceAction() throws GameActionException
@@ -279,21 +281,33 @@ public class Politician {
 		MapLocation cur = rc.getLocation();
 
 
-		//TODO Modify score based on passability
+		//Modify score based on passability
+		{
+			try{score[0][0]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x-1, cur.y-1));} catch(GameActionException e) {score[0][0]-=INF;}
+			try{score[0][1]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x-1, cur.y));} catch(GameActionException e) {score[0][1]-=INF;}
+			try{score[0][2]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x-1, cur.y+1));} catch(GameActionException e) {score[0][2]-=INF;}
+			try{score[1][0]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x, cur.y-1));} catch(GameActionException e) {score[1][0]-=INF;}
+			try{score[1][1]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x, cur.y));} catch(GameActionException e) {score[1][1]-=INF;}
+			try{score[1][2]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x, cur.y+1));} catch(GameActionException e) {score[1][2]-=INF;}
+			try{score[2][0]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x+1, cur.y-1));} catch(GameActionException e) {score[2][0]-=INF;}
+			try{score[2][1]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x+1, cur.y));} catch(GameActionException e) {score[2][1]-=INF;}
+			try{score[2][2]-=PASS_WT/rc.sensePassability(new MapLocation(cur.x+1, cur.y+1));} catch(GameActionException e) {score[2][2]-=INF;}
+		}
 
 		//Modify score to naturally favor moving closer to home RC
 		if(rc.canGetFlag(RobotPlayer.parent_EC.getID())) { // parent EC alive
 			MapLocation home = RobotPlayer.parent_EC.getLocation();
-			int dist;
-			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y-1));if(dist <= 2)score[0][0] += SPAWN_BLOCK_WEIGHT;else score[0][0] -= HOME_WEIGHT*Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y));if(dist <= 2)score[0][1] += SPAWN_BLOCK_WEIGHT;else score[0][1] -= HOME_WEIGHT*Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y+1));if(dist <= 2)score[0][2] += SPAWN_BLOCK_WEIGHT;else score[0][2] -= HOME_WEIGHT*Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y-1));if(dist <= 2)score[1][0] += SPAWN_BLOCK_WEIGHT;else score[1][0] -= HOME_WEIGHT*Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y));if(dist <= 2)score[1][1] += SPAWN_BLOCK_WEIGHT;else score[1][1] -= HOME_WEIGHT*Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y+1));if(dist <= 2)score[1][2] += SPAWN_BLOCK_WEIGHT;else score[1][2] -= HOME_WEIGHT*Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y-1));if(dist <= 2)score[2][0] += SPAWN_BLOCK_WEIGHT;else score[2][0] -= HOME_WEIGHT*Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y));if(dist <= 2)score[2][1] += SPAWN_BLOCK_WEIGHT;else score[2][1] -= HOME_WEIGHT*Math.sqrt(dist+1);
-			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y+1));if(dist <= 2)score[2][2] += SPAWN_BLOCK_WEIGHT;else score[2][2] -= HOME_WEIGHT*Math.sqrt(dist+1);
+			int dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y));
+			double wt = HOME_WEIGHT * (Math.log(dist+1)/3-1.07295860829); // ln(25)-3 = 1.07295860829
+			if(dist <= 2)score[1][1] += SPAWN_BLOCK_WEIGHT;else score[1][1] -= wt*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y-1));if(dist <= 2)score[0][0] += SPAWN_BLOCK_WEIGHT;else score[0][0] -= wt*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y));if(dist <= 2)score[0][1] += SPAWN_BLOCK_WEIGHT;else score[0][1] -= wt*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y+1));if(dist <= 2)score[0][2] += SPAWN_BLOCK_WEIGHT;else score[0][2] -= wt*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y-1));if(dist <= 2)score[1][0] += SPAWN_BLOCK_WEIGHT;else score[1][0] -= wt*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y+1));if(dist <= 2)score[1][2] += SPAWN_BLOCK_WEIGHT;else score[1][2] -= wt*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y-1));if(dist <= 2)score[2][0] += SPAWN_BLOCK_WEIGHT;else score[2][0] -= wt*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y));if(dist <= 2)score[2][1] += SPAWN_BLOCK_WEIGHT;else score[2][1] -= wt*Math.sqrt(dist+1);
+			dist = home.distanceSquaredTo(new MapLocation(cur.x+1, cur.y+1));if(dist <= 2)score[2][2] += SPAWN_BLOCK_WEIGHT;else score[2][2] -= wt*Math.sqrt(dist+1);
 		}
 
 		//Modify score based on nearby robots
@@ -319,6 +333,7 @@ public class Politician {
 				}
 				MapLocation loc = info.getLocation();
 				int dist = loc.distanceSquaredTo(cur);
+				wt /= Math.log((double)dist+2.7183);
 				score[0][0] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y-1)));
 				score[0][1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y)));
 				score[0][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y+1)));
@@ -409,7 +424,7 @@ public class Politician {
 				return;
 			}
 			else
-				score[bi][bj] -= INF;
+				score[bi][bj] -= INFB;
 			//ncnt = Clock.getBytecodeNum(); System.out.println("Try move & failed: " + (ncnt - cnt)); cnt = ncnt;
 		}
 	}
