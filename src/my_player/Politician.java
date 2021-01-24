@@ -263,16 +263,17 @@ public class Politician {
 	 * IMPLEMENTATION OF POLICE POLITICIAN
 	 */
 
-	public static final double PASS_WT = 0.1;
+	public static final double PASS_WT = 0.2;
 	public static final double HOME_WEIGHT = 1.0;
-	public static final double REPEL_SL = 1.0;
-	public static final double REPEL_EC = 100.0;
+	public static final double REPEL_SL = 0.0;
+	public static final double REPEL_EC = 50.0;
 	public static final double REPEL_PT = 100.0;
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
-	public static final double CHASE_WEIGHTS[] = {0.0, -1000.0, -500.0};
+	public static final double CHASE_WEIGHTS[] = {0.0, -900.0, -300.0};
 	public static final double INF = 1e11;
 	public static final double INFB = 1e12;
-	public static final int MAX_KILL_DIST = 5;
+	public static final int MAX_KILL_DIST = 9;
+	public static final int ATK_DIST = 2; // if you can't insta, attack anyways
 
 	public static void doPoliceAction() throws GameActionException
 	{
@@ -298,7 +299,7 @@ public class Politician {
 		if(rc.canGetFlag(RobotPlayer.parent_EC.getID())) { // parent EC alive
 			MapLocation home = RobotPlayer.parent_EC.getLocation();
 			int dist = home.distanceSquaredTo(new MapLocation(cur.x, cur.y));
-			double wt = HOME_WEIGHT * (Math.log(dist+1)/3-1.07295860829); // ln(25)-3 = 1.07295860829
+			double wt = HOME_WEIGHT * (Math.log(dist+1)/3-1.073); // (pretty much) always positive --- 1.073 ~ log(25)/3
 			if(dist <= 2)score[1][1] += SPAWN_BLOCK_WEIGHT;else score[1][1] -= wt*Math.sqrt(dist+1);
 			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y-1));if(dist <= 2)score[0][0] += SPAWN_BLOCK_WEIGHT;else score[0][0] -= wt*Math.sqrt(dist+1);
 			dist = home.distanceSquaredTo(new MapLocation(cur.x-1, cur.y));if(dist <= 2)score[0][1] += SPAWN_BLOCK_WEIGHT;else score[0][1] -= wt*Math.sqrt(dist+1);
@@ -313,7 +314,7 @@ public class Politician {
 		//Modify score based on nearby robots
 		RobotInfo closest_enemy = null;
 		int closest_enemy_dist = 1000000;
-		for(RobotInfo info : rc.senseNearbyRobots(20))
+		for(RobotInfo info : rc.senseNearbyRobots(25))
 			if(info.getTeam() == rc.getTeam()) // same team
 			{
 				double wt = 0.0;
@@ -371,13 +372,17 @@ public class Politician {
 		{
 			double wt = CHASE_WEIGHTS[ClosestEnemyAttacker.enemy_type];
 			MapLocation loc = ClosestEnemyAttacker.enemy_position;
-			for(int i=-1;i<=1;++i)
-				for(int j=-1;j<=1;++j)
-				{
-					int x=cur.x+i;
-					int y=cur.y+j;
-					score[i+1][j+1] -= wt/Math.sqrt(loc.distanceSquaredTo(new MapLocation(x, y))+1); // subtract because we want to move to smaller distance
-				}
+			int dist = loc.distanceSquaredTo(cur);
+			wt /= Math.log((double)dist+2.7183);
+			score[0][0] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y-1)));
+			score[0][1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y)));
+			score[0][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x-1, cur.y+1)));
+			score[1][0] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x, cur.y-1)));
+			score[1][1] -= wt/Math.sqrt(1+(double)dist);
+			score[1][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x, cur.y+1)));
+			score[2][0] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y-1)));
+			score[2][1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y)));
+			score[2][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y+1)));
 		}
 
 		//AFTER SCORES ARE COMPUTED: DETERMINE ACTION
@@ -389,7 +394,7 @@ public class Politician {
 				cnt[i+1] += cnt[i];
 			int dist = rc.getLocation().distanceSquaredTo(closest_enemy.getLocation());
 			int to_emp = 0;
-			if(dist == 1) to_emp = 1; // if distance == 1, then you have to empower
+			if(dist <= ATK_DIST) to_emp = dist; // if distance == 1, then you have to empower
 
 			for(int i=dist;i <= MAX_KILL_DIST;++i) // if can insta, increase radius
 				if(((int)((rc.getConviction()-10)*rc.getEmpowerFactor(rc.getTeam(), 0)))/cnt[i] > closest_enemy.getConviction())

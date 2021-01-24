@@ -97,14 +97,14 @@ public class Slanderer {
 
 	// FROM POLICE POLITICIAN MOVEMENT
 
-	public static final double PASS_WT = 0.05;
+	public static final double PASS_WT = 0.1;
 	public static final double LATTICE_PREF = 1.0;
 	public static final double HOME_WEIGHT = 1.0; // proportional to dist
 	public static final double REPEL_SL = 0.0; // inverse to dist
 	public static final double REPEL_EC = 0.0; // inverse to dist
 	public static final double REPEL_PT = 15.0; // inverse to dist
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
-	public static final double CHASE_WEIGHTS[] = {0.0, 600.0, 200.0};  // tendency to move away from enemy muckrakers (inversely proportional)
+	public static final double CHASE_WEIGHTS[] = {0.0, 600.0, 60.0};  // tendency to move away from enemy muckrakers (inversely proportional)
 	public static final double INF = 1e12;
 	public static double score[][] = new double[3][3];// each of the 9 squares it can move to. Higher score is better
 
