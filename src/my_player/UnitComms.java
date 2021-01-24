@@ -17,7 +17,6 @@ public class UnitComms {
 
     static RobotInfo[] all_nearby_robots;
     static MapLocation my_loc;
-    static Point my_rel_loc = new Point();
 
     static int BYTECODE_LIMIT = 1000;
 
@@ -28,11 +27,9 @@ public class UnitComms {
      * Updates ec lists and ClosestEnemyAttacker
      */
     static void lookAroundBeforeMovement() throws GameActionException {
-        if(rc.getType() != RobotType.ENLIGHTENMENT_CENTER && !RobotPlayer.has_parent_EC) return;
         all_nearby_robots = rc.senseNearbyRobots();
 
         my_loc = rc.getLocation();
-        my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
         int bytecode_before = Clock.getBytecodeNum();
 
@@ -116,7 +113,6 @@ public class UnitComms {
         all_nearby_robots = rc.senseNearbyRobots();
 
         my_loc = rc.getLocation();
-        my_rel_loc = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
 
         int bytecode_before = Clock.getBytecodeNum();
 
@@ -251,14 +247,26 @@ public class UnitComms {
          * List possible flag values to communicate in order of priority.
          */
         if(rc.getType() == RobotType.MUCKRAKER && Muckraker.muckraker_type == Muckraker.SCOUT){
-            NEW_NEUTRAL_EC = 1;
-            NEW_ENEMY_EC = 2;
-            NEW_FRIEND_EC = 3;
-            CLOSEST_ENEMY_ATTACKER = 4;
-            NEW_BORDER = 5;
-            OLD_NEUTRAL_EC = 6;
-            OLD_ENEMY_EC = 7;
-            OLD_FRIEND_EC = 8;
+            if(Math.random() < 0.75){
+                NEW_NEUTRAL_EC = 1;
+                NEW_ENEMY_EC = 2;
+                NEW_FRIEND_EC = 3;
+                OLD_NEUTRAL_EC = 4;
+                OLD_ENEMY_EC = 5;
+                OLD_FRIEND_EC = 6;
+                CLOSEST_ENEMY_ATTACKER = 7;
+                NEW_BORDER = 8;
+            }
+            else{
+                NEW_NEUTRAL_EC = 1;
+                NEW_ENEMY_EC = 2;
+                NEW_FRIEND_EC = 3;
+                CLOSEST_ENEMY_ATTACKER = 4;
+                NEW_BORDER = 5;
+                OLD_NEUTRAL_EC = 6;
+                OLD_ENEMY_EC = 7;
+                OLD_FRIEND_EC = 8;
+            }
         }
         else{
             if(Math.random() < 0.5){

@@ -438,6 +438,8 @@ public class Politician {
 		}
 		////////////////////Initialization End
 
+		System.out.println("I am a politician of type: " + politician_type);
+
 		////////////////////Receive Broadcast Begin
 		RobotPlayer.receiveECBroadcast();
 		////////////////////Receive Broadcast End

@@ -82,6 +82,13 @@ public class EnlightenmentCenter {
 
 		BID_PERCENTAGE_UPPER_BOUND = 0.15;
 
+		if(rc.getRoundNum() <= 50){
+			BID_PERCENTAGE_UPPER_BOUND = 0;
+		}
+		else if(rc.getRoundNum() <= 200){
+			BID_PERCENTAGE_UPPER_BOUND = 0.1;
+		}
+
 		if(rc.getRoundNum() >= 1300) {
 			BID_PERCENTAGE_UPPER_BOUND = 0.30;
 			if(rc.getRoundNum() >= 1480) {
@@ -564,6 +571,11 @@ public class EnlightenmentCenter {
 		return 0;
 	}
 
+	public static int getBestNeutralECIndex(){
+		if(RobotPlayer.neutral_ecs.size() == 0) return -1;
+		return (int)(Math.random()*RobotPlayer.neutral_ecs.size());
+	}
+
 	/**
 	 * Chooses what robot to spawn and spawns it.
 	 *
@@ -571,244 +583,235 @@ public class EnlightenmentCenter {
 	 *
 	 * @throws GameActionException
 	 */
+	static final int ECONOMY_PHASE = 1;
+	static final int ATTACK_PHASE = 2;
+	static int CURRENT_SPAWN_PHASE = ECONOMY_PHASE;
+	static int spawn_cycle_index = 0;
 	public static void spawnRobot() throws GameActionException {
-		save_money = false; //this will be set true within the spawnRobot method if our strategy involves saving money for some reason
-		if(rc.getRoundNum() < 200) save_money = true; //LOL hard code, just making sure we definitely have the money to expand
-		//at the beginning, spawns 13 politcians
-		//towards the end game, it spawns 17-23 politcians
-		int default_police_influence = (int) Math.round(Math.pow(Math.pow(9.5, 1.0/100), Math.min(rc.getRoundNum(), 100)) + Math.random()*rc.getRoundNum()/100 + 12);
-		
-		//MAKE MONEY (no longer viable)
+		if(!rc.isReady()) return;
 
-		/*if(rc.getEmpowerFactor(rc.getTeam(), 12) > 10.0 && rc.getInfluence() < 80000000) {
-			System.out.println("Spawning Money Politician...");
-			trySpawnMoneyPolitician(rc.getInfluence()/2); //Money politicians are always good!
-		}*/
-		
+		int allowance = rc.getInfluence();
+
+		System.out.println("allowance: " + allowance);
+
+		for(RobotInfo close_enemy_unit: rc.senseNearbyRobots(40, rc.getTeam().opponent())){
+			if(close_enemy_unit.getType() == RobotType.POLITICIAN){
+				allowance = Math.min(allowance, rc.getInfluence()-close_enemy_unit.getConviction());
+			}
+		}
+
 		////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//URGENT defense Code, takes highest priority if there is a big threat
 		//Note that a unit's conviction has to go NEGATIVE (not just 0) for it to die...
-		
+
+
 		boolean surround_unit = false;
 		int surround_unit_max_conviction = -1;
-		for(RobotInfo close_enemy_unit: rc.senseNearbyRobots(2, rc.getTeam().opponent())){
+		for(RobotInfo close_enemy_unit: rc.senseNearbyRobots(4, rc.getTeam().opponent())){
 			surround_unit = true;
 			surround_unit_max_conviction = Math.max(surround_unit_max_conviction, close_enemy_unit.getConviction());
 		}
 
 		if(surround_unit){
-			//very urgent need for police politician'
-			
-			surround_unit_max_conviction++; //SUPER SHADY LINE because I thought the conviction to die only had to go to 0, not negative
-			int cost = (int)(Math.ceil((8*surround_unit_max_conviction)/rc.getEmpowerFactor(rc.getTeam(), 11)) + 10);
-			if(cost < rc.getInfluence()) {
+			//very urgent need for police politician
+			int cost = 4*surround_unit_max_conviction + 15;
+			if(cost <= allowance) {
+				System.out.println("Spawn for surround unit");
 				trySpawnPolicePolitician(cost);
-			} else {
-				if(rc.getInfluence() <= 50) save_money = true;
+			}
+			else{
 				return; //DONT SPAWN CHEAP... waste of space and money when surrounded
 			}
 		}
 
-		boolean very_close_muckraker = false;
+
+
+		boolean close_muckraker = false;
 		boolean close_enemy = false;
-		int very_close_muckraker_max_conviction = -1;
+		int close_muckraker_max_conviction = -1;
 		for(RobotInfo close_enemy_unit: rc.senseNearbyRobots(40, rc.getTeam().opponent())){
-			if(close_enemy_unit.getType() == RobotType.MUCKRAKER){
-				very_close_muckraker = true;
-				very_close_muckraker_max_conviction = Math.max(very_close_muckraker_max_conviction, close_enemy_unit.getConviction());
-			}
 			close_enemy = true;
-		}
-
-		if(very_close_muckraker && alive_police_politician_ids.size() < 2*alive_slanderer_ids.size()+5){ // check this ratio later
-			//urgent need for police politician
-			very_close_muckraker_max_conviction++; //ANOTHER SUPER SHADY LINE because I thought the conviction to die only had to go to 0, not negative
-			
-			int cost;
-			if(very_close_muckraker_max_conviction <= 6) cost = (int)(Math.ceil((8*very_close_muckraker_max_conviction)/rc.getEmpowerFactor(rc.getTeam(), 13)) + 10); //probably cheap unit flood, just prepare for 8-way surround
-			else cost = (int)(Math.ceil((2*very_close_muckraker_max_conviction)/rc.getEmpowerFactor(rc.getTeam(), 20)) + 11); //tanky muckraker, probably not going to be a flood of these
-			if(cost < rc.getInfluence()) {
-				trySpawnPolicePolitician(cost);
-			} else {
-				if(rc.getInfluence() <= 50) save_money = true;
-				return; //DONT SPAWN CHEAP... waste of space and money when surrounded
+			if(close_enemy_unit.getType() == RobotType.MUCKRAKER || close_enemy_unit.getType() == RobotType.POLITICIAN){
+				close_muckraker = true;
+				close_muckraker_max_conviction = Math.max(close_muckraker_max_conviction, close_enemy_unit.getConviction());
 			}
 		}
-		
-		boolean possible_threat = ((ClosestEnemyAttacker.enemy_exists && ClosestEnemyAttacker.enemy_position.distanceSquaredTo(rc.getLocation()) <= 121) || close_enemy);
-		
-		////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//NO URGENT DANGER (outline of what to do when urgent defense code didn't run):
-		/*
-	if round <= 100
-		if slanderers < 2:
-			if(influence >= 107) make slanderer
-			else make cheap
-		if influence >= 85 && num slanderer < num politician:
-			make slanderer
-		else if politcian <= slanderer
-			make politcian
-		else make cheap
-	else:
-		 if (# slanderers < 10 && no nearby enemy) or (# slanderers < 2):
-		 	if (scouts < 8) make scout
-		 	if (police < 2) make police
-		 	if(police : slanderer < 1/5) make police
-		 	if(influence > 85) make slanderer
-		 	else make cheap
-		 else if neutral EC exists
-		 	if no money:
-		 		if(police : slanderer < 1/5) make police
-		 		else make cheap
-		 	else make politician
-		 else if slanderers > 25 && money > 500:
-		 	make attacker 400 politician
-		 else
-		 	make police / slanderer such that ratio is 2?:1
-		 */
-		
-		//Make slanderer, assuming DEFENSE code didn't have to do anything
-		
-		if(rc.getRoundNum() <= 100) {
-			if(alive_slanderer_ids.size() < 2) {
-				if(rc.getInfluence() >= 107) {
-					trySpawnSlanderer(getOptimalSlandererInfluence(rc.getInfluence()));
-				} else {
-					trySpawnCheap();
-				}
-			} else {
-				if(rc.getInfluence() >= 85 && alive_slanderer_ids.size() < alive_police_politician_ids.size()) { 
-					trySpawnSlanderer(rc.getInfluence());
-				} else if(alive_police_politician_ids.size() <= alive_slanderer_ids.size()) {
-					trySpawnPolicePolitician(default_police_influence);
+
+		boolean possible_threat = ((ClosestEnemyAttacker.enemy_exists && ClosestEnemyAttacker.enemy_position.distanceSquaredTo(rc.getLocation()) <= 100)) || close_enemy;
+
+		if(rc.getRoundNum() <= 100){ //early game
+			System.out.println("allowance: " + allowance);
+			if(alive_slanderer_ids.size() < 2) { //start
+				System.out.println("start");
+				if(allowance >= 107) {
+
+					trySpawnSlanderer(getOptimalSlandererInfluence(allowance));
 				} else {
 					trySpawnCheap();
 				}
 			}
-		} else { //AFTER round >= 100
-			//if our economy is huge, then it's probably a troll game where the buffs are huge - don't make vulnerable slanderers
-			int spam = 10; // = how many slanderers to make first before doing anything. After the early game, if an EC wants to do this it's probably in the middle of the map and vulnerable - so don't
-			if(alive_slanderer_ids.size() < spam && rc.getInfluence() < 1000000 && !possible_threat) {
-				save_money = true;
-				if(alive_police_politician_ids.size() < 2) trySpawnPolicePolitician(default_police_influence);
-				if(alive_scout_ids.size() < 8) trySpawnCheap();
-				
-				int cost = getOptimalSlandererInfluence(rc.getInfluence());
-				if(cost > 0) {
-					trySpawnSlanderer(cost);
-				} else {
-					if(alive_police_politician_ids.size()*5 <= alive_slanderer_ids.size()) {
-						trySpawnPolicePolitician(default_police_influence);
-					} else {
-						trySpawnCheap();
-					}
-				}
-			}
-			
-			//Enough economy to start thinking about taking more bases
-			if(RobotPlayer.neutral_ecs.size() > 0 && alive_slanderer_ids.size() >= 10) {
-				Point ec_target = RobotPlayer.getClosestNeutralECLocation();
-				int ec_target_influence = 1;
-				for(Neutral_EC_Info neutral_ec: RobotPlayer.neutral_ecs){
-					if(neutral_ec.rel_loc.equals(ec_target)){
-						ec_target_influence = neutral_ec.influence;
-						break;
-					}
-				}
+			else {
+				if(!possible_threat){
+					System.out.println("safe");
+					if(alive_police_politician_ids.size() < alive_slanderer_ids.size()){
+						//build a politician
+						int police_influence = -1;
+						if(close_muckraker){
+							police_influence = Math.max(20, 2*close_muckraker_max_conviction+14);
+						}
+						else{
+							police_influence = 20;
+						}
 
-				if(Math.random() < 0.5){ //also go to other neutral ecs
-					int random_neutral_ec_ind = (int)(Math.random()*(RobotPlayer.neutral_ecs.size()));
-					ec_target = RobotPlayer.neutral_ecs.get(random_neutral_ec_ind).rel_loc;
-					ec_target_influence = RobotPlayer.neutral_ecs.get(random_neutral_ec_ind).influence;
-					if(ec_target_influence == -1) ec_target_influence = 150;
-				}
-
-				int attacker_politician_influence = ec_target_influence+20;
-
-				if(attacker_politician_influence < rc.getInfluence()){
-					trySpawnAttackerPolitician(attacker_politician_influence, ec_target);
-					System.out.println("Spawned neutral EC politician attacker" + attacker_politician_influence + ec_target);
-				}
-				else{
-					save_money = true;
-					if(alive_police_politician_ids.size()*5 <= alive_slanderer_ids.size()) {
-						trySpawnPolicePolitician(default_police_influence);
-					} else {
-						trySpawnCheap();
-					}
-				}
-			}
-			
-			//Huge economy, start thinking about attacking
-			if(alive_slanderer_ids.size() >= 25 || rc.getInfluence() >= 1000000) {
-				//ATTACK
-				if(alive_scout_ids.size() < MAX_SCOUTS) trySpawnScout();
-
-				int attacker_politician_influence = -1;
-				if(RobotPlayer.enemy_ecs.size() > 0 && rc.getInfluence() > 500){
-					Point enemy_ec_rel_loc = RobotPlayer.getClosestEnemyECLocation();
-					attacker_politician_influence = Math.min(200, (int)(rc.getInfluence()/2));
-					trySpawnAttackerPolitician(attacker_politician_influence, enemy_ec_rel_loc); //Attack enemy ECs
-					System.out.println("Spawned enemy EC politician attacker");
-				}
-
-				int attacker_muckraker_influence = 1;
-				if(Math.random() < 0.5){
-					if(rc.getInfluence() > 500){
-						attacker_muckraker_influence = Math.max(50, (int)(rc.getInfluence()*0.1));
-					}
-				}
-
-				trySpawnAttackerMuckraker(attacker_muckraker_influence, null);
-			}
-			
-			//Build economy (with a 1.8?/1 ratio police : slanderer)
-			
-			if(alive_scout_ids.size() < MAX_SCOUTS/3) trySpawnScout(); //Didn't have this line in my original plan, but probably a good one
-
-			if(!ClosestEnemyAttacker.enemy_exists){
-				double police_to_slanderer = 1.0;
-				
-				if(police_to_slanderer*alive_slanderer_ids.size() < alive_police_politician_ids.size()){
-					if(!very_close_muckraker) {
-						//	Attempt to build slanderer
-						int cost = getOptimalSlandererInfluence(rc.getInfluence());
-						if (cost >= 85) {
-							trySpawnSlanderer(cost);
-						} else {
-							trySpawnCheap();
+						if(police_influence <= allowance){
+							trySpawnPolicePolitician(police_influence);
 						}
 					}
+					else{
+						int slanderer_cost = getOptimalSlandererInfluence(allowance);
+						if(slanderer_cost >= 107){
+							trySpawnSlanderer(slanderer_cost);
+						}
+					}
+					trySpawnCheap();
 				}
 				else{
-					trySpawnPolicePolitician(default_police_influence);
+					System.out.println("threat");
+					if(alive_police_politician_ids.size() < alive_slanderer_ids.size()*2){
+						//build a politician
+						int police_influence = -1;
+						if(close_muckraker){
+							police_influence = Math.max(20, 2*close_muckraker_max_conviction+14);
+						}
+						else{
+							police_influence = 20;
+						}
+
+						if(police_influence <= allowance){
+							trySpawnPolicePolitician(police_influence);
+						}
+					}
+					else{
+						if(!close_muckraker){
+							int slanderer_cost = getOptimalSlandererInfluence(allowance);
+							if(slanderer_cost >= 85){
+								trySpawnSlanderer(slanderer_cost);
+							}
+						}
+
+					}
+					trySpawnCheap();
 				}
+
 			}
-			
-			double police_to_slanderer = 1.1;
-			if(ClosestEnemyAttacker.enemy_exists && ClosestEnemyAttacker.enemy_position.distanceSquaredTo(rc.getLocation()) < 256){
-				police_to_slanderer = 2.0;
-				if(possible_threat) police_to_slanderer = 3.0;
-				if(close_enemy) police_to_slanderer = 5.0;
+		}
+		else{ //mid game
+			if(CURRENT_SPAWN_PHASE == ECONOMY_PHASE && rc.getInfluence() >= 1000 && alive_slanderer_ids.size() >= 6){
+				CURRENT_SPAWN_PHASE = ATTACK_PHASE;
 			}
-			if(rc.getInfluence() > 100000) police_to_slanderer *= 2.5;
-			if(police_to_slanderer*alive_slanderer_ids.size() < alive_police_politician_ids.size()){
-				if(!very_close_muckraker) {
-					//	Attempt to build slanderer
-					int cost = getOptimalSlandererInfluence(rc.getInfluence());
-					if (cost >= 85) {
-						trySpawnSlanderer(cost);
-					} else {
-						trySpawnCheap();
+
+			if(CURRENT_SPAWN_PHASE == ECONOMY_PHASE){
+				System.out.println("Currently in economy phase");
+				if(RobotPlayer.neutral_ecs.size() > 0){
+					Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
+					if(allowance >= 250+neutral_ec.influence){
+						trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc);
 					}
 				}
-				else{
-					trySpawnPolicePolitician(default_police_influence);
+				if(alive_scout_ids.size() < 8){
+					trySpawnScout();
 				}
+
+				if(possible_threat){
+					if(alive_police_politician_ids.size() < alive_slanderer_ids.size()*2){
+						//build a politician
+						int police_influence = -1;
+						if(close_muckraker){
+							police_influence = Math.max(20, 2*close_muckraker_max_conviction+14);
+						}
+						else{
+							police_influence = 20;
+						}
+						if(police_influence <= allowance){
+							trySpawnPolicePolitician(police_influence);
+						}
+					}
+					else{
+						if(!close_muckraker){
+							int slanderer_cost = getOptimalSlandererInfluence(allowance);
+							if(slanderer_cost >= 85){
+								trySpawnSlanderer(slanderer_cost);
+							}
+						}
+					}
+					trySpawnCheap();
+				}
+				else{
+					if(alive_police_politician_ids.size() < alive_slanderer_ids.size()){
+						//build a politician
+						int police_influence = 20;
+
+						if(police_influence <= allowance){
+							trySpawnPolicePolitician(police_influence);
+						}
+					}
+					else{
+						int slanderer_cost = getOptimalSlandererInfluence(allowance);
+						if(slanderer_cost >= 85){
+							trySpawnSlanderer(slanderer_cost);
+						}
+					}
+					trySpawnCheap();
+				}
+			}
+			else if(CURRENT_SPAWN_PHASE == ATTACK_PHASE){
+				System.out.println("Currently in attack phase");
+				if(RobotPlayer.neutral_ecs.size() > 0){
+					Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
+					if(allowance >= 250+neutral_ec.influence){
+						trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc);
+						System.out.println("Attack neutral ec");
+					}
+				}
+				System.out.println("Spawn cycle: " + spawn_cycle_index);
+				if(spawn_cycle_index == 0){
+					if(!close_muckraker){
+						int slanderer_cost = getOptimalSlandererInfluence(allowance);
+						if(slanderer_cost >= 85){
+							trySpawnSlanderer(slanderer_cost);
+						}
+					}
+					spawn_cycle_index = (spawn_cycle_index+1) % 4;
+				}
+				else if(spawn_cycle_index == 1){
+					int attacker_muckraker_cost = allowance/3;
+					if(attacker_muckraker_cost <= allowance){
+						trySpawnAttackerMuckraker(attacker_muckraker_cost, null);
+					}
+
+					spawn_cycle_index = (spawn_cycle_index+1) % 4;
+				}
+				else if(spawn_cycle_index == 2){
+					int police_cost = Math.max(20, allowance/20);
+					if(police_cost <= allowance){
+						trySpawnPolicePolitician(police_cost);
+					}
+
+					spawn_cycle_index = (spawn_cycle_index+1) % 4;
+				}
+				else if(spawn_cycle_index == 3){
+					int attacker_politician_cost = allowance/3;
+					if(attacker_politician_cost <= allowance){
+						trySpawnAttackerPolitician(attacker_politician_cost, null);
+					}
+					spawn_cycle_index = (spawn_cycle_index+1) % 4;
+				}
+
+				trySpawnCheap();
 			}
 		}
 
-		trySpawnCheap();
+
 	}
 
 	static int last_round_broadcast_enemy_attacker = 1; // the last round in which we broadcast an enemy attacker

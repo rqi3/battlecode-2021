@@ -1,5 +1,4 @@
 package my_player;
-
 import java.lang.Math.*;
 
 public class Vec {
