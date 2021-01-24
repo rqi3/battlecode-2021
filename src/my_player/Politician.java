@@ -249,7 +249,10 @@ public class Politician {
 		}
 
 		if(rc.canSenseRadiusSquared(distance_to_target) && rc.senseNearbyRobots(distance_to_target).length == 1){
-			rc.empower(distance_to_target);
+			if(rc.canEmpower(distance_to_target)){
+				rc.empower(distance_to_target);
+			}
+
 		}
 
 		Movement.assignDestination(ec_target);
