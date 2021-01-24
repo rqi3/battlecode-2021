@@ -31,11 +31,11 @@ public class Politician {
 			Direction.WEST,
 			Direction.NORTHWEST,
 	};
-		
+
 	public static final Direction dir[][] = //[x][y]
-	{{Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST},
-		{Direction.SOUTH, null, Direction.NORTH},
-		{Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST}};
+			{{Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST},
+					{Direction.SOUTH, null, Direction.NORTH},
+					{Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST}};
 
 
 	/**
@@ -49,14 +49,14 @@ public class Politician {
 		}
 	}
 
-//////////////// PARAMETERS
-		public static final int LOST_POLITICIAN = 0;
-		public static final int EC_ATTACK = 1;
-		public static final int POLICE = 2;
-		public static final int MONEY = 3;
-		static int politician_type = EC_ATTACK; // read above. By default, EC attack
+	//////////////// PARAMETERS
+	public static final int LOST_POLITICIAN = 0;
+	public static final int EC_ATTACK = 1;
+	public static final int POLICE = 2;
+	public static final int MONEY = 3;
+	static int politician_type = EC_ATTACK; // read above. By default, EC attack
 
-		// Type 1 politican parameters
+	// Type 1 politican parameters
 	/**
 	 * Targeting for Attacker Politicians
 	 */
@@ -67,37 +67,77 @@ public class Politician {
 ////////////////
 
 
-		// Type 0 Politician Functions
-		static void doLostPoliticianAction() throws GameActionException
+	// Type 0 Politician Functions
+	static void doLostPoliticianAction() throws GameActionException
 		/*
 			Summary of Algorithm:
 			* Copy slanderer pathfinding (to hopefully find them)
 			* If you see enemy muckraker within range, use empower
 		*/
+	{
+		RobotInfo[] close_robots = rc.senseNearbyRobots(4); //If there are nearby enemy units, empower
+		boolean do_empower = false;
+		for(RobotInfo x : close_robots)
 		{
-			RobotInfo[] close_robots = rc.senseNearbyRobots(4); //If there are nearby enemy units, empower
-			boolean do_empower = false;
-			for(RobotInfo x : close_robots)
-			{
-				//check whether robot x is an enemy muckraker
-				if(x.getTeam() != rc.getTeam() && x.getType() == RobotType.MUCKRAKER)
-					do_empower = true;
-				if(x.getType() == RobotType.ENLIGHTENMENT_CENTER)
-					do_empower = true;
+			//check whether robot x is an enemy muckraker
+			if(x.getTeam() != rc.getTeam() && x.getType() == RobotType.MUCKRAKER)
+				do_empower = true;
+			if(x.getType() == RobotType.ENLIGHTENMENT_CENTER)
+				do_empower = true;
+		}
+		if(do_empower) {
+			if (rc.canEmpower(4)) { // TODO what should we do about empower parameter?
+				rc.empower(4);
+				return; // successfully empowered
 			}
-			if(do_empower) {
-				if (rc.canEmpower(4)) { // TODO what should we do about empower parameter?
-					rc.empower(4);
-					return; // successfully empowered
-				}
-			}
-			//otherwise: no move
-			tryMove(randomDirection());
-			return;
+		}
+		//otherwise: no move
+		tryMove(randomDirection());
+		return;
+	}
+
+	// Type 1 Politician Functions
+
+	/**
+	 * Empower if you are a politician scout
+	 */
+	static void tryPoliticianScoutEmpower(){
+
+	}
+
+	/**
+	 * Attacker Politicians without a target
+	 * @throws GameActionException
+	 */
+	static Point scout_destination = null;
+	static void doPoliticianScoutAction() throws GameActionException
+	{
+		System.out.println("Doing Politician Scout Action");
+
+		tryPoliticianScoutEmpower();
+
+		if(scout_destination == null){
+			scout_destination = RobotPlayer.convertToRelativeCoordinates(rc.getLocation());
+			Movement.assignDestination(scout_destination);
 		}
 
-		// Type 1 Politician Functions
+		if(ClosestEnemyAttacker.enemy_exists){
+			Point potential_destination = RobotPlayer.convertToRelativeCoordinates(ClosestEnemyAttacker.enemy_position);
+			int current_dist = (scout_destination.x*scout_destination.x)+(scout_destination.y*scout_destination.y);
+			int potential_dist = (potential_destination.x*potential_destination.x)+(potential_destination.y*potential_destination.y);
+			if(potential_dist > current_dist){
+				scout_destination = potential_destination;
+				Movement.assignDestination(scout_destination);
+			}
+		}
 
+		if(!Movement.moved_to_destination){
+			Movement.moveToDestination();
+		}
+		else{
+			doPoliceAction();
+		}
+	}
 
 	/**
 	 * Assign an EC target if !hasECTarget
@@ -164,7 +204,7 @@ public class Politician {
 		}
 
 		if(!hasECTarget){
-			doPoliceAction();
+			doPoliticianScoutAction();
 			//System.out.println("I moved!");
 			return;
 		}
@@ -197,9 +237,9 @@ public class Politician {
 				}
 
 			}
-			
+
 			int radius = Math.min(distance_to_target, 9);
-			
+
 			if(distance_to_target <= 9 || num_nearby_enemies > 3) {
 				if(rc.canEmpower(radius)){
 					rc.empower(radius);
@@ -214,16 +254,16 @@ public class Politician {
 
 	/*
 	 * IMPLEMENTATION OF POLICE POLITICIAN
-	*/
+	 */
 
 	public static final double HOME_WEIGHT = 1.0;
 	public static final double REPEL_SL = 1.0;
-	public static final double REPEL_EC = 100.0; 
-	public static final double REPEL_PT = 100.0; 
+	public static final double REPEL_EC = 100.0;
+	public static final double REPEL_PT = 100.0;
 	public static final double SPAWN_BLOCK_WEIGHT = -100.0;
 	public static final double CHASE_WEIGHTS[] = {0.0, -1000.0, -500.0};
 	public static final double INF = 1e12;
-	public static final int MAX_KILL_DIST = 5; 
+	public static final int MAX_KILL_DIST = 5;
 
 	public static void doPoliceAction() throws GameActionException
 	{
@@ -233,7 +273,7 @@ public class Politician {
 
 
 		//TODO Modify score based on passability
-		
+
 		//Modify score to naturally favor moving closer to home RC
 		if(rc.canGetFlag(RobotPlayer.parent_EC.getID())) { // parent EC alive
 			MapLocation home = RobotPlayer.parent_EC.getLocation();
@@ -413,10 +453,10 @@ public class Politician {
 					//System.out.println("ec_target: " + ec_target);
 				}
 			}
-						// ASSERT politician_type != -1
-						if(politician_type == -1) politician_type = Politician.LOST_POLITICIAN; // if no parent EC make it LOST_POLITICIAN
+			// ASSERT politician_type != -1
+			if(politician_type == -1) politician_type = Politician.LOST_POLITICIAN; // if no parent EC make it LOST_POLITICIAN
 
-						//Also record type of politician (note this will result in LOST_POLITICIAN by default)
+			//Also record type of politician (note this will result in LOST_POLITICIAN by default)
 
 						/*
 			System.out.println("has_parent_EC: " + RobotPlayer.has_parent_EC);
