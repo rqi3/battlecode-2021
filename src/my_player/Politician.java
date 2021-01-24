@@ -260,7 +260,7 @@ public class Politician {
 	public static final double REPEL_SL = 1.0;
 	public static final double REPEL_EC = 100.0;
 	public static final double REPEL_PT = 100.0;
-	public static final double SPAWN_BLOCK_WEIGHT = -100.0;
+	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
 	public static final double CHASE_WEIGHTS[] = {0.0, -1000.0, -500.0};
 	public static final double INF = 1e12;
 	public static final int MAX_KILL_DIST = 5;
@@ -381,20 +381,19 @@ public class Politician {
 				}
 		}
 
-		//Move (should take at most (9 * (4 + 9*5 + 2)) = 459 bytecodes
-		while(true)
+		for(int z=0;z<9;++z) // try all 9 locations
 		{
-			double best = score[1][1]-1;
-			int bi=-1, bj=-1;
-			Direction to_go = null;
-			for(int i=-1;i<=1;++i)
-				for(int j=-1;j<=1;++j)
-					if(best < score[i+1][j+1])
-					{
-						best = score[i+1][j+1];
-						bi=i+1; bj=j+1;
-						to_go = dir[i+1][j+1];
-					}
+			int bi=0, bj=0;
+			if(score[0][1]>score[bi][bj]) {bi=0; bj=1;}
+			if(score[0][2]>score[bi][bj]) {bi=0; bj=2;}
+			if(score[1][0]>score[bi][bj]) {bi=1; bj=0;}
+			if(score[1][1]>score[bi][bj]) {bi=1; bj=1;}
+			if(score[1][2]>score[bi][bj]) {bi=1; bj=2;}
+			if(score[2][0]>score[bi][bj]) {bi=2; bj=0;}
+			if(score[2][1]>score[bi][bj]) {bi=2; bj=1;}
+			if(score[2][2]>score[bi][bj]) {bi=2; bj=2;}
+
+			Direction to_go = dir[bi][bj];
 			if(to_go == null) // no movement
 				return;
 			if(rc.canMove(to_go))
@@ -404,6 +403,7 @@ public class Politician {
 			}
 			else
 				score[bi][bj] -= INF;
+			//ncnt = Clock.getBytecodeNum(); System.out.println("Try move & failed: " + (ncnt - cnt)); cnt = ncnt;
 		}
 	}
 
