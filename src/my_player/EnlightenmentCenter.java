@@ -571,9 +571,34 @@ public class EnlightenmentCenter {
 		return 0;
 	}
 
+	static int numSent[][] = new int[150][150];
+
 	public static int getBestNeutralECIndex(){
 		if(RobotPlayer.neutral_ecs.size() == 0) return -1;
-		return (int)(Math.random()*RobotPlayer.neutral_ecs.size());
+		
+		int idx = -1;
+		int min = Integer.MAX_VALUE;
+		int dist = Integer.MAX_VALUE;
+		
+		for(int i = 0; i < RobotPlayer.neutral_ecs.size(); i++) {
+			Point p = RobotPlayer.neutral_ecs.get(i).rel_loc;
+			int d = p.x*p.x + p.y*p.y;
+			if(numSent[p.x+75][p.y+75] < min) {
+				min = numSent[p.x+75][p.y+75];
+				idx = i;
+				dist = d;
+			}
+			if(numSent[p.x+75][p.y+75] == min) {
+				if(d < dist) {
+					dist = d;
+					idx = i;
+				}
+			}
+		}
+		
+		numSent[RobotPlayer.neutral_ecs.get(idx).rel_loc.x+75][RobotPlayer.neutral_ecs.get(idx).rel_loc.y+75]++;
+		
+		return idx;
 	}
 
 	/**
