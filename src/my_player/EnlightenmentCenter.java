@@ -582,6 +582,7 @@ public class EnlightenmentCenter {
 		
 		for(int i = 0; i < RobotPlayer.neutral_ecs.size(); i++) {
 			Point p = RobotPlayer.neutral_ecs.get(i).rel_loc;
+			System.out.println("possible loc: " + p);
 			int d = p.x*p.x + p.y*p.y;
 			if(numSent[p.x+75][p.y+75] < min) {
 				min = numSent[p.x+75][p.y+75];
@@ -595,9 +596,10 @@ public class EnlightenmentCenter {
 				}
 			}
 		}
-		
-		numSent[RobotPlayer.neutral_ecs.get(idx).rel_loc.x+75][RobotPlayer.neutral_ecs.get(idx).rel_loc.y+75]++;
-		
+
+
+
+		System.out.println("Best location: " + RobotPlayer.neutral_ecs.get(idx).rel_loc);
 		return idx;
 	}
 
@@ -740,7 +742,10 @@ public class EnlightenmentCenter {
 				if(RobotPlayer.neutral_ecs.size() > 0){
 					Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
 					if(allowance >= 250+neutral_ec.influence){
-						trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc);
+						if(trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc)){
+							//if we successfully spawned an attacker politician, update the location
+							numSent[neutral_ec.rel_loc.x+75][neutral_ec.rel_loc.y+75]++;
+						}
 					}
 				}
 				if(alive_scout_ids.size() < 8){
@@ -794,8 +799,10 @@ public class EnlightenmentCenter {
 				if(RobotPlayer.neutral_ecs.size() > 0){
 					Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
 					if(allowance >= 250+neutral_ec.influence){
-						trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc);
-						//System.out.println("Attack neutral ec");
+						if(trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc)){
+							//if we successfully spawned an attacker politician, update the location
+							numSent[neutral_ec.rel_loc.x+75][neutral_ec.rel_loc.y+75]++;
+						}
 					}
 				}
 				//System.out.println("Spawn cycle: " + spawn_cycle_index);
