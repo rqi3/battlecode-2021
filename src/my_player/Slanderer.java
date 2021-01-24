@@ -101,7 +101,7 @@ public class Slanderer {
 	public static final double HOME_WEIGHT = 1.0; // proportional to dist
 	public static final double REPEL_SL = 0.0; // inverse to dist
 	public static final double REPEL_EC = 0.0; // inverse to dist
-	public static final double REPEL_PT = 0.0; // inverse to dist
+	public static final double REPEL_PT = 25.0; // inverse to dist
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
 	public static final double CHASE_WEIGHTS[] = {0.0, 200.0, 100.0};  // tendency to move away from enemy muckrakers (inversely proportional)
 	public static final double INF = 1e12;
@@ -142,7 +142,6 @@ public class Slanderer {
 		//ncnt = Clock.getBytecodeNum(); System.out.println("Process home EC: " + (ncnt - cnt)); cnt = ncnt;
 
 		//Retrieve nearest robot
-		/*
 		RobotInfo closest_friendly = null;
 		int closest_friendly_dist = 1000000;
 		for(RobotInfo info : rc.senseNearbyRobots(20, rc.getTeam()))
@@ -154,12 +153,10 @@ public class Slanderer {
 				closest_friendly = info;
 			}
 		}
-		*/
 
 		//ncnt = Clock.getBytecodeNum(); System.out.println("Retrieve nearest friendly: " + (ncnt - cnt)); cnt = ncnt;
 
 		//Handle nearest friendly
-		/*
 		if(closest_friendly != null)
 		{
 			double wt = 0.0;
@@ -188,7 +185,6 @@ public class Slanderer {
 			score[2][1] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y)));
 			score[2][2] -= wt/Math.sqrt(1+(double)loc.distanceSquaredTo(new MapLocation(cur.x+1, cur.y+1)));
 		}
-		*/
 
 		//ncnt = Clock.getBytecodeNum(); System.out.println("Handle nearest friendly: " + (ncnt - cnt)); cnt = ncnt;
 
