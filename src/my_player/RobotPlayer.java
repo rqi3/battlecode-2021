@@ -324,9 +324,9 @@ public strictfp class RobotPlayer {
 				}
 				just_made = false;
 
-				if(ClosestEnemyAttacker.enemy_exists){
+				/*if(ClosestEnemyAttacker.enemy_exists){
 					System.out.println("CLOSEST ENEMY AT LOC " + ClosestEnemyAttacker.enemy_position + " seen at round " + ClosestEnemyAttacker.round_seen);
-				}
+				}*/
 
 				// Clock.yield() makes the robot wait until the next turn, then it will perform this loop again
 				Clock.yield();

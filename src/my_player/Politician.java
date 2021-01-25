@@ -112,7 +112,7 @@ public class Politician {
 	static Point scout_destination = null;
 	static void doPoliticianScoutAction() throws GameActionException
 	{
-		System.out.println("Doing Politician Scout Action");
+		//System.out.println("Doing Politician Scout Action");
 
 		tryPoliticianScoutEmpower();
 
