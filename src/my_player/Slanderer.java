@@ -14,24 +14,24 @@ public class Slanderer {
 	public static final float PI = (float)(Math.atan(1)*4);
 
 	static final Direction[] directions = {
-		Direction.NORTH,
-		Direction.NORTHEAST,
-		Direction.EAST,
-		Direction.SOUTHEAST,
-		Direction.SOUTH,
-		Direction.SOUTHWEST,
-		Direction.WEST,
-		Direction.NORTHWEST,
+			Direction.NORTH,
+			Direction.NORTHEAST,
+			Direction.EAST,
+			Direction.SOUTHEAST,
+			Direction.SOUTH,
+			Direction.SOUTHWEST,
+			Direction.WEST,
+			Direction.NORTHWEST,
 	};
 
 	public static final Direction dir[][] = //[x][y]
-	{{Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST},
-		{Direction.SOUTH, null, Direction.NORTH},
-		{Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST}};
+			{{Direction.SOUTHWEST, Direction.WEST, Direction.NORTHWEST},
+					{Direction.SOUTH, null, Direction.NORTH},
+					{Direction.SOUTHEAST, Direction.EAST, Direction.NORTHEAST}};
 
 	/**
 	 * Check whether parent EC died
-     */
+	 */
 	static void updateParentEC() {
 		if(!RobotPlayer.has_parent_EC) return;
 		if(!rc.canGetFlag(RobotPlayer.parent_EC.getID())){ //parent EC died
@@ -97,13 +97,13 @@ public class Slanderer {
 
 	// FROM POLICE POLITICIAN MOVEMENT
 
-	public static final double LATTICE_PREF = 1.0;
+	public static final double LATTICE_PREF = 2.0;
 	public static final double HOME_WEIGHT = 1.0; // proportional to dist
 	public static final double REPEL_SL = 0.0; // inverse to dist
 	public static final double REPEL_EC = 0.0; // inverse to dist
-	public static final double REPEL_PT = 15.0; // inverse to dist
+	public static final double REPEL_PT = 25.0; // inverse to dist
 	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
-	public static final double CHASE_WEIGHTS[] = {0.0, 600.0, 100.0};  // tendency to move away from enemy muckrakers (inversely proportional)
+	public static final double CHASE_WEIGHTS[] = {0.0, 200.0, 100.0};  // tendency to move away from enemy muckrakers (inversely proportional)
 	public static final double INF = 1e12;
 	public static double score[][] = new double[3][3];// each of the 9 squares it can move to. Higher score is better
 
@@ -121,7 +121,7 @@ public class Slanderer {
 			score[0][0]=score[0][2]=score[1][1]=score[2][0]=score[2][2]=0;
 			score[0][1]=score[1][0]=score[1][2]=score[2][1]=LATTICE_PREF;
 		}
-		
+
 		//Modify score to naturally favor moving closer to home RC
 
 		if(RobotPlayer.parent_EC != null)
@@ -205,7 +205,7 @@ public class Slanderer {
 		}
 
 		//ncnt = Clock.getBytecodeNum(); System.out.println("Handle nearest enemy: " + (ncnt - cnt)); cnt = ncnt;
-		
+
 		for(int z=0;z<3;++z) // try 3 best locations
 		{
 			int bi=0, bj=0;
