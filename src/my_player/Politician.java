@@ -265,10 +265,10 @@ public class Politician {
 
 	public static final double HOME_WEIGHT = 1.0;
 	public static final double REPEL_SL = 1.0;
-	public static final double REPEL_EC = 100.0;
-	public static final double REPEL_PT = 100.0;
-	public static final double SPAWN_BLOCK_WEIGHT = -100.0;
-	public static final double CHASE_WEIGHTS[] = {0.0, -1000.0, -500.0};
+	public static final double REPEL_EC = 50.0;
+	public static final double REPEL_PT = 15.0;
+	public static final double SPAWN_BLOCK_WEIGHT = -1000.0;
+	public static final double CHASE_WEIGHTS[] = {0.0, -60.0, -30.0};
 	public static final double INF = 1e12;
 	public static final int MAX_KILL_DIST = 5;
 
