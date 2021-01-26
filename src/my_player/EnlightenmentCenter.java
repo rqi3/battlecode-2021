@@ -50,34 +50,35 @@ public class EnlightenmentCenter {
 	 * List of possible directions.
 	 */
 	static final Direction[] directions = {
-		Direction.NORTH,
-		Direction.NORTHEAST,
-		Direction.EAST,
-		Direction.SOUTHEAST,
-		Direction.SOUTH,
-		Direction.SOUTHWEST,
-		Direction.WEST,
-		Direction.NORTHWEST,
+			Direction.NORTH,
+			Direction.NORTHEAST,
+			Direction.EAST,
+			Direction.SOUTHEAST,
+			Direction.SOUTH,
+			Direction.SOUTHWEST,
+			Direction.WEST,
+			Direction.NORTHWEST,
 	};
 
 	////////////////////////////// Nathan Chen Bidder Code //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	static ArrayList<Integer> previous_scores = new ArrayList<Integer>();
-	
+
 	static double current_bid_value = 5; //calibrate this based on what other bots are doing
 	static double BID_PERCENTAGE_UPPER_BOUND = 0.15; //don't spend too much... in theory if the opponent is going above our upper bound then they will be too poor to win remaining rounds
 	//though maybe we want to raise this upper bound in the the last 200 rounds?
-	static double volatility = 1.5; 
+	static double volatility = 1.5;
 	static double bid_multiplier = 1;
 	static final int LAST_FEW_BIDS = 4;
-	
+
 	static boolean save_money = false; //THIS IS MODIFIED BASED ON spawnRobot()
-	
+	static boolean DEBUG = true;
 	static int getBidValue(){ //returns the value this Enlightenment Center will bid
 		//System.out.println("Current influence: " + rc.getInfluence());
+		if(DEBUG) return 0;
 		int us = rc.getTeamVotes();
 		int them = rc.getRoundNum() - rc.getTeamVotes(); //might be slightly overestimated in the case of ties - in reality ties should be really unlikely
 		bid_multiplier = 1; //reset
-		
+
 		if(us > 750) return 0; //we have majority vote, just invest in full defense
 
 		BID_PERCENTAGE_UPPER_BOUND = 0.15;
@@ -95,11 +96,11 @@ public class EnlightenmentCenter {
 				BID_PERCENTAGE_UPPER_BOUND = 0.50;
 			}
 		}
-		
+
 		int check = Math.min(LAST_FEW_BIDS, previous_scores.size());
 		if(check > 0) {
 			int bids_lost = check - (us - previous_scores.get(previous_scores.size() - check));
-			
+
 			bid_multiplier *= (.95 + .075 * bids_lost);
 			if(rc.getInfluence() > 10000000) bid_multiplier += .049;
 		}
@@ -109,15 +110,15 @@ public class EnlightenmentCenter {
 		//System.out.println("BID_PERCENTAGE_UPPER_BOUND: " + BID_PERCENTAGE_UPPER_BOUND);*/
 
 		current_bid_value *= Math.pow(bid_multiplier, volatility);
-		
+
 		double upper_bound = save_money ? BID_PERCENTAGE_UPPER_BOUND / 5 : BID_PERCENTAGE_UPPER_BOUND;
 		current_bid_value = Math.min(current_bid_value, upper_bound * rc.getInfluence());
 		current_bid_value = Math.max(current_bid_value, 0.1);
 		previous_scores.add(rc.getTeamVotes());
-		
+
 		return (int) Math.round(current_bid_value);
 	}
-	
+
 	/////////////////////////////// END Nathan Chen Bidder Code ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/**
@@ -368,8 +369,8 @@ public class EnlightenmentCenter {
 
 	static int current_scout_direction = 0;
 	/**
-	Tries to spawn a scout in a random direction.
-	@return whether it did spawn a scout.
+	 Tries to spawn a scout in a random direction.
+	 @return whether it did spawn a scout.
 	 */
 	private static boolean trySpawnScout() throws GameActionException {
 
@@ -535,7 +536,7 @@ public class EnlightenmentCenter {
 		}
 		return false;
 	}*/
-	
+
 	/**
 	 * Tries to spawn a unit of influence 1
 	 * @throws GameActionException
@@ -575,11 +576,11 @@ public class EnlightenmentCenter {
 
 	public static int getBestNeutralECIndex(){
 		if(RobotPlayer.neutral_ecs.size() == 0) return -1;
-		
+
 		int idx = -1;
 		int min = Integer.MAX_VALUE;
 		int dist = Integer.MAX_VALUE;
-		
+
 		for(int i = 0; i < RobotPlayer.neutral_ecs.size(); i++) {
 			Point p = RobotPlayer.neutral_ecs.get(i).rel_loc;
 			int d = p.x*p.x + p.y*p.y;
@@ -595,7 +596,7 @@ public class EnlightenmentCenter {
 				}
 			}
 		}
-				
+
 		return idx;
 	}
 
@@ -737,7 +738,7 @@ public class EnlightenmentCenter {
 				//System.out.println("Currently in economy phase");
 				if(RobotPlayer.neutral_ecs.size() > 0){
 					Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
-					if(allowance >= 250+neutral_ec.influence){
+					if(allowance >= 250+neutral_ec.influence && numSent.getOrDefault(neutral_ec.rel_loc, 0) <= 1){
 						if(trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc)){
 							//if we successfully spawned an attacker politician, update the location
 							numSent.put(neutral_ec.rel_loc, numSent.getOrDefault(neutral_ec.rel_loc, 0)+1);
@@ -795,7 +796,7 @@ public class EnlightenmentCenter {
 				if(RobotPlayer.neutral_ecs.size() > 0){
 					Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
 					if(allowance >= 250+neutral_ec.influence){
-						if(trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc)){
+						if(trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc) && numSent.getOrDefault(neutral_ec.rel_loc, 0) <= 1){
 							//if we successfully spawned an attacker politician, update the location
 							numSent.put(neutral_ec.rel_loc, numSent.getOrDefault(neutral_ec.rel_loc, 0)+1);
 						}
