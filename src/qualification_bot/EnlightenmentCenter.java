@@ -1,4 +1,4 @@
-package last_update_bot;
+package qualification_bot;
 
 import battlecode.common.*;
 import java.util.*;
@@ -71,10 +71,9 @@ public class EnlightenmentCenter {
 	static final int LAST_FEW_BIDS = 4;
 	
 	static boolean save_money = false; //THIS IS MODIFIED BASED ON spawnRobot()
-	static boolean DEBUG = true;
+	
 	static int getBidValue(){ //returns the value this Enlightenment Center will bid
 		//System.out.println("Current influence: " + rc.getInfluence());
-		if(DEBUG) return 0;
 		int us = rc.getTeamVotes();
 		int them = rc.getRoundNum() - rc.getTeamVotes(); //might be slightly overestimated in the case of ties - in reality ties should be really unlikely
 		bid_multiplier = 1; //reset
@@ -738,7 +737,7 @@ public class EnlightenmentCenter {
 				//System.out.println("Currently in economy phase");
 				if(RobotPlayer.neutral_ecs.size() > 0){
 					Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
-					if(allowance >= 250+neutral_ec.influence && numSent.getOrDefault(neutral_ec.rel_loc, 0) <= 1){
+					if(allowance >= 250+neutral_ec.influence){
 						if(trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc)){
 							//if we successfully spawned an attacker politician, update the location
 							numSent.put(neutral_ec.rel_loc, numSent.getOrDefault(neutral_ec.rel_loc, 0)+1);
@@ -796,7 +795,7 @@ public class EnlightenmentCenter {
 				if(RobotPlayer.neutral_ecs.size() > 0){
 					Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
 					if(allowance >= 250+neutral_ec.influence){
-						if(trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc) && numSent.getOrDefault(neutral_ec.rel_loc, 0) <= 1){
+						if(trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc)){
 							//if we successfully spawned an attacker politician, update the location
 							numSent.put(neutral_ec.rel_loc, numSent.getOrDefault(neutral_ec.rel_loc, 0)+1);
 						}
