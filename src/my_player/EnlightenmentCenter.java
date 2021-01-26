@@ -640,7 +640,6 @@ public class EnlightenmentCenter {
 			//very urgent need for police politician
 			int cost = 4*surround_unit_max_conviction + 15;
 			if(cost <= allowance) {
-				//System.out.println("Spawn for surround unit");
 				trySpawnPolicePolitician(cost);
 			}
 			else{
@@ -710,7 +709,6 @@ public class EnlightenmentCenter {
 						else{
 							police_influence = 20;
 						}
-
 						if(police_influence <= allowance){
 							trySpawnPolicePolitician(police_influence);
 						}
@@ -738,7 +736,7 @@ public class EnlightenmentCenter {
 				//System.out.println("Currently in economy phase");
 				if(RobotPlayer.neutral_ecs.size() > 0){
 					Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
-					if(allowance >= 250+neutral_ec.influence && numSent.getOrDefault(neutral_ec.rel_loc, 0) <= 1){
+					if(allowance >= 250+neutral_ec.influence && numSent.getOrDefault(neutral_ec.rel_loc, 0) < 2){
 						if(trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc)){
 							//if we successfully spawned an attacker politician, update the location
 							numSent.put(neutral_ec.rel_loc, numSent.getOrDefault(neutral_ec.rel_loc, 0)+1);
@@ -796,7 +794,7 @@ public class EnlightenmentCenter {
 				if(RobotPlayer.neutral_ecs.size() > 0){
 					Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
 					if(allowance >= 250+neutral_ec.influence){
-						if(trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc) && numSent.getOrDefault(neutral_ec.rel_loc, 0) <= 1){
+						if(trySpawnAttackerPolitician(neutral_ec.influence+200, neutral_ec.rel_loc) && numSent.getOrDefault(neutral_ec.rel_loc, 0) < 2){
 							//if we successfully spawned an attacker politician, update the location
 							numSent.put(neutral_ec.rel_loc, numSent.getOrDefault(neutral_ec.rel_loc, 0)+1);
 						}

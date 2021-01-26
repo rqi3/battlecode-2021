@@ -337,11 +337,20 @@ public class Politician {
 				switch(info.getType())
 				{
 					case MUCKRAKER:
-					case POLITICIAN:
 						if(closest_enemy == null || new_dist < closest_enemy_dist)
 						{
 							closest_enemy = info;
 							closest_enemy_dist = new_dist;
+						}
+						break;
+					case POLITICIAN:
+						if(closest_enemy == null || new_dist < closest_enemy_dist)
+						{
+							if(info.getInfluence() <= rc.getInfluence()*10){
+								closest_enemy = info;
+								closest_enemy_dist = new_dist;
+							}
+
 						}
 						break;
 					default:
