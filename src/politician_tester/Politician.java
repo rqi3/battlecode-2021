@@ -399,7 +399,7 @@ public class Politician {
 				cnt[i+1] += cnt[i];
 			int dist = rc.getLocation().distanceSquaredTo(closest_enemy.getLocation());
 			int to_emp = 0;
-			if(dist <=2&&(closest_enemy.type==RobotType.MUCKRAKER)) to_emp = 1; // if distance == 1, then you have to empower
+			if(dist <=2) to_emp = 1; // empower if muck is close
 
 			for(int i=dist;i <= MAX_KILL_DIST;++i) // if can insta, increase radius
 				if(((int)((rc.getConviction()-10)*rc.getEmpowerFactor(rc.getTeam(), 0)))/cnt[i] > closest_enemy.getConviction())
