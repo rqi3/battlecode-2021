@@ -299,6 +299,7 @@ public class Politician {
 		//Modify score based on nearby robots
 		RobotInfo closest_enemy = null;
 		int closest_enemy_dist = 1000000;
+		int empower_value = (int)((rc.getConviction()-10)*rc.getEmpowerFactor(rc.getTeam(), 0));
 		for(RobotInfo info : rc.senseNearbyRobots(20))
 			if(info.getTeam() == rc.getTeam()) // same team
 			{
@@ -334,6 +335,7 @@ public class Politician {
 			else // enemy team
 			{
 				int new_dist = info.getLocation().distanceSquaredTo(cur);
+
 				switch(info.getType())
 				{
 					case MUCKRAKER:
@@ -346,7 +348,7 @@ public class Politician {
 					case POLITICIAN:
 						if(closest_enemy == null || new_dist < closest_enemy_dist)
 						{
-							if(info.getInfluence() <= rc.getInfluence()*10){
+							if(info.getConviction() <= 8*empower_value){
 								closest_enemy = info;
 								closest_enemy_dist = new_dist;
 							}
