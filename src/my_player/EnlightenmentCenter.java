@@ -646,7 +646,7 @@ public class EnlightenmentCenter {
 				trySpawnPolicePolitician(cost);
 			}
 			else{
-				return; //DONT SPAWN CHEAP... waste of space and money when surrounded
+				trySpawnCheap();//do something
 			}
 		}
 
