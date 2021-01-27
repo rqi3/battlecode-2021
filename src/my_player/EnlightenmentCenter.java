@@ -71,10 +71,10 @@ public class EnlightenmentCenter {
 	static final int LAST_FEW_BIDS = 4;
 
 	static boolean save_money = false; //THIS IS MODIFIED BASED ON spawnRobot()
-	static boolean DEBUG = true;
+	//static boolean DEBUG = true;
 	static int getBidValue(){ //returns the value this Enlightenment Center will bid
 		//System.out.println("Current influence: " + rc.getInfluence());
-		if(DEBUG) return 0;
+		//if(DEBUG) return 0;
 		int us = rc.getTeamVotes();
 		int them = rc.getRoundNum() - rc.getTeamVotes(); //might be slightly overestimated in the case of ties - in reality ties should be really unlikely
 		bid_multiplier = 1; //reset
