@@ -634,6 +634,12 @@ public class EnlightenmentCenter {
 				total_surround_conviction+=ri.getConviction();
 			}
 		}
+		for(int i = 0; i < 8; i++){
+			if(!rc.onTheMap(rc.getLocation().add(directions[i]))){
+				surround_enemies++;
+				break;
+			}
+		}
 
 
 		if(surround_enemies >= 4){
