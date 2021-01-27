@@ -474,6 +474,7 @@ public class EnlightenmentCenter {
 		return false;
 	}
 
+
 	/**
 	 *
 	 * @param influence The influence that we will put into the police politican.
@@ -609,9 +610,15 @@ public class EnlightenmentCenter {
 
 	static boolean CLOSE_ENEMY_CASE = false;
 
+	//for spawning police politicians when near enemy ec
+	static int lastSpawnTime=-1000;
+	static int lastSpawnInfluence=0;
+
 	public static void spawnRobotCloseEnemyCase() throws GameActionException{
 		System.out.println("Spawn close enemy case");
-
+		if(rc.getRoundNum() == 1){
+			trySpawnSlanderer(130);
+		}
 
 		int allowance = rc.getInfluence();
 
@@ -644,7 +651,17 @@ public class EnlightenmentCenter {
 			int avg_surround_conviction = total_surround_conviction/surround_enemies+2;
 			int police_cost = 4*avg_surround_conviction+10;
 			if(police_cost <= allowance){
-				trySpawnPolicePolitician(Math.min(allowance,avg_surround_conviction*(rc.senseNearbyRobots(8,rc.getTeam().opponent()).length)+10));
+				int needed=(int)(avg_surround_conviction*(rc.senseNearbyRobots(8).length)/rc.getEmpowerFactor(rc.getTeam(),10)+10);
+				int target=(int)(avg_surround_conviction*(rc.senseNearbyRobots(8).length+3)/rc.getEmpowerFactor(rc.getTeam(),10)+10);
+				if(lastSpawnTime+10<rc.getRoundNum()||needed>lastSpawnInfluence+10)
+				{
+					int influenceToSpawn=Math.min(allowance,target);
+					if(trySpawnPolicePolitician(influenceToSpawn))
+					{
+						lastSpawnTime=rc.getRoundNum();
+						lastSpawnInfluence=influenceToSpawn;
+					};
+				}
 			}
 			else{
 				trySpawnAttackerMuckraker(1, RobotPlayer.getClosestEnemyECLocation());
@@ -677,8 +694,9 @@ public class EnlightenmentCenter {
 
 		if(RobotPlayer.neutral_ecs.size() > 0){
 			Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
-			int attacker_influence = neutral_ec.influence+50;
-			if(attacker_influence*2 <= allowance){
+			int attacker_influence = neutral_ec.influence+20;
+			if(attacker_influence <= allowance)
+			{
 				trySpawnAttackerPolitician(attacker_influence, neutral_ec.rel_loc);
 			}
 		}
@@ -694,22 +712,14 @@ public class EnlightenmentCenter {
 			trySpawnScout();
 		}
 
-		if(RobotPlayer.neutral_ecs.size() > 0){
-			Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
-			int attacker_influence = neutral_ec.influence+30;
-			if(attacker_influence+20 <= allowance){
-				trySpawnAttackerPolitician(attacker_influence, neutral_ec.rel_loc);
-			}
-		}
-		else
+
+		if(alive_attack_muckraker_ids.size() <= 30)
 		{
-			if(alive_attack_muckraker_ids.size() <= 30)
-			{
-				if(Math.random()<0.1)
-					trySpawnAttackerMuckraker(allowance/2, null);
-				else trySpawnAttackerMuckraker(1, null);
-			}
+			if(RobotPlayer.neutral_ecs.size() == 0&&Math.random()<0.1)
+				trySpawnAttackerMuckraker(allowance/2, null);
+			else trySpawnAttackerMuckraker(1, null);
 		}
+
 		//Don't spawn cheap: already enough muckrackers
 	}
 
