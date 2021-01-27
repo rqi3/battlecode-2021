@@ -75,6 +75,12 @@ public class EnlightenmentCenter {
 	static int getBidValue(){ //returns the value this Enlightenment Center will bid
 		//System.out.println("Current influence: " + rc.getInfluence());
 		//if(DEBUG) return 0;
+		if(CLOSE_ENEMY_CASE){
+			if(rc.getRoundNum() <= 200){
+				return 0;
+			}
+		}
+
 		int us = rc.getTeamVotes();
 		int them = rc.getRoundNum() - rc.getTeamVotes(); //might be slightly overestimated in the case of ties - in reality ties should be really unlikely
 		bid_multiplier = 1; //reset
@@ -601,6 +607,67 @@ public class EnlightenmentCenter {
 		return idx;
 	}
 
+	static boolean CLOSE_ENEMY_CASE = false;
+
+	public static void spawnRobotCloseEnemyCase() throws GameActionException{
+		System.out.println("Spawn close enemy case");
+		int allowance = rc.getInfluence();
+
+		//System.out.println("allowance: " + allowance);
+
+		for(RobotInfo close_enemy_unit: rc.senseNearbyRobots(4, rc.getTeam().opponent())){
+			if(close_enemy_unit.getType() == RobotType.POLITICIAN){
+				allowance = Math.min(allowance, rc.getInfluence()-close_enemy_unit.getConviction());
+			}
+		}
+
+		int surround_enemies = 0;
+		int total_surround_conviction = 0;
+		for(int i = 0; i < 8; i++){
+			if(rc.canSenseLocation(rc.getLocation().add(directions[i]))){
+				RobotInfo ri = rc.senseRobotAtLocation(rc.getLocation().add(directions[i]));
+				if(ri == null){
+					continue;
+				}
+				if(ri.getTeam().equals(rc.getTeam().opponent())){
+					surround_enemies++;
+					total_surround_conviction+=ri.getConviction();
+				}
+			}
+		}
+
+
+
+		if(surround_enemies >= 4){
+			int avg_surround_conviction = total_surround_conviction/surround_enemies+2;
+			int police_cost = 4*avg_surround_conviction+10;
+			if(police_cost <= allowance){
+				trySpawnPolicePolitician(police_cost);
+			}
+			else{
+				trySpawnAttackerMuckraker(1, RobotPlayer.getClosestEnemyECLocation());
+			}
+
+			return;
+		}
+
+		if(alive_attack_muckraker_ids.size() <= 15){
+			trySpawnAttackerMuckraker(1, RobotPlayer.getClosestEnemyECLocation());
+		}
+
+		if(alive_scout_ids.size() < 8){
+			trySpawnScout();
+		}
+
+		if(RobotPlayer.neutral_ecs.size() > 0){
+			Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
+			int attacker_influence = neutral_ec.influence+20;
+			if(attacker_influence <= allowance){
+				trySpawnAttackerPolitician(attacker_influence, neutral_ec.rel_loc);
+			}
+		}
+	}
+
 	/**
 	 * Chooses what robot to spawn and spawns it.
 	 *
@@ -614,7 +681,22 @@ public class EnlightenmentCenter {
 	static int spawn_cycle_index = 0;
 
 	public static void spawnRobot() throws GameActionException {
+		if(RobotPlayer.enemy_ecs.size() > 0){
+			Point enemy_ec_rel_loc = RobotPlayer.getClosestEnemyECLocation();
+			if(rc.getRoundNum() <= 50 && enemy_ec_rel_loc.x*enemy_ec_rel_loc.x+enemy_ec_rel_loc.y+enemy_ec_rel_loc.y <= 64){
+				CLOSE_ENEMY_CASE = true;
+			}
+		}
+		else{
+			CLOSE_ENEMY_CASE = false;
+		}
+
 		if(!rc.isReady()) return;
+
+		if(CLOSE_ENEMY_CASE){
+			spawnRobotCloseEnemyCase();
+			return;
+		}
 
 		int allowance = rc.getInfluence();
 

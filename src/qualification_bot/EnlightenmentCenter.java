@@ -71,7 +71,7 @@ public class EnlightenmentCenter {
 	static final int LAST_FEW_BIDS = 4;
 	
 	static boolean save_money = false; //THIS IS MODIFIED BASED ON spawnRobot()
-	static boolean DEBUG = true;
+	static boolean DEBUG = false;
 	static int getBidValue(){ //returns the value this Enlightenment Center will bid
 		//System.out.println("Current influence: " + rc.getInfluence());
 		if(DEBUG) return 0;
