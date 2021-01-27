@@ -692,7 +692,7 @@ public class EnlightenmentCenter {
 	public static void spawnRobot() throws GameActionException {
 		if(RobotPlayer.enemy_ecs.size() > 0){
 			Point enemy_ec_rel_loc = RobotPlayer.getClosestEnemyECLocation();
-			if(rc.getRoundNum() <= 50 && enemy_ec_rel_loc.x*enemy_ec_rel_loc.x+enemy_ec_rel_loc.y+enemy_ec_rel_loc.y <= 64){
+			if(rc.getRoundNum() <= 50 && enemy_ec_rel_loc.x*enemy_ec_rel_loc.x+enemy_ec_rel_loc.y*enemy_ec_rel_loc.y <= 64){
 				CLOSE_ENEMY_CASE = true;
 			}
 		}
