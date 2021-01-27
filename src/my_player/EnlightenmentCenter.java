@@ -611,6 +611,10 @@ public class EnlightenmentCenter {
 
 	public static void spawnRobotCloseEnemyCase() throws GameActionException{
 		System.out.println("Spawn close enemy case");
+		if(rc.getRoundNum() == 1){
+			trySpawnSlanderer(130);
+			return;
+		}
 		int allowance = rc.getInfluence();
 
 		//System.out.println("allowance: " + allowance);
@@ -651,11 +655,12 @@ public class EnlightenmentCenter {
 			return;
 		}
 
-		if(alive_attack_muckraker_ids.size() <= 15){
+		if(alive_attack_muckraker_ids.size() <= 30){
 			trySpawnAttackerMuckraker(1, RobotPlayer.getClosestEnemyECLocation());
 		}
 
 		if(alive_scout_ids.size() < 8){
+			System.out.println("Spawned scout");
 			trySpawnScout();
 		}
 
@@ -1042,6 +1047,10 @@ public class EnlightenmentCenter {
 		//Due to the save_money boolean, it is crazy important that spawnRobot() is called before getBidValue()
 
 		////////////////////Spawn Robot Begin
+		if(rc.getRoundNum() == 1){
+			UnitComms.lookAroundAfterMovement();
+		}
+
 		spawnRobot();
 		////////////////////Spawn Robot End
 		//System.out.println("After Spawn Robot: " + Clock.getBytecodeNum());
