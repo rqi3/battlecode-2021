@@ -627,19 +627,13 @@ public class EnlightenmentCenter {
 
 		int surround_enemies = 0;
 		int total_surround_conviction = 0;
-		for(int i = 0; i < 8; i++){
-			if(rc.canSenseLocation(rc.getLocation().add(directions[i]))){
-				RobotInfo ri = rc.senseRobotAtLocation(rc.getLocation().add(directions[i]));
-				if(ri == null){
-					continue;
-				}
-				if(ri.getTeam().equals(rc.getTeam().opponent())){
-					surround_enemies++;
-					total_surround_conviction+=ri.getConviction();
-				}
+
+		for(RobotInfo ri: rc.senseNearbyRobots(4, rc.getTeam().opponent())){
+			if(ri.getTeam().equals(rc.getTeam().opponent())){
+				surround_enemies++;
+				total_surround_conviction+=ri.getConviction();
 			}
 		}
-
 
 
 		if(surround_enemies >= 4){
@@ -653,6 +647,14 @@ public class EnlightenmentCenter {
 			}
 
 			return;
+		}
+
+		if(RobotPlayer.neutral_ecs.size() > 0 && alive_attack_politician_ids.size() < 1){
+			Neutral_EC_Info neutral_ec = RobotPlayer.neutral_ecs.get(getBestNeutralECIndex());
+			int attacker_influence = neutral_ec.influence+20;
+			if(attacker_influence <= allowance){
+				trySpawnAttackerPolitician(attacker_influence, neutral_ec.rel_loc);
+			}
 		}
 
 		if(alive_attack_muckraker_ids.size() <= 15 && alive_scout_ids.size() < 1){
