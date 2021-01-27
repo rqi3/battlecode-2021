@@ -76,7 +76,7 @@ public class EnlightenmentCenter {
 		//System.out.println("Current influence: " + rc.getInfluence());
 		//if(DEBUG) return 0;
 		if(CLOSE_ENEMY_CASE){
-			if(rc.getRoundNum() <= 200){
+			if(rc.getRoundNum() <= 400){
 				return 0;
 			}
 		}
@@ -653,6 +653,10 @@ public class EnlightenmentCenter {
 			}
 
 			return;
+		}
+
+		if(alive_attack_muckraker_ids.size() <= 15 && alive_scout_ids.size() < 1){
+			trySpawnScout();
 		}
 
 		if(alive_attack_muckraker_ids.size() <= 30){
